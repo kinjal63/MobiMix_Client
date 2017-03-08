@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/save_button_game_profile"
+    android:layout_width="80dp"
+    android:layout_height="50dp"
+    android:background="@color/oil"
+    android:fontFamily="sans-serif"
+    android:orientation="vertical"
+    android:text="Save"
+    style="@style/Widget.AppCompat.Button.Borderless"
+    android:textColor="@color/white"
+    android:textSize="15sp"
+    android:textStyle="normal" />
+

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white"
+            android:padding="10dp"
+            >
+
+            <TextView
+                android:id="@+id/textviewClickGame"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:background="@color/orange_button"
+                android:gravity="center"
+                android:text="Click Game "
+                android:textColor="@color/white"
+                android:textSize="25dp" />
+
+
+            <io.connection.bluetooth.activity.AutoFitRecyclerview
+                android:padding="10dp"
+                android:id="@+id/nearby_final_recyclerview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/textviewClickGame">
+
+            </io.connection.bluetooth.activity.AutoFitRecyclerview>
+
+            <Button
+                android:id="@+id/nearby_final_popup_closed_button"
+                android:layout_width="wrap_content"
+                android:background="@color/colorAccent"
+                android:text="Close"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center_horizontal"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:layout_below="@+id/nearby_final_recyclerview" />
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

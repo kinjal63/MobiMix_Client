@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="10dp"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <TextView
+        android:id="@+id/sendmessgae"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="5dp"
+        android:textColor="#000000"
+        android:textSize="13dip" />
+
+
+    <LinearLayout
+        android:id="@+id/layout_image_final_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+
+        android:layout_below="@+id/sendmessgae"
+        android:layout_marginTop="10dp">
+
+        <CheckBox
+            android:id="@+id/image_final_checkbox"
+            style="@style/MyCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/xml_checkbox_background" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/imageText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sendmessgae"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_toRightOf="@+id/layout_image_final_checkbox"
+        android:text="Images"
+        android:textColor="#000000"
+        android:textSize="15dip" />
+
+    <LinearLayout
+        android:id="@+id/layout_audio_final_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/layout_image_final_checkbox"
+        android:layout_marginTop="10dp">
+
+        <CheckBox
+            android:id="@+id/audio_final_checkbox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/xml_checkbox_background"
+            android:theme="@+style/MyCheckBox" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/audioText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layout_image_final_checkbox"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_toRightOf="@+id/layout_audio_final_checkbox"
+        android:text="Music"
+        android:textColor="#000000"
+        android:textSize="15dip" />
+
+    <LinearLayout
+        android:id="@+id/layout_video_final_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/layout_audio_final_checkbox"
+        android:layout_marginTop="10dp">
+
+        <CheckBox
+            android:id="@+id/video_final_checkbox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/xml_checkbox_background"
+            android:theme="@+style/MyCheckBox" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/videoText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layout_audio_final_checkbox"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="15dp"
+        android:layout_toRightOf="@+id/layout_video_final_checkbox"
+        android:text="Videos"
+        android:textColor="#000000"
+        android:textSize="15dip" />
+
+
+    <Button
+        android:id="@+id/imSure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/layout_video_final_checkbox"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="15dp"
+        android:background="#000000"
+        android:text="I'm Sure"
+        android:textColor="@color/white"
+        android:textSize="20dip" />
+
+    <Button
+        android:id="@+id/notSure"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/layout_video_final_checkbox"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="15dp"
+        android:background="#000000"
+        android:text="No !!"
+        android:textColor="@color/white"
+        android:textSize="20dip" />
+
+
+</RelativeLayout>

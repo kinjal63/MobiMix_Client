@@ -1,0 +1,55 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <io.connection.bluetooth.activity.AutoFitRecyclerview
+        android:id="@+id/game_profile_gridview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:columnWidth="120dp" />
+
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:indeterminate="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_centerVertical="true"
+        android:textColor="@color/black"
+        android:paddingLeft="5dp"
+        android:background="@color/orange_button"
+        android:layout_alignParentBottom="true"
+        >
+        <Spinner
+            android:id="@+id/planets_spinner"
+            android:layout_width="140dp"
+            android:layout_height="match_parent"
+            android:textColor="@color/white"
+            android:layout_alignParentLeft="true"
+            android:drawableLeft="@drawable/ic_game_timer"
+            android:drawablePadding="5dp"/>
+
+        <EditText
+            android:layout_toRightOf="@+id/planets_spinner"
+            android:id="@+id/game_profile_play_timing"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColorHint="@color/black"
+            android:background="@android:color/transparent"
+            android:textColor="@color/black"
+            android:hint="Playing Time"
+            android:padding="3dp" />
+    </RelativeLayout>
+
+
+
+</RelativeLayout>

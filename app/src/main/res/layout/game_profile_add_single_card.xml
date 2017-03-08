@@ -1,0 +1,69 @@
+
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="80dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <LinearLayout android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:layout_width="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_marginRight="5dip"
+            android:padding="3dip"
+            android:id="@+id/gameImageLayout">
+            <ImageView
+                android:id="@+id/gameImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_user"
+                />
+
+        </LinearLayout>
+        <TextView
+            android:id="@+id/gameTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_toRightOf="@+id/gameImageLayout"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="5dp"
+            android:maxLength="30"
+            android:textColor="#040404"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            android:text="HAPPY CODING"
+            android:typeface="normal" />
+
+        <Button
+            android:id="@+id/undo_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Undo"
+            android:layout_marginTop="20dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:textAllCaps="true"
+            android:textColor="@android:color/white"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            />
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_gravity="bottom"
+        />
+
+</android.support.v7.widget.CardView>

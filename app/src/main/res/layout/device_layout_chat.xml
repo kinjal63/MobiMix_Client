@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingBottom="2dp"
+    android:paddingTop="2dp"
+    android:paddingLeft="2dp"
+    android:background="@drawable/list_selector">
+
+
+    <LinearLayout android:id="@+id/thumbnail_image_chat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="3dip"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="5dip">
+
+        <io.connection.bluetooth.activity.CircularImageView
+            android:id="@+id/list_image_chat"
+            android:src="@drawable/image20160621_121902"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            />
+
+    </LinearLayout>
+    <TextView
+        android:gravity="center_vertical"
+        android:layout_toRightOf="@id/thumbnail_image_chat"
+        android:paddingTop="10dp"
+        android:id="@+id/chat_user_name"
+        android:textColor="#040404"
+        android:layout_marginLeft="25dp"
+        android:textSize="22dip"
+        android:text="Hello World"
+        android:layout_marginTop="14dp"
+        android:typeface="sans"
+        android:maxLength="20"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+   <!-- <TextView
+        android:gravity="left"
+        android:layout_toRightOf="@id/thumbnail_image_chat"
+        android:id="@+id/chat_status"
+        android:textColor="#040404"
+        android:layout_marginLeft="15dp"
+        android:textSize="15dip"
+        android:layout_below="@+id/chat_user_name"
+        android:text="Hello World"
+        android:layout_marginTop="5dp"
+        android:maxLength="27"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />-->
+</RelativeLayout>

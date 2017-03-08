@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/game_profile_game_card_view"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_margin="7dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:padding="5dp">
+
+                <ImageView
+                    android:id="@+id/game_profile_details_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_user" />
+
+                <TextView
+                    android:id="@+id/game_profile_details_gameName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/game_profile_details_image"
+                    android:text="Hello World"
+                    android:inputType="textCapWords"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/game_profile_details_publisher"
+                    android:layout_marginTop="2dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:inputType="textCapWords"
+                    android:layout_toRightOf="@+id/game_profile_details_image"
+                    android:layout_below="@+id/game_profile_details_gameName"
+                    android:text="Hello World"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/game_profile_details_game_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_marginTop="-3dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:gravity="center"
+                    android:text="4.7"
+                    android:drawablePadding="-6dp"
+                    android:layout_toRightOf="@+id/game_profile_details_image"
+                    android:drawableRight="@drawable/ic_game_rating"
+                    android:layout_below="@+id/game_profile_details_publisher"
+                    android:textSize="13sp"/>
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_toRightOf="@+id/game_profile_details_gameName">
+
+
+                    <TextView
+                        android:id="@+id/game_profile_details_age_rating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_alignParentRight="true"
+                        android:text="12+"
+                        android:background="@drawable/textview_border"
+                        android:textSize="20sp"/>
+
+                </RelativeLayout>
+
+            </RelativeLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/game_profile_timer_card_view"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@+id/game_profile_game_card_view"
+            android:layout_marginBottom="7dp"
+            android:layout_marginLeft="7dp"
+            android:layout_marginRight="7dp"
+            android:layout_marginTop="3dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <EditText
+                    android:id="@+id/game_profile_play_timing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_margin="5dp"
+                    android:background="@android:color/transparent"
+                    android:drawableLeft="@drawable/ic_game_timer"
+                    android:drawablePadding="5dp"
+                    android:hint="Set Game Playing Timer"
+                    android:inputType="textEmailAddress"
+                    android:padding="3dp" />
+
+            </RelativeLayout>
+
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/game_profile_details_card_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/game_profile_timer_card_view"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="7dp"
+            android:layout_marginRight="7dp"
+            android:layout_marginTop="3dp"
+            android:padding="5dp">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TableLayout
+                    android:layout_width="match_parent"
+                    android:id="@+id/table"
+                    android:layout_height="match_parent"
+                    android:shrinkColumns="*" android:stretchColumns="*"
+                    android:padding="5dp">
+                    <TableRow android:layout_margin="5dp" >
+                        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/game_profile_genre"
+                            android:textColor="@color/black"
+                            android:text="Age"/>
+                        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/game_profile_category"
+                            android:layout_below="@+id/game_profile_genre"
+                            android:textColor="@color/black"
+                            android:text="Game Category"/>
+                    </TableRow>
+                    <TableRow  android:layout_margin="5dp">
+                        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/game_profile_genre"
+                            android:inputType="textCapWords"
+                            android:id="@+id/game_profile_genre_value"
+                            android:text="Age Value"/>
+
+                        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/game_profile_category_value"
+                            android:inputType="textCapWords"
+                            android:layout_toRightOf="@+id/game_profile_category"
+                            android:text="Game Category"/>
+                    </TableRow>
+
+                    <TableRow android:layout_margin="5dp">
+                        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/game_profile_version"
+                            android:textColor="@color/black"
+                            android:text="Game Version"/>
+                        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/black"
+                            android:id="@+id/game_profile_studio"
+                            android:text="Game Studio"/>
+                <!--        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/game_profile_publisher"
+                            android:text="Game Publisher"/>-->
+
+                    </TableRow>
+                    <TableRow android:layout_margin="5dp">
+                        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords"
+                            android:id="@+id/game_profile_version_value"
+                            android:text="Game Version Value"/>
+                        <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords"
+                            android:id="@+id/game_profile_studio_value"
+                            android:text="Game Studio"/>
+
+                       <!-- <TextView
+                            android:layout_marginTop="10dp"
+                            android:layout_marginLeft="10dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/game_profile_publisher_value"
+                            android:text="Game Publisher Value"/>-->
+                    </TableRow>
+
+                </TableLayout>
+
+
+                <Button
+                    android:id="@+id/game_profile_google_play_button"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
+                    android:text="View In Google Play"
+                    android:textStyle="normal"
+                    android:padding="12dp"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/white"
+                    android:layout_below="@+id/table"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:background="@color/orange_button"
+                />
+
+
+
+
+
+            </RelativeLayout>
+
+        </android.support.v7.widget.CardView>
+
+
+    </RelativeLayout>
+</ScrollView>
+

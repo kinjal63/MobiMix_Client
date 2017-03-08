@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="io.connection.bluetooth">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_logo"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
+
+        <!--android:permission="android.permission.BLUETOOTH_PRIVILEGED"-->
+
+        <activity
+            android:name=".activity.MainActivity"
+            android:label="File Sharing"
+            android:screenOrientation="portrait">
+            <!--<intent-filter>-->
+                    <!--<action android:name="android.intent.action.MAIN" />-->
+
+                    <!--<category android:name="android.intent.category.LAUNCHER" />-->
+
+                <!--</intent-filter>-->
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable"></meta-data>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+
+        </activity>
+
+        <activity
+            android:name=".activity.Login_Register"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.white">
+            <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+
+                  <category android:name="android.intent.category.LAUNCHER" />
+              </intent-filter>
+        </activity>
+
+
+        <activity
+            android:name=".activity.DeviceListActivityChat"
+            android:label="Chat"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable"></meta-data>
+
+        </activity>
+        <activity
+            android:name=".activity.DeviceChatActivity"
+            android:label="Chat"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.BusinessCardListActivityUser"
+            android:label="Business Card">
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable"></meta-data>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.BusinessCard"
+            android:label="Business Card"
+            android:screenOrientation="portrait">
+            <!--  <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+
+                  <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>-->
+        </activity>
+        <activity
+            android:name="io.connection.imagecrop.CropImage"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.BusinessCardReceivedList"
+            android:label="Business Card"
+            android:screenOrientation="portrait" />
+
+
+        <activity
+            android:name=".activity.GameProfileActivity"
+            android:screenOrientation="portrait">
+
+        </activity>
+
+
+        <activity
+            android:name=".activity.GameProfileAddActivity"
+            android:label="Game Profile"
+            android:screenOrientation="portrait">
+
+        </activity>
+
+        <activity
+            android:name=".activity.GameProfileDetails"
+            android:screenOrientation="portrait">
+
+
+        </activity>
+        <activity
+            android:name=".activity.UserProfile"
+            android:label="Profile"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".activity.Home_Master"
+            android:icon="@mipmap/ic_logo"
+            android:screenOrientation="portrait">
+
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
+
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+
+        </activity>
+
+        <activity
+            android:name=".activity.UserNearByWithGames"
+            android:label="NearBy Players"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".activity.UserResponseDialog"
+            android:label="Game Request"
+            android:screenOrientation="portrait"
+            android:theme="@style/mythemeDialog">
+
+        </activity>
+
+        <service android:name=".Services.InstanceIdService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".Services.PushReceiveService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".Services.GPSTracker">
+
+        </service>
+
+        <receiver android:name=".PairingReceiver">
+            <intent-filter>
+                <action android:name="android.bluetooth.device.action.PAIRING_REQUEST" />
+                <action android:name="android.bluetooth.device.action.BOND_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

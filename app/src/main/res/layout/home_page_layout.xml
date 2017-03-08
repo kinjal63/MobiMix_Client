@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="5dp"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/file_card_id"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:clickable="true">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/olive_file_sharing">
+
+                <ImageView
+                    android:id="@+id/fileshare_image_id"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginBottom="25dp"
+                    android:src="@drawable/image_file_transfer" />
+
+                <ImageView
+                    android:id="@+id/fileshare1_image_id"
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/fileshare_image_id"
+                    android:src="@drawable/image_file_transfer" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="30dp"
+                    android:gravity="center"
+                    android:text="File Sharing"
+                    android:textColor="@color/white"
+                    android:textSize="17dip" />
+
+            </RelativeLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/chat_card_id"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@+id/file_card_id"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/brown_chat">
+
+                <ImageView
+                    android:id="@+id/chat_image_id"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginBottom="25dp"
+                    android:src="@drawable/image_chat" />
+
+                <ImageView
+                    android:id="@+id/chat1_image_id"
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/chat_image_id"
+                    android:src="@drawable/image_chat" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="30dp"
+                    android:gravity="center"
+                    android:text="Chat"
+                    android:textColor="@color/white"
+                    android:textSize="17dip" />
+
+            </RelativeLayout>
+
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/business_card_id"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@+id/chat_card_id"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/green_business_Card">
+
+                <ImageView
+                    android:id="@+id/business_image_id"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginBottom="25dp"
+                    android:src="@drawable/image_business_card" />
+
+                <ImageView
+                    android:id="@+id/business1_image_id"
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/business_image_id"
+                    android:src="@drawable/image_business_card" />
+
+                <TextView
+                    android:id="@+id/business_card_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="30dp"
+                    android:gravity="center"
+                    android:text="Busines Card"
+                    android:textColor="@color/white"
+                    android:textSize="17dip" />
+
+            </RelativeLayout>
+
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/game_card_id"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@+id/business_card_id"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/red_game_profile">
+
+                <ImageView
+                    android:id="@+id/game_image_id"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginBottom="25dp"
+                    android:src="@drawable/image_gamer_profile" />
+
+                <ImageView
+                    android:id="@+id/game1_image_id"
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/game_image_id"
+                    android:src="@drawable/image_gamer_profile" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="30dp"
+                    android:gravity="center"
+                    android:text="Game Profiles"
+                    android:textColor="@color/white"
+                    android:textSize="17dip" />
+
+            </RelativeLayout>
+
+
+        </android.support.v7.widget.CardView>
+
+
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/nearby_card_id"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:clickable="true"
+            android:layout_marginTop="10dp"
+            android:layout_below="@+id/game_card_id"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/aluminum">
+
+                <ImageView
+                    android:id="@+id/nearby_image_id"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginBottom="25dp"
+                    android:src="@drawable/mulitplayer_games_image" />
+
+                <ImageView
+                    android:id="@+id/nearby1_image_id"
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/nearby_image_id"
+                    android:src="@drawable/mulitplayer_games_image" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="30dp"
+                    android:gravity="center"
+                    android:text="NearBy Players"
+                    android:textColor="@color/white"
+                    android:textSize="17dip" />
+
+            </RelativeLayout>
+
+        </android.support.v7.widget.CardView>
+
+    </RelativeLayout>
+</ScrollView>
