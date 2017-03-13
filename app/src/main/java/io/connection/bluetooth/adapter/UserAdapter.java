@@ -10,10 +10,14 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.Domain.NearbyUserInfo;
+import io.connection.bluetooth.R;
 
 /**
  * Created by Kinjal on 11/24/2016.
@@ -22,7 +26,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 
     private List<NearbyUserInfo> userList;
     private ImageLoader imageLoader;
-    private ArrayList<Long> toUserIds = new ArrayList<>();
+    private ArrayList<String> toUserIds = new ArrayList<>();
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView name;
@@ -68,7 +72,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         });
     }
 
-    public ArrayList<Long> getUserIds() {
+    public ArrayList<String> getUserIds() {
         return toUserIds;
     }
 

@@ -10,12 +10,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.Domain.GameInfo;
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.R;
 import io.connection.bluetooth.request.ReqGameInvite;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,7 +34,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
 
     private List<GameInfo> gameList;
     private ImageLoader imageLoader;
-    private ArrayList<Long> remoteUserIds;
+    private ArrayList<String> remoteUserIds;
     private Context context;
     public static String gamePackageName = "";
     public static String gameName = "";
@@ -53,7 +59,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         imageLoader.init(ImageLoaderConfiguration.createDefault(activity));
     }
 
-    public void setRemoteUserIds(ArrayList<Long> userIds) {
+    public void setRemoteUserIds(ArrayList<String> userIds) {
         this.remoteUserIds = userIds;
     }
 
@@ -107,7 +113,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
 
     private void sendConnectionInvites() {
         String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
-        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getLongValue("user_id"), remoteUserIds, wifiAddress);
+        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"), remoteUserIds, wifiAddress);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {
@@ -130,7 +136,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
 
     private void sendWifiConnectionInvite() {
         String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
-        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getLongValue("user_id"), remoteUserIds, wifiAddress);
+        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"), remoteUserIds, wifiAddress);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {

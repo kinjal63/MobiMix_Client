@@ -6,13 +6,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TimePicker;
 
-import com.mobilemeasurement.MobileMeasurementApplication;
-import com.mobilemeasurement.R;
-import com.mobilemeasurement.utilities.ApplicationSharedPreferences;
-
 import java.io.IOException;
 import java.util.Calendar;
 
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.R;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -97,7 +96,7 @@ public class TimeAvailabilityActivity extends Activity {
 
     private void addTime() {
         Call<ResponseBody> call = MobileMeasurementApplication.getInstance().
-                getService().addUserTime(ApplicationSharedPreferences.getInstance(TimeAvailabilityActivity.this).getLongValue("user_id"),
+                getService().addUserTime(ApplicationSharedPreferences.getInstance(TimeAvailabilityActivity.this).getValue("user_id"),
                 fromTime.getText().toString(), toTime.getText().toString());
         call.enqueue(new Callback<ResponseBody>() {
             @Override

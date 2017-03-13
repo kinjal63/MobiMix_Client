@@ -1,4 +1,4 @@
-package io.connection.bluetooth.;
+package io.connection.bluetooth;
 
 import android.app.Activity;
 import android.app.Application;
@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder;
 import java.util.concurrent.TimeUnit;
 
 import io.connection.bluetooth.Api.ApiCall;
+import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.utils.Constants;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -24,7 +25,7 @@ public class MobileMeasurementApplication extends Application {
     private static MobileMeasurementApplication mApplication;
     private Activity mActivity;
     //    public static String BASE_URL = "http://192.168.43.28:8080/SpringRestfulWebServicesWithJSONExample/";
-    public static String BASE_URL = "http://192.168.0.104:8080/SpringRestfulWebServicesWithJSONExample/";
+    public static String BASE_URL = "http://192.168.42.150:8080/";
 
     @Override
     public void onCreate() {
@@ -61,10 +62,11 @@ public class MobileMeasurementApplication extends Application {
                 connectTimeout(60, TimeUnit.SECONDS).build();
 
 // Change base URL to your upload server URL.
-        service = new Retrofit.Builder()
-                .baseUrl(Constants.endPointAddress)
-                .addConverterFactory(GsonConverterFactory.create())
-                .client(client).build().create(ApiCall.class);
+        service = ApiClient.getClient().create(ApiCall.class);
+//        service = new Retrofit.Builder()
+//                .baseUrl(Constants.endPointAddress)
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .client(client).build().create(ApiCall.class);
 
     }
 }

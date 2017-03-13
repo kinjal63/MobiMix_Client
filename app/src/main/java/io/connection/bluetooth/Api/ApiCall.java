@@ -6,6 +6,8 @@ import java.util.List;
 import io.connection.bluetooth.Domain.DeviceDetails;
 import io.connection.bluetooth.Domain.GameProfile;
 import io.connection.bluetooth.Domain.User;
+import io.connection.bluetooth.request.ReqGameInvite;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
@@ -54,5 +56,22 @@ public interface ApiCall {
     @GET("updateGameProfiles")
     Call<User> updateGameProfiles(@Query("userId") String userId, @Query("installedPackageName") List<String> installedPackageName);
 
+    @POST("getNearByGameList")
+    Call<ResponseBody> getNearByGameList(@Query("user_id") String userId);
+
+    @POST("getMutualGames")
+    Call<ResponseBody> getMutualGames(@Body ReqGameInvite reqGameInvite);
+
+    @POST("sendRemoteUserInput")
+    Call<ResponseBody> sendRemoteUserInput(@Query("userId") String userId, @Query("toUserId") String toUserId,
+                                           @Query("bluetoothAddress") String bluetoothAddress,
+                                           @Query("accept") boolean accept);
+
+    @POST("sendConnectionInvite")
+    Call<ResponseBody> sendConnectionInvite(@Body ReqGameInvite reqGameInvite);
+
+    @POST("addUserTime")
+    Call<ResponseBody> addUserTime(@Query("userId") String userId, @Query("fromTime") String fromTime,
+                                   @Query("toTime") String toTime);
 }
 

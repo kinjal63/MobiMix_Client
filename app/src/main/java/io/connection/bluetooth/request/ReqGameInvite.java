@@ -13,12 +13,12 @@ public class ReqGameInvite {
     public String userId;
 
     @SerializedName("remoteUserIds")
-    public ArrayList<Long> remoteUserIds;
+    public ArrayList<String> remoteUserIds;
 
     @SerializedName("wifiDeviceAddress")
     public String wifiAddress;
 
-    public ReqGameInvite(String userId, ArrayList<Long> remoteUserIds, String wifiAddress) {
+    public ReqGameInvite(String userId, ArrayList<String> remoteUserIds, String wifiAddress) {
         this.userId = userId;
         this.remoteUserIds = remoteUserIds;
         this.wifiAddress = wifiAddress;

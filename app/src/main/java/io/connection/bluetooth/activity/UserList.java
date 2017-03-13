@@ -8,16 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
 
-import com.mobilemeasurement.MobileMeasurementApplication;
-import com.mobilemeasurement.R;
-import com.mobilemeasurement.adapter.GameAdapter;
-import com.mobilemeasurement.adapter.RecyclerItemClickListener;
-import com.mobilemeasurement.adapter.UserAdapter;
-import com.mobilemeasurement.models.GameInfo;
-import com.mobilemeasurement.models.NearbyUserInfo;
-import com.mobilemeasurement.request.ReqGameInvite;
-import com.mobilemeasurement.utilities.ApplicationSharedPreferences;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +17,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import io.connection.bluetooth.Domain.GameInfo;
+import io.connection.bluetooth.Domain.NearbyUserInfo;
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.R;
+import io.connection.bluetooth.adapter.GameAdapter;
+import io.connection.bluetooth.adapter.RecyclerItemClickListener;
+import io.connection.bluetooth.adapter.UserAdapter;
+import io.connection.bluetooth.request.ReqGameInvite;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -77,11 +76,11 @@ public class UserList extends Activity {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getMutualGames(ApplicationSharedPreferences.getInstance(UserList.this).getLongValue("user_id"));
+                getMutualGames(ApplicationSharedPreferences.getInstance(UserList.this).getValue("user_id"));
             }
         });
 
-        getNearByGames();
+//        getNearByGames();
     }
 
     @Override
@@ -109,7 +108,7 @@ public class UserList extends Activity {
 
     private void getNearByGames() {
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().
-                getService().getNearByGameList(ApplicationSharedPreferences.getInstance(UserList.this).getLongValue("user_id"));
+                getService().getNearByGameList(ApplicationSharedPreferences.getInstance(UserList.this).getValue("user_id"));
 
         req1.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -126,7 +125,7 @@ public class UserList extends Activity {
                         JSONObject jsonObject = (JSONObject) usrArray.get(ii);
                         NearbyUserInfo userInfo = new NearbyUserInfo();
 
-                        userInfo.setUserId(jsonObject.getLong("userId"));
+                        userInfo.setUserId(jsonObject.getString("userId"));
                         userInfo.setUserImagePath(jsonObject.getString("userImagePath"));
                         userInfo.setUserFirstName(jsonObject.getString("userFirstName"));
                         userInfo.setUserLastName(jsonObject.getString("userLastName"));
@@ -165,8 +164,8 @@ public class UserList extends Activity {
         });
     }
 
-    private void getMutualGames(final long userId) {
-        final ArrayList<Long> userIds = ((UserAdapter)adapter).getUserIds();
+    private void getMutualGames(final String userId) {
+        final ArrayList<String> userIds = ((UserAdapter)adapter).getUserIds();
 
         ReqGameInvite req = new ReqGameInvite(userId, userIds, UserList.deviceAddress );
 

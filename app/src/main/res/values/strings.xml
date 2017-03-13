@@ -18,4 +18,8 @@
     <string name="email">Email</string>
     <string name="phone">Phone number</string>
     <string name="avatar_edit">Change avatar</string>
+    <string name="time_pick">Pick the time and press save button</string>
+    <string name="time_save">Save</string>
+    <string name="time_selected"></string>
+    <string name="time_current">The Time is:</string>
 </resources>

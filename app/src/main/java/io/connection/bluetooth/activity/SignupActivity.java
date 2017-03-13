@@ -36,6 +36,7 @@ import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Domain.DeviceDetails;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
@@ -95,7 +96,7 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
 
                 String macAddress = android.provider.Settings.Secure.getString(getActivity().getContentResolver(), "bluetooth_address");
 
-                User user = new User();
+                final User user = new User();
                 user.setName(name.getText().toString());
                 user.setPassword(password.getText().toString());
                 user.setMacAddress(macAddress);
@@ -122,6 +123,7 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
                         public void onResponse(Call<User> call, Response<User> response) {
                             if (response.isSuccessful()) {
                                 sharedPref = context.getSharedPreferences("myPref", Context.MODE_PRIVATE);
+                                ApplicationSharedPreferences.getInstance(getActivity()).addValue("user_id", response.body().getId());
                                 sharedPref.edit().putBoolean("is_login", true).commit();
                                 onSignupSuccess();
                                 Toast.makeText(getActivity(), "Registered Successfully", Toast.LENGTH_SHORT).show();

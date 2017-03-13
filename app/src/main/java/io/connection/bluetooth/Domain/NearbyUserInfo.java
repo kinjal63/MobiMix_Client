@@ -6,7 +6,7 @@ import java.util.List;
  * Created by Kinjal on 11/24/2016.
  */
 public class NearbyUserInfo {
-    private long userId;
+    private String userId;
     private String userImagePath;
     private String userFirstName;
     private String userLastName;
@@ -29,11 +29,11 @@ public class NearbyUserInfo {
 
     private List<GameInfo> gameInfoList;
 
-    public long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
