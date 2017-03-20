@@ -80,7 +80,7 @@ public class UserList extends Activity {
             }
         });
 
-//        getNearByGames();
+        getNearByGames();
     }
 
     @Override
@@ -167,9 +167,7 @@ public class UserList extends Activity {
     private void getMutualGames(final String userId) {
         final ArrayList<String> userIds = ((UserAdapter)adapter).getUserIds();
 
-        ReqGameInvite req = new ReqGameInvite(userId, userIds, UserList.deviceAddress );
-
-//        retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().getMutualGames(req);
+        ReqGameInvite req = new ReqGameInvite(userId, userIds, "", "" );
 
         Call<ResponseBody> call = MobileMeasurementApplication.getInstance().getService().getMutualGames(req);
         call.enqueue(new Callback<ResponseBody>() {

@@ -1,10 +1,14 @@
 package io.connection.bluetooth.activity;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -39,12 +43,14 @@ import java.util.List;
 import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Domain.User;
+import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.GPSTracker;
 import io.connection.bluetooth.Thread.AcceptBusinessThread;
 import io.connection.bluetooth.Thread.AcceptThread;
 import io.connection.bluetooth.Thread.GameRequestAcceptThread;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GPSTrackerUtil;
@@ -64,6 +70,87 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     ApiCall apiCall;
     private GPSTrackerUtil gpsTrackerUtil;
     private Handler mHandler;
+    private String toUserId;
+    private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
+
+    private void showBluetoothDialog(final String bluetoothAddress, final String toUserId) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set title
+        alertDialogBuilder.setTitle("Bluetooth Connection Invite");
+
+        // set dialog message
+        alertDialogBuilder
+                .setMessage("Do you want to make bluetooth connection with " + toUserId)
+                .setCancelable(false)
+                .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        if(Utils.getBluetoothAdapter() != null) {
+                            mBluetoothDeviceFoundReceiver.setUserId(toUserId);
+                            bluetoothAdapter.startDiscovery();
+                        }
+                    }
+                })
+                .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, just close
+                        // the dialog box and do nothing
+                        dialog.cancel();
+                    }
+                });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    private void showWifiDialog(final String wifiAddress, final String toUserId) {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                MobileMeasurementApplication.getInstance().getActivity());
+
+        // set title
+        alertDialogBuilder.setTitle("Wifi Direct Invite");
+
+        // set dialog message
+        alertDialogBuilder
+                .setMessage("Do you want to make wifi direct connection with " + toUserId)
+                .setCancelable(false)
+                .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, close
+                        // current activity
+//                        connection.connectWithWifiAddress(wifiAddress);
+                    }
+                })
+                .setNegativeButton("No",new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog,int id) {
+                        // if this button is clicked, just close
+                        // the dialog box and do nothing
+                        dialog.cancel();
+                    }
+                });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if( intent != null && intent.getStringExtra("wifi_address") != null) {
+            this.toUserId = intent.getStringExtra("toUserId");
+            showWifiDialog(intent.getStringExtra("wifi_address"), toUserId);
+        }
+        else if( intent != null && intent.getStringExtra("bluetooth_address") != null) {
+            this.toUserId = intent.getStringExtra("toUserId");
+            showBluetoothDialog(intent.getStringExtra("bluetooth_address"), toUserId);
+        }
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,8 +162,10 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         findViewById(R.id.business_card_id).setOnClickListener(this);
         findViewById(R.id.chat_card_id).setOnClickListener(this);
         findViewById(R.id.user_availability_id).setOnClickListener(this);
+        findViewById(R.id.data_usage_card_id).setOnClickListener(this);
         ImageCache.setContext(this);
         Intent intent = new Intent(this, GPSTracker.class);
+        mBluetoothDeviceFoundReceiver = new BluetoothDeviceReceiver();
         this.startService(intent);
         apiCall = ApiClient.getClient().create(ApiCall.class);
         context = this;
@@ -143,6 +232,20 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         gpsTrackerUtil = new GPSTrackerUtil(this, this.mHandler);
 
         sendAllAppdetail();
+
+        Intent intent1 = getIntent();
+
+        if( intent1 != null && intent1.getStringExtra("wifi_address") != null) {
+            this.toUserId = intent1.getStringExtra("toUserId");
+            showWifiDialog(intent1.getStringExtra("wifi_address"), toUserId);
+        }
+        else if( intent1 != null && intent1.getStringExtra("bluetooth_address") != null) {
+            this.toUserId = intent1.getStringExtra("toUserId");
+            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId);
+        }
+        registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
     }
 
     @Override
@@ -270,6 +373,10 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
             case R.id.user_availability_id:
                 Intent userAvailabilityIntent = new Intent(this, TimeAvailabilityActivity.class);
                 startActivity(userAvailabilityIntent);
+                break;
+            case R.id.data_usage_card_id:
+                Intent dataUsageIntent = new Intent(this, MobileDataUsageActivity.class);
+                startActivity(dataUsageIntent);
                 break;
 
         }
@@ -424,5 +531,11 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
                 }
             }
         }).start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mBluetoothDeviceFoundReceiver);
+        super.onDestroy();
     }
 }

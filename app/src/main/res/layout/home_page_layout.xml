@@ -151,61 +151,12 @@
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.CardView
-            android:id="@+id/game_card_id"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_below="@+id/business_card_id"
-            android:layout_marginTop="10dp"
-            android:clickable="true"
-            android:padding="10dp">
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/red_game_profile">
-
-                <ImageView
-                    android:id="@+id/game_image_id"
-                    android:layout_width="50dp"
-                    android:layout_height="match_parent"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentTop="true"
-                    android:layout_marginBottom="25dp"
-                    android:src="@drawable/image_gamer_profile" />
-
-                <ImageView
-                    android:id="@+id/game1_image_id"
-                    android:layout_width="100dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="15dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_toRightOf="@id/game_image_id"
-                    android:src="@drawable/image_gamer_profile" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginRight="30dp"
-                    android:gravity="center"
-                    android:text="Game Profiles"
-                    android:textColor="@color/white"
-                    android:textSize="17dip" />
-
-            </RelativeLayout>
-
-
-        </android.support.v7.widget.CardView>
-
-
-
-        <android.support.v7.widget.CardView
             android:id="@+id/user_availability_id"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:clickable="true"
             android:layout_marginTop="10dp"
-            android:layout_below="@+id/game_card_id"
+            android:layout_below="@+id/business_card_id"
             android:padding="10dp">
 
             <RelativeLayout
@@ -244,6 +195,99 @@
             </RelativeLayout>
 
         </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/game_card_id"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_below="@+id/user_availability_id"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/red_game_profile">
+
+                <ImageView
+                    android:id="@+id/game_image_id"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginBottom="25dp"
+                    android:src="@drawable/mulitplayer_games_image" />
+
+                <ImageView
+                    android:id="@+id/game1_image_id"
+                    android:layout_width="100dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_toRightOf="@id/game_image_id"
+                    android:src="@drawable/mulitplayer_games_image" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="30dp"
+                    android:gravity="center"
+                    android:text="Find nearby users"
+                    android:textColor="@color/white"
+                    android:textSize="17dip" />
+
+            </RelativeLayout>
+
+
+        </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/data_usage_card_id"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_below="@+id/game_card_id"
+        android:layout_marginTop="10dp"
+        android:clickable="true"
+        android:padding="10dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/red_game_profile">
+
+            <ImageView
+                android:id="@+id/data_usage_image_id"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginBottom="25dp"
+                android:src="@drawable/mulitplayer_games_image" />
+
+            <ImageView
+                android:id="@+id/data_usage1_image_id"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="5dp"
+                android:layout_toRightOf="@id/data_usage_image_id"
+                android:src="@drawable/mulitplayer_games_image" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="30dp"
+                android:gravity="center"
+                android:text="Data Usage and Logs"
+                android:textColor="@color/white"
+                android:textSize="17dip" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
 
     </RelativeLayout>
 </ScrollView>

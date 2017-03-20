@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.activity.MobileDataUsageActivity;
+
 public class GPSTrackerUtil extends Service implements LocationListener {
 
     private final Context mContext;
@@ -75,20 +78,28 @@ public class GPSTrackerUtil extends Service implements LocationListener {
 
     private String carrierName1, carrierName2;
     private int subId1 = 0, subId2 = 0;
+    public static GPSTrackerUtil gpsTrackerInstance = null;
 
     public GPSTrackerUtil(Context context, Handler handler) {
         this.mContext = context;
         this.mHandler = handler;
+        setBluetoothAdapter();
         getLocation();
-//        getRssi();
-//        getDataUsage();
+        getRssi();
+        getDataUsage();
+    }
+
+    private void setBluetoothAdapter() {
+        boolean isNameSet = Utils.getBluetoothAdapter().setName(ApplicationSharedPreferences.getInstance(
+                MobileMeasurementApplication.getInstance().getContext()).getValue("user_id"));
+        Log.d("BluetoothAdapter:", "Is Name Set::" + isNameSet + ", BluetoothAdapter Name:" + Utils.getBluetoothAdapter().getName());
     }
 
     private void getRssi() {
         mPhoneStatelistener1 = new MyPhoneStateListener1();
         mPhoneStatelistener2 = new MyPhoneStateListener2();
 
-        getSubscriptionIdandCarriers();
+//        getSubscriptionIdandCarriers();
 
         mTelephonyManager1 = (TelephonyManager) this.mContext.getSystemService(Context.TELEPHONY_SERVICE);
         mTelephonyManager1.listen(mPhoneStatelistener1, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
@@ -145,7 +156,7 @@ public class GPSTrackerUtil extends Service implements LocationListener {
                     conn.setDoOutput(true);
 
                     JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("userId", ApplicationSharedPreferences.getInstance(mContext).getLongValue("user_id"));
+                    jsonObject.put("userId", ApplicationSharedPreferences.getInstance(mContext).getValue("user_id"));
                     jsonObject.put("deviceId", "hgd6356d53t7gcvhenc");
                     jsonObject.put("rssi", mSignalStrength);
                     jsonObject.put("latitude", latitude);
@@ -188,9 +199,9 @@ public class GPSTrackerUtil extends Service implements LocationListener {
                     mPreviousWifiTx += mWifiTx;
 
                     JSONObject jsonObject1 = new JSONObject();
-                    jsonObject1.put("userId", ApplicationSharedPreferences.getInstance(mContext).getLongValue("user_id"));
+                    jsonObject1.put("userId", ApplicationSharedPreferences.getInstance(mContext).getValue("user_id"));
                     jsonObject1.put("deviceId", "hgd6356d53t7gcvhenc");
-                    jsonObject1.put("country", "IN");
+                    jsonObject1.put("country", Utils.country);
                     jsonObject1.put("latitude", latitude);
                     jsonObject1.put("longitude", longitude);
                     jsonObject1.put("mobileTx", mMobileTx);

@@ -24,8 +24,6 @@ public class MobileMeasurementApplication extends Application {
     private ApiCall service;
     private static MobileMeasurementApplication mApplication;
     private Activity mActivity;
-    //    public static String BASE_URL = "http://192.168.43.28:8080/SpringRestfulWebServicesWithJSONExample/";
-    public static String BASE_URL = "http://192.168.42.150:8080/";
 
     @Override
     public void onCreate() {

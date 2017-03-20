@@ -22,6 +22,7 @@ import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.request.ReqGameInvite;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Utils;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -82,7 +83,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         holder.imgBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendConnectionInvites();
+                sendBluetoothConnectionInvite();
                 gameName = gameList.get((int)view.getTag()).getGamneName();
                 gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
 
@@ -111,9 +112,11 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         return gameList.size();
     }
 
-    private void sendConnectionInvites() {
+    private void sendBluetoothConnectionInvite() {
+        Utils.makeDeviceDiscoverable();
         String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
-        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"), remoteUserIds, wifiAddress);
+        String bluetoothDeviceAddress = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
+        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"), remoteUserIds, wifiAddress, bluetoothDeviceAddress);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {
@@ -136,7 +139,8 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
 
     private void sendWifiConnectionInvite() {
         String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
-        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"), remoteUserIds, wifiAddress);
+        String bluetoothDeviceAddress = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
+        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"), remoteUserIds, wifiAddress, bluetoothDeviceAddress);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {

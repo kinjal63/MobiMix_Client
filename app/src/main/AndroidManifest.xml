@@ -13,7 +13,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
     <application
         android:name=".MobileMeasurementApplication"
         android:allowBackup="true"
@@ -158,6 +157,18 @@
         <activity
             android:name=".activity.UserList"
             android:label="Users List"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name=".activity.MobileDataUsageActivity"
+            android:label="Data Usage"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name=".activity.CallLogActivity"
+            android:label="Call logs"
             android:screenOrientation="portrait">
         </activity>
 

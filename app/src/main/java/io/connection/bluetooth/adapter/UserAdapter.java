@@ -60,7 +60,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
     public void onBindViewHolder(MyViewHolder holder, int position) {
         NearbyUserInfo userInfo = userList.get(position);
 
-        holder.name.setText(userInfo.getUserFirstName() + " " + userInfo.getUserLastName());
+        holder.name.setText(userInfo.getUserFirstName());
         imageLoader.displayImage(userInfo.getUserImagePath(), holder.imageView);
 
         holder.checkBox.setTag(position);

@@ -32,5 +32,8 @@
     <color name="brown_chat">#663300</color>
     <color name ="red">#FF0000</color>
     <color name="newcolor">#10FF0000</color>
+    <color name="name">#999999</color>
+    <color name="duration">#222222</color>
+    <color name="type">@android:color/holo_blue_light</color>
 
 </resources>

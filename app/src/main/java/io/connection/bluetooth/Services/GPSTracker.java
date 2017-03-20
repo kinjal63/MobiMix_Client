@@ -47,7 +47,6 @@ public class GPSTracker extends Service implements LocationListener {
 
     private Context mContext;
 
-
     // flag for GPS status
     boolean isGPSEnabled = false;
 

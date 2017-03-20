@@ -18,9 +18,13 @@ public class ReqGameInvite {
     @SerializedName("wifiDeviceAddress")
     public String wifiAddress;
 
-    public ReqGameInvite(String userId, ArrayList<String> remoteUserIds, String wifiAddress) {
+    @SerializedName("bluetoothDeviceAddress")
+    public String bluetoothAddress;
+
+    public ReqGameInvite(String userId, ArrayList<String> remoteUserIds, String wifiAddress, String bluetoothAddress) {
         this.userId = userId;
         this.remoteUserIds = remoteUserIds;
         this.wifiAddress = wifiAddress;
+        this.bluetoothAddress = bluetoothAddress;
     }
 }
