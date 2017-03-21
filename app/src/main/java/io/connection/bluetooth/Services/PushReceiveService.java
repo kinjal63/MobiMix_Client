@@ -53,7 +53,8 @@ public class PushReceiveService extends FirebaseMessagingService {
 
                 if (hasInvite == 1) {
                     String bluetoothAddress = jsonObject.optString("bluetooth_address");
-                    generateBluetoothNotification(toUserId, bluetoothAddress);
+                    String remoteUserEmail = jsonObject.optString("remote_user_email");
+                    generateBluetoothNotification(toUserId, remoteUserEmail, bluetoothAddress);
                 } else if (hasInvite == 2) {
                     String wifiAddress = jsonObject.optString("wifi_address");
                     generateWifiNotification(wifiAddress, toUserId);
@@ -152,11 +153,12 @@ public class PushReceiveService extends FirebaseMessagingService {
         notificationManager.notify(1, notificationBuilder.build());
     }
 
-    private void generateBluetoothNotification(String toUserId, String bluetoothAdress) {
+    private void generateBluetoothNotification(String toUserId, String email, String bluetoothAdress) {
         if (!isNotificationVisible()) {
             Intent intent = new Intent(this, Home_Master.class);
             intent.putExtra("bluetooth_address", bluetoothAdress);
             intent.putExtra("toUserId", toUserId);
+            intent.putExtra("email", email);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                     PendingIntent.FLAG_ONE_SHOT);

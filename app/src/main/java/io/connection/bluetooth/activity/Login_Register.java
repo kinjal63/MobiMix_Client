@@ -72,13 +72,7 @@ public class Login_Register extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
     }
 
-    private void printBluetoothAddress() {
-        String macAddress = android.provider.Settings.Secure.getString(this.getContentResolver(), "bluetooth_address");
-        System.out.println("Bluetooth MAC addess->" + macAddress);
-    }
-
     private void printWifiAddress() {
-        printBluetoothAddress();
         try {
             List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
             for (NetworkInterface nif : all) {

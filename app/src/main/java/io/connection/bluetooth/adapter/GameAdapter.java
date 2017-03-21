@@ -113,10 +113,11 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
     }
 
     private void sendBluetoothConnectionInvite() {
-        Utils.makeDeviceDiscoverable();
+        Utils.makeDeviceDiscoverable(context);
         String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
         String bluetoothDeviceAddress = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
-        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"), remoteUserIds, wifiAddress, bluetoothDeviceAddress);
+        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
+                ApplicationSharedPreferences.getInstance(context).getValue("email"), remoteUserIds, wifiAddress, bluetoothDeviceAddress);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {
@@ -140,7 +141,8 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
     private void sendWifiConnectionInvite() {
         String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
         String bluetoothDeviceAddress = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
-        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"), remoteUserIds, wifiAddress, bluetoothDeviceAddress);
+        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
+                ApplicationSharedPreferences.getInstance(context).getValue("email"), remoteUserIds, wifiAddress, bluetoothDeviceAddress);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {

@@ -725,6 +725,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     if (!tempbluetoothDevices.contains(device)) {
                         User userAvailable = new User();
                         userAvailable.setMacAddress(deviceMacAddress);
+                        userAvailable.setEmail(device.getName());
                         Call<User> name = apiCall.isAvailable(userAvailable);
                         name.enqueue(new Callback<User>() {
                             @Override

@@ -13,6 +13,7 @@ public class User implements Serializable {
     private String name;
     private String password;
     private String macAddress;
+    private String bluetoothName;
     private String email;
     private Long dob;
     private String gender;
@@ -73,6 +74,14 @@ public class User implements Serializable {
 
     public void setMacAddress(String macAddress) {
         this.macAddress = macAddress;
+    }
+
+    public String getBluetoothName(String bluetoothName) {
+        return this.bluetoothName;
+    }
+
+    public void setBluetoothName(String bluetoothName) {
+        this.bluetoothName = bluetoothName;
     }
 
     public String getEmail() {

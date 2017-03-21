@@ -367,6 +367,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                         if (!tempbluetoothDevices.contains(deviceSet)) {
                             User userAvailable = new User();
                             userAvailable.setMacAddress(deviceSet.getAddress());
+                            userAvailable.setEmail(deviceSet.getName());
                             Call<User> name = apiCall.isAvailable(userAvailable);
                             name.enqueue(new Callback<User>() {
                                 @Override
@@ -412,6 +413,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                 if (!tempbluetoothDevices.contains(deviceSet)) {
                     User userAvailable = new User();
                     userAvailable.setMacAddress(deviceSet.getAddress());
+                    userAvailable.setEmail(deviceSet.getName());
                     Call<User> name = apiCall.isAvailable(userAvailable);
                     name.enqueue(new Callback<User>() {
                         @Override

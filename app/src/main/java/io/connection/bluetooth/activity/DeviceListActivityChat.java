@@ -361,6 +361,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
                     if (!tempbluetoothDevices.contains(deviceBroadcast)) {
                         User userAvailable = new User();
                         userAvailable.setMacAddress(deviceMacAddress);
+                        userAvailable.setEmail(deviceBroadcast.getName());
                         Call<User> name = apiCall.isAvailable(userAvailable);
                         name.enqueue(new Callback<User>() {
                             @Override
@@ -410,6 +411,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
                 if (!tempbluetoothDevices.contains(deviceSet)) {
                     User userAvailable = new User();
                     userAvailable.setMacAddress(deviceSet.getAddress());
+                    userAvailable.setEmail(deviceSet.getName());
                     Call<User> name = apiCall.isAvailable(userAvailable);
                     name.enqueue(new Callback<User>() {
                         @Override

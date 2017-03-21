@@ -54,6 +54,11 @@ public class Utils {
         return versionCode;
     }
 
+    public static void setBluetoothAdapterName() {
+        boolean isNameSet = mBluetoothAdapter.setName(ApplicationSharedPreferences.getInstance(
+                MobileMeasurementApplication.getInstance().getContext()).getValue("email"));
+        Log.d("BluetoothAdapter:", "Is Name Set::" + isNameSet + ", BluetoothAdapter Name:" + Utils.getBluetoothAdapter().getName());
+    }
 
     public static String getDeviceId(Context context){
 
@@ -140,26 +145,30 @@ public class Utils {
         }
     }
 
-    public static void makeDeviceDiscoverable() {
-            try {
-                IBluetooth mBtService = getIBluetooth();
-                Log.d("TESTE", "Ensuring bluetoot is discoverable");
-                if(mBtService.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-                    Log.e("TESTE", "Device was not in discoverable mode");
-                    try {
-                        mBtService.setDiscoverableTimeout(100);
-                        // mBtService.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 1000);
-                    } catch(Exception e) {
-                        Log.e("TESTE", "Error setting bt discoverable",e);
-                    }
-                    Log.i("TESTE", "Device must be discoverable");
-                } else {
-                    Log.e("TESTE", "Device already discoverable");
-                }
-            } catch(Exception e) {
-                Log.e("TESTE", "Error ensuring BT discoverability", e);
-            }
+    public static void makeDeviceDiscoverable(Context context) {
+        if (mBluetoothAdapter.getScanMode() !=
+                BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+            Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 600);
+            context.startActivity(discoverableIntent);
         }
-
+//            try {
+//                IBlueTooth mBtService = getIBluetooth();
+//                Log.d("TESTE", "Ensuring bluetoot is discoverable");
+//                if(mBtService.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+//                    Log.e("TESTE", "Device was not in discoverable mode");
+//                    try {
+//                        mBtService.setDiscoverableTimeout(100);
+//                        // mBtService.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 1000);
+//                    } catch(Exception e) {
+//                        Log.e("TESTE", "Error setting bt discoverable",e);
+//                    }
+//                    Log.i("TESTE", "Device must be discoverable");
+//                } else {
+//                    Log.e("TESTE", "Device already discoverable");
+//                }
+//            } catch(Exception e) {
+//                Log.e("TESTE", "Error ensuring BT discoverability", e);
+//            }
     }
 }

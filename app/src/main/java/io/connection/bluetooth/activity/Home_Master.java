@@ -71,9 +71,10 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     private GPSTrackerUtil gpsTrackerUtil;
     private Handler mHandler;
     private String toUserId;
+    private String toEmail;
     private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
 
-    private void showBluetoothDialog(final String bluetoothAddress, final String toUserId) {
+    private void showBluetoothDialog(final String bluetoothAddress, final String toUserId, final String toEmail) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         // set title
@@ -86,7 +87,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         if(Utils.getBluetoothAdapter() != null) {
-                            mBluetoothDeviceFoundReceiver.setUserId(toUserId);
+                            mBluetoothDeviceFoundReceiver.setUserId(toEmail);
                             bluetoothAdapter.startDiscovery();
                         }
                     }
@@ -148,7 +149,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         }
         else if( intent != null && intent.getStringExtra("bluetooth_address") != null) {
             this.toUserId = intent.getStringExtra("toUserId");
-            showBluetoothDialog(intent.getStringExtra("bluetooth_address"), toUserId);
+            showBluetoothDialog(intent.getStringExtra("bluetooth_address"), toUserId, toEmail);
         }
     }
 
@@ -241,11 +242,19 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         }
         else if( intent1 != null && intent1.getStringExtra("bluetooth_address") != null) {
             this.toUserId = intent1.getStringExtra("toUserId");
-            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId);
+            this.toEmail = intent1.getStringExtra("email");
+            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId, toEmail);
         }
         registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
 
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Utils.setBluetoothAdapterName();
+        Utils.makeDeviceDiscoverable(context);
     }
 
     @Override

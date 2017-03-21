@@ -83,16 +83,9 @@ public class GPSTrackerUtil extends Service implements LocationListener {
     public GPSTrackerUtil(Context context, Handler handler) {
         this.mContext = context;
         this.mHandler = handler;
-        setBluetoothAdapter();
         getLocation();
         getRssi();
         getDataUsage();
-    }
-
-    private void setBluetoothAdapter() {
-        boolean isNameSet = Utils.getBluetoothAdapter().setName(ApplicationSharedPreferences.getInstance(
-                MobileMeasurementApplication.getInstance().getContext()).getValue("user_id"));
-        Log.d("BluetoothAdapter:", "Is Name Set::" + isNameSet + ", BluetoothAdapter Name:" + Utils.getBluetoothAdapter().getName());
     }
 
     private void getRssi() {

@@ -167,7 +167,8 @@ public class UserList extends Activity {
     private void getMutualGames(final String userId) {
         final ArrayList<String> userIds = ((UserAdapter)adapter).getUserIds();
 
-        ReqGameInvite req = new ReqGameInvite(userId, userIds, "", "" );
+        ReqGameInvite req = new ReqGameInvite(userId,
+                ApplicationSharedPreferences.getInstance(MobileMeasurementApplication.getInstance().getContext()).getValue("email"), userIds, "", "" );
 
         Call<ResponseBody> call = MobileMeasurementApplication.getInstance().getService().getMutualGames(req);
         call.enqueue(new Callback<ResponseBody>() {

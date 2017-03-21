@@ -124,7 +124,10 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
                             if (response.isSuccessful()) {
                                 sharedPref = context.getSharedPreferences("myPref", Context.MODE_PRIVATE);
                                 ApplicationSharedPreferences.getInstance(getActivity()).addValue("user_id", response.body().getId());
+                                ApplicationSharedPreferences.getInstance(getActivity()).addValue("email", response.body().getEmail());
+
                                 sharedPref.edit().putBoolean("is_login", true).commit();
+
                                 onSignupSuccess();
                                 Toast.makeText(getActivity(), "Registered Successfully", Toast.LENGTH_SHORT).show();
                             } else if (response.code() == 409) {
