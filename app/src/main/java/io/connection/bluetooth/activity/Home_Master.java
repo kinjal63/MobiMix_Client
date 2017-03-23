@@ -46,6 +46,7 @@ import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.GPSTracker;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.AcceptBusinessThread;
 import io.connection.bluetooth.Thread.AcceptThread;
 import io.connection.bluetooth.Thread.GameRequestAcceptThread;
@@ -74,7 +75,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     private String toEmail;
     private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
 
-    private void showBluetoothDialog(final String bluetoothAddress, final String toUserId, final String toEmail) {
+    private void showBluetoothDialog(final String bluetoothName, final String toUserId) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         // set title
@@ -82,7 +83,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
         // set dialog message
         alertDialogBuilder
-                .setMessage("Do you want to make bluetooth connection with " + toUserId)
+                .setMessage("Do you want to make bluetooth connection with " + bluetoothName)
                 .setCancelable(false)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
@@ -107,28 +108,24 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         alertDialog.show();
     }
 
-    private void showWifiDialog(final String wifiAddress, final String toUserId) {
+    private void showWifiDialog(final String wifiDirectName, final String toUserId) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 MobileMeasurementApplication.getInstance().getActivity());
 
         // set title
-        alertDialogBuilder.setTitle("Wifi Direct Invite");
+        alertDialogBuilder.setTitle("Wifi Direct Connection Invite");
 
         // set dialog message
         alertDialogBuilder
-                .setMessage("Do you want to make wifi direct connection with " + toUserId)
+                .setMessage("Do you want to make wifi direct connection with " + wifiDirectName)
                 .setCancelable(false)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
-                        // if this button is clicked, close
-                        // current activity
-//                        connection.connectWithWifiAddress(wifiAddress);
+                        WifiDirectService.getInstance(context).requestPeers();
                     }
                 })
                 .setNegativeButton("No",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
-                        // if this button is clicked, just close
-                        // the dialog box and do nothing
                         dialog.cancel();
                     }
                 });
@@ -149,7 +146,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         }
         else if( intent != null && intent.getStringExtra("bluetooth_address") != null) {
             this.toUserId = intent.getStringExtra("toUserId");
-            showBluetoothDialog(intent.getStringExtra("bluetooth_address"), toUserId, toEmail);
+            showBluetoothDialog(intent.getStringExtra("bluetooth_address"), toUserId);
         }
     }
 
@@ -203,7 +200,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1113);
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1112);
-
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1114);
 
             List<String> InstalledpackageName = Utils.getAllInstalledGames(this);
             if (Utils.isConnected(context)) {
@@ -242,12 +239,10 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         }
         else if( intent1 != null && intent1.getStringExtra("bluetooth_address") != null) {
             this.toUserId = intent1.getStringExtra("toUserId");
-            this.toEmail = intent1.getStringExtra("email");
-            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId, toEmail);
+            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId);
         }
-        registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
 
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001);
+        registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     }
 
     @Override
@@ -279,6 +274,14 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
                 }
                 return;
             case 1113:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                } else {
+                    // ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
+                }
+                return;
+            case 1114:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 

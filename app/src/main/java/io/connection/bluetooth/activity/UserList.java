@@ -21,6 +21,7 @@ import io.connection.bluetooth.Domain.GameInfo;
 import io.connection.bluetooth.Domain.NearbyUserInfo;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.RecyclerItemClickListener;
 import io.connection.bluetooth.adapter.UserAdapter;
@@ -42,7 +43,8 @@ public class UserList extends Activity {
     private Object adapter;
     private boolean isGame = false;
 
-    public static String deviceAddress = "";
+    RecyclerItemClickListener itemClickListener;
+    private WifiDirectService wifiDirectService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,11 +88,18 @@ public class UserList extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        wifiDirectService.registerReceiver();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        wifiDirectService.unRegisterReceiver();
     }
 
     private void addOnItemTouchListener() {
@@ -99,12 +108,7 @@ public class UserList extends Activity {
         recyclerView.setAdapter((UserAdapter) adapter);
 
         btnSubmit.setVisibility(View.VISIBLE);
-
-//        recyclerView.addOnItemTouchListener(itemClickListener);
     }
-
-
-    RecyclerItemClickListener itemClickListener;
 
     private void getNearByGames() {
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().
