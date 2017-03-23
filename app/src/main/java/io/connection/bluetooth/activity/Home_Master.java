@@ -88,7 +88,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         if(Utils.getBluetoothAdapter() != null) {
-                            mBluetoothDeviceFoundReceiver.setUserId(toEmail);
+                            mBluetoothDeviceFoundReceiver.setUserId(bluetoothName);
                             bluetoothAdapter.startDiscovery();
                         }
                     }
@@ -121,6 +121,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
                 .setCancelable(false)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
+                        WifiDirectService.getInstance(context).setWifiDirectDeviceName(wifiDirectName);
                         WifiDirectService.getInstance(context).requestPeers();
                     }
                 })

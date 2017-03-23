@@ -89,6 +89,9 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
         button_edit.setOnClickListener(this);
         button_send.setOnClickListener(this);
         button_done.setOnClickListener(this);
+
+        imageClickEvent();
+
         card_name.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
         card_email.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
         card_phone.getBackground().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
@@ -132,11 +135,7 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
             setDisableMode(preferences.getString("picture", ""));
 
 
-        } else {
-            imageClickEvent();
         }
-
-
     }
 
     @Override
@@ -262,7 +261,7 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
         card_name.setTextColor(Color.BLACK);
         card_email.setTextColor(Color.BLACK);
         card_phone.setTextColor(Color.BLACK);
-        card_avatar.setOnClickListener(null);
+//        card_avatar.setOnClickListener(null);
 
         if (card_phone.getText().toString().trim().equals(""))
             card_phone.setVisibility(View.GONE);

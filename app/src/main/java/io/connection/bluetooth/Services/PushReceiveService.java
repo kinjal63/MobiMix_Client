@@ -52,11 +52,11 @@ public class PushReceiveService extends FirebaseMessagingService {
                 final String toUserId = jsonObject.optString("remote_user_id");
 
                 if (hasInvite == 1) {
-                    String bluetoothAddress = jsonObject.optString("bluetooth_address");
-                    generateBluetoothNotification(bluetoothAddress, toUserId);
+                    String bluetoothName = jsonObject.optString("bluetooth_address");
+                    generateBluetoothNotification(bluetoothName, toUserId);
                 } else if (hasInvite == 2) {
-                    String wifiAddress = jsonObject.optString("wifi_address");
-                    generateWifiNotification(wifiAddress, toUserId);
+                    String wifiDirectName = jsonObject.optString("wifi_address");
+                    generateWifiNotification(wifiDirectName, toUserId);
                 } else if (jsonObject.optInt("notification_message") == 1) {
                     generateNearByUserNotification("User " + toUserId + " is nearby", toUserId);
                 }
@@ -131,9 +131,9 @@ public class PushReceiveService extends FirebaseMessagingService {
         }
     }
 
-    private void generateWifiNotification(String wifiAddress, String toUserId) {
+    private void generateWifiNotification(String wifiDirectName, String toUserId) {
         Intent intent = new Intent(this, Home_Master.class);
-        intent.putExtra("wifi_address", wifiAddress);
+        intent.putExtra("wifi_address", wifiDirectName);
         intent.putExtra("toUserId", toUserId);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
@@ -152,10 +152,10 @@ public class PushReceiveService extends FirebaseMessagingService {
         notificationManager.notify(1, notificationBuilder.build());
     }
 
-    private void generateBluetoothNotification(String bluetoothAdress, String toUserId) {
+    private void generateBluetoothNotification(String bluetoothName, String toUserId) {
         if (!isNotificationVisible()) {
             Intent intent = new Intent(this, Home_Master.class);
-            intent.putExtra("bluetooth_address", bluetoothAdress);
+            intent.putExtra("bluetooth_address", bluetoothName);
             intent.putExtra("toUserId", toUserId);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
@@ -184,8 +184,5 @@ public class PushReceiveService extends FirebaseMessagingService {
         PendingIntent test = PendingIntent.getActivity(this, 1, notificationIntent, PendingIntent.FLAG_NO_CREATE);
         return test != null;
     }
-    
-
-
 }
 
