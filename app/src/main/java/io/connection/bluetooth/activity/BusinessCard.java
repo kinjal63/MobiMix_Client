@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -273,6 +274,8 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
         editor.putString("name", card_name.getText().toString());
         editor.putString("email", card_email.getText().toString());
         editor.putString("phone", card_phone.getText().toString());
+        editor.putString("device_id", Settings.Secure.getString(this.getContentResolver(),
+                Settings.Secure.ANDROID_ID));
         editor.putBoolean("isdataAvailable", true);
         editor.commit();
 

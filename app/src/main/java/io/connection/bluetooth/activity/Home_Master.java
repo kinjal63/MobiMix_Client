@@ -56,6 +56,7 @@ import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GPSTrackerUtil;
 import io.connection.bluetooth.utils.Utils;
+import io.connection.bluetooth.utils.UtilsHandler;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -74,6 +75,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     private String toUserId;
     private String toEmail;
     private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
+    private WifiDirectService wifiDirectService;
 
     private void showBluetoothDialog(final String bluetoothName, final String toUserId) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -109,8 +111,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     }
 
     private void showWifiDialog(final String wifiDirectName, final String toUserId) {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                MobileMeasurementApplication.getInstance().getActivity());
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         // set title
         alertDialogBuilder.setTitle("Wifi Direct Connection Invite");
@@ -122,7 +123,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         WifiDirectService.getInstance(context).setWifiDirectDeviceName(wifiDirectName);
-                        WifiDirectService.getInstance(context).requestPeers();
+                        WifiDirectService.getInstance(context).connectWithPeer();
+                        UtilsHandler.showProgressDialog("Connecting with " + wifiDirectName);
                     }
                 })
                 .setNegativeButton("No",new DialogInterface.OnClickListener() {
@@ -155,6 +157,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_page_layout);
+
+        MobileMeasurementApplication.getInstance().registerActivity(this);
         getSupportActionBar().setIcon(R.mipmap.ic_logo);
         findViewById(R.id.file_card_id).setOnClickListener(this);
         findViewById(R.id.game_card_id).setOnClickListener(this);
@@ -244,6 +248,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         }
 
         registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+
+        wifiDirectService = WifiDirectService.getInstance(this);
     }
 
     @Override
@@ -251,6 +257,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         super.onResume();
         Utils.setBluetoothAdapterName();
         Utils.makeDeviceDiscoverable(context);
+        wifiDirectService.registerReceiver();
     }
 
     @Override
@@ -547,8 +554,14 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
         unregisterReceiver(mBluetoothDeviceFoundReceiver);
+//        wifiDirectService.unRegisterReceiver();
         super.onDestroy();
     }
 }

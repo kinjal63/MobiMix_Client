@@ -21,7 +21,6 @@ import io.connection.bluetooth.Domain.GameInfo;
 import io.connection.bluetooth.Domain.NearbyUserInfo;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.RecyclerItemClickListener;
 import io.connection.bluetooth.adapter.UserAdapter;
@@ -44,7 +43,6 @@ public class UserList extends Activity {
     private boolean isGame = false;
 
     RecyclerItemClickListener itemClickListener;
-    private WifiDirectService wifiDirectService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +86,6 @@ public class UserList extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        wifiDirectService.registerReceiver();
     }
 
     @Override
@@ -99,7 +96,6 @@ public class UserList extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        wifiDirectService.unRegisterReceiver();
     }
 
     private void addOnItemTouchListener() {
@@ -169,10 +165,9 @@ public class UserList extends Activity {
     }
 
     private void getMutualGames(final String userId) {
-        final ArrayList<String> userIds = ((UserAdapter)adapter).getUserIds();
+        final ArrayList<String> remoteUserIds = ((UserAdapter)adapter).getUserIds();
 
-        ReqGameInvite req = new ReqGameInvite(userId,
-                ApplicationSharedPreferences.getInstance(MobileMeasurementApplication.getInstance().getContext()).getValue("email"), userIds, "", "" );
+        ReqGameInvite req = new ReqGameInvite(userId, remoteUserIds, 0 );
 
         Call<ResponseBody> call = MobileMeasurementApplication.getInstance().getService().getMutualGames(req);
         call.enqueue(new Callback<ResponseBody>() {
@@ -204,7 +199,7 @@ public class UserList extends Activity {
                     isGame = true;
 
                     adapter = new GameAdapter(UserList.this, lstGameInfo, UserList.this);
-                    ((GameAdapter)adapter).setRemoteUserIds(userIds);
+                    ((GameAdapter)adapter).setRemoteUserIds(remoteUserIds);
                     recyclerView.setAdapter((GameAdapter) adapter);
                     recyclerView.removeOnItemTouchListener(itemClickListener);
 

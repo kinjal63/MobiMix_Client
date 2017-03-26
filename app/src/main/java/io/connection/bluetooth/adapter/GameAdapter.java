@@ -20,6 +20,7 @@ import java.util.List;
 import io.connection.bluetooth.Domain.GameInfo;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.request.ReqGameInvite;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
@@ -139,6 +140,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
     }
 
     private void sendWifiConnectionInvite() {
+        WifiDirectService.getInstance(context).initiateDiscovery();
 //        String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
 //        String bluetoothDeviceAddress = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
         ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),

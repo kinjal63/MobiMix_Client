@@ -103,7 +103,7 @@ class ReadBusinessCard extends Thread {
                 String email = dis.readUTF();
                 String phone = dis.readUTF();
                 String filename = dis.readUTF();
-
+                String deviceId = dis.readUTF();
 
                 int fileLength = dis.readInt();
 
@@ -124,6 +124,7 @@ class ReadBusinessCard extends Thread {
                 businessCard.setPhone(phone);
                 businessCard.setEmail(email);
                 businessCard.setPicture(files.getPath());
+                businessCard.setDeviceId(deviceId);
 
                 long value = db.insertBusinessCard(businessCard);
 

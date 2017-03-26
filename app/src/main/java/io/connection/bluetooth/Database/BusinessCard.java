@@ -10,6 +10,7 @@ public class BusinessCard {
     String email;
     String phone;
     String picture;
+    String deviceId;
   public   BusinessCard(){
 
     }
@@ -61,5 +62,13 @@ public class BusinessCard {
 
     public void setPicture(String picture) {
         this.picture = picture;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 }

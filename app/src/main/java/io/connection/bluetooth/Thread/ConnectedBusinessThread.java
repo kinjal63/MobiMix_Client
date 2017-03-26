@@ -105,6 +105,8 @@ public class ConnectedBusinessThread extends Thread {
         String email = prefs.getString("email", "");
         String phone = prefs.getString("phone", "");
         String picture = prefs.getString("picture", "");
+        String deviceId = prefs.getString("device_id", "");
+
         InputStream in;
         Uri file = Uri.parse(picture);
 
@@ -128,6 +130,7 @@ public class ConnectedBusinessThread extends Thread {
                 dos.writeUTF(phone);
                 final String fileName = f.getName();
                 dos.writeUTF(fileName);
+                dos.writeUTF(deviceId);
                 dos.writeInt((int) filelength);
 
                 FileInputStream fis = new FileInputStream(f);

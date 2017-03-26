@@ -9,6 +9,7 @@ import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
@@ -36,7 +37,6 @@ public class WifiDirectService {
 
     private final IntentFilter intentFilter = new IntentFilter();
     private WifiP2pManager.Channel channel;
-    private BroadcastReceiver receiver = null;
     private IntentFilter mIntentFilter;
     private WiFiDirectBroadcastReceiver mReceiver;
 
@@ -71,6 +71,42 @@ public class WifiDirectService {
         setDeviceName();
     }
 
+    public void connectWithPeer() {
+        manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "discovery is initiated.");
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        manager.requestPeers(channel, WifiDirectService.getInstance(mContext).peerListListener);
+                    }
+                }, 1500);
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                Log.d(TAG, "discovery initiation is failed.");
+            }
+        });
+    }
+
+    public void initiateDiscovery() {
+        manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "discovery is initiated.");
+            }
+
+            @Override
+            public void onFailure(int reasonCode) {
+                Log.d(TAG, "discovery initiation is failed.");
+            }
+        });
+    }
+
     WifiP2pManager.ChannelListener mChannelListener = new WifiP2pManager.ChannelListener() {
         @Override
         public void onChannelDisconnected() {
@@ -89,6 +125,8 @@ public class WifiDirectService {
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+        mContext.registerReceiver(mReceiver, intentFilter);
     }
 
     private void enableP2P() {
@@ -148,14 +186,6 @@ public class WifiDirectService {
         }
     }
 
-
-    public void requestPeers() {
-        UtilsHandler.showProgressDialog("Connecting with " + wifiDirectDeviceName);
-        if (manager != null) {
-            manager.requestPeers(channel, peerListListener);
-        }
-    }
-
     public void connectWithWifiAddress(String wifiDirectAddress) {
         final WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = wifiDirectAddress;
@@ -190,6 +220,7 @@ public class WifiDirectService {
                     isDeviceFound = true;
                 }
             }
+            setWifiDirectDeviceName(null);
 
             if( !isDeviceFound ) {
                 UtilsHandler.dismissProgressDialog();
@@ -203,11 +234,15 @@ public class WifiDirectService {
         this.wifiDirectDeviceName = wifiDirectDeviceName;
     }
 
+    public String getWifiDirectDeviceName() {
+        return this.wifiDirectDeviceName;
+    }
+
     public void registerReceiver() {
-        mContext.registerReceiver(receiver, intentFilter);
+
     }
 
     public void unRegisterReceiver() {
-        mContext.unregisterReceiver(receiver);
+        mContext.unregisterReceiver(mReceiver);
     }
 }

@@ -27,11 +27,13 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final String KEY_EMAIL = "email";
     private static final String KEY_PHONE = "phone";
     private static final String KEY_PICTURE = "picture";
+    private static final String KEY_DEVICE_ID = "device_id";
 
 
     private static final String CREATE_TABLE_BUSINESS_CARD = "CREATE TABLE "
             + TABLE_BUSINESS_CARD + "(" + KEY_ID + " INTEGER PRIMARY KEY," + KEY_NAME
-            + " TEXT," + KEY_EMAIL + " TEXT," + KEY_PHONE + " TEXT," + KEY_PICTURE + " TEXT," + KEY_CREATED_AT
+            + " TEXT," + KEY_EMAIL + " TEXT," + KEY_PHONE + " TEXT," + KEY_PICTURE + " TEXT,"
+            + KEY_DEVICE_ID + " TEXT,"+ KEY_CREATED_AT
             + " DATETIME" + ")";
 
 
@@ -48,6 +50,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BUSINESS_CARD);
+        String sql = "create unique index unique_device_id on " + TABLE_BUSINESS_CARD + "( " + KEY_DEVICE_ID + " )";
+        db.execSQL(sql);
         onCreate(db);
     }
 
@@ -86,9 +90,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         values.put(KEY_EMAIL, businessCard.getEmail());
         values.put(KEY_PHONE, businessCard.getPhone());
         values.put(KEY_PICTURE, businessCard.getPicture());
+        values.put(KEY_DEVICE_ID, businessCard.getDeviceId());
         values.put(KEY_CREATED_AT, getDateTime());
 
-        long row_id = db.insert(TABLE_BUSINESS_CARD, null, values);
+        long row_id = db.replace(TABLE_BUSINESS_CARD, null, values);
         return row_id;
 
     }
