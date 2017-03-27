@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.Home_Master;
 import io.connection.bluetooth.activity.UserList;
 import io.connection.bluetooth.adapter.GameAdapter;
@@ -132,16 +133,16 @@ public class PushReceiveService extends FirebaseMessagingService {
     }
 
     private void generateWifiNotification(String wifiDirectName, String toUserId) {
-        Intent intent = new Intent(this, Home_Master.class);
+        Intent intent = new Intent(this, DialogActivity.class);
         intent.putExtra("wifi_address", wifiDirectName);
         intent.putExtra("toUserId", toUserId);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.mipmap.ic_logo)
                 .setContentTitle("Wifi Direct connection")
                 .setContentText("Do you want to make wifi direct connection with " + toUserId)
                 .setAutoCancel(true)
@@ -154,16 +155,16 @@ public class PushReceiveService extends FirebaseMessagingService {
 
     private void generateBluetoothNotification(String bluetoothName, String toUserId) {
         if (!isNotificationVisible()) {
-            Intent intent = new Intent(this, Home_Master.class);
+            Intent intent = new Intent(this, DialogActivity.class);
             intent.putExtra("bluetooth_address", bluetoothName);
             intent.putExtra("toUserId", toUserId);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                     PendingIntent.FLAG_ONE_SHOT);
 
             Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             notificationBuilder = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setSmallIcon(R.mipmap.ic_logo)
                     .setContentTitle("Bluetooth connection")
                     .setContentText("Do you want to make bluetooth Connection with " + toUserId)
                     .setAutoCancel(true)

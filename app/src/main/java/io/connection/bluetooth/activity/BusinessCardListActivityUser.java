@@ -53,7 +53,7 @@ import retrofit2.Response;
  * Created by songline on 07/09/16.
  */
 public class BusinessCardListActivityUser extends AppCompatActivity implements SearchView.OnQueryTextListener {
-    private static final String TAG = "BusinessCardListActivi";
+    private static final String TAG = "BusinessCardListActivity";
     BluetoothAdapter bluetoothAdapter;
     private Toolbar toolbar;
     static ConnectedBusinessThread connectedThread;
@@ -322,7 +322,6 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                 connectedThread = new ConnectedBusinessThread(device);
                 connectedThread.start();
                 NotificationManagerCompat.from(context).cancelAll();
-
             }
 
 

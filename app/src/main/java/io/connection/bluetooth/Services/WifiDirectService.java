@@ -35,7 +35,6 @@ public class WifiDirectService {
     private boolean isWifiP2pEnabled = false;
     private boolean retryChannel = false;
 
-    private final IntentFilter intentFilter = new IntentFilter();
     private WifiP2pManager.Channel channel;
     private IntentFilter mIntentFilter;
     private WiFiDirectBroadcastReceiver mReceiver;
@@ -125,8 +124,6 @@ public class WifiDirectService {
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-
-        mContext.registerReceiver(mReceiver, intentFilter);
     }
 
     private void enableP2P() {
@@ -239,7 +236,7 @@ public class WifiDirectService {
     }
 
     public void registerReceiver() {
-
+        mContext.registerReceiver(mReceiver, mIntentFilter);
     }
 
     public void unRegisterReceiver() {

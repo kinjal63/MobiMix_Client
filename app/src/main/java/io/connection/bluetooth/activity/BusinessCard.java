@@ -33,6 +33,7 @@ import android.widget.Toast;
 import java.io.File;
 
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.imagecrop.CropImageIntentBuilder;
 
 /**
@@ -171,9 +172,9 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_send:
                 Log.d(TAG, "onClick: send clicked");
-                Intent intent = new Intent(BusinessCard.this, BusinessCardListActivityUser.class);
-                //intent.putExtra("connectThread", connectedThread);
-                this.startActivity(intent);
+                Intent intent = new Intent(this, DialogActivity.class);
+                intent.putExtra("module", Modules.BUSINESS_CARD.name());
+                startActivity(intent);
                 break;
             case R.id.button_edit:
                 Log.d(TAG, "onClick: edit clickedd");

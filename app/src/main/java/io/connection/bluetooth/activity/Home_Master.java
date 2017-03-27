@@ -51,6 +51,7 @@ import io.connection.bluetooth.Thread.AcceptBusinessThread;
 import io.connection.bluetooth.Thread.AcceptThread;
 import io.connection.bluetooth.Thread.GameRequestAcceptThread;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
@@ -77,82 +78,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
     private WifiDirectService wifiDirectService;
 
-    private void showBluetoothDialog(final String bluetoothName, final String toUserId) {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        // set title
-        alertDialogBuilder.setTitle("Bluetooth Connection Invite");
-
-        // set dialog message
-        alertDialogBuilder
-                .setMessage("Do you want to make bluetooth connection with " + bluetoothName)
-                .setCancelable(false)
-                .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        if(Utils.getBluetoothAdapter() != null) {
-                            mBluetoothDeviceFoundReceiver.setUserId(bluetoothName);
-                            bluetoothAdapter.startDiscovery();
-                        }
-                    }
-                })
-                .setNegativeButton("No",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        // if this button is clicked, just close
-                        // the dialog box and do nothing
-                        dialog.cancel();
-                    }
-                });
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-    }
-
-    private void showWifiDialog(final String wifiDirectName, final String toUserId) {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        // set title
-        alertDialogBuilder.setTitle("Wifi Direct Connection Invite");
-
-        // set dialog message
-        alertDialogBuilder
-                .setMessage("Do you want to make wifi direct connection with " + wifiDirectName)
-                .setCancelable(false)
-                .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        WifiDirectService.getInstance(context).setWifiDirectDeviceName(wifiDirectName);
-                        WifiDirectService.getInstance(context).connectWithPeer();
-                        UtilsHandler.showProgressDialog("Connecting with " + wifiDirectName);
-                    }
-                })
-                .setNegativeButton("No",new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if( intent != null && intent.getStringExtra("wifi_address") != null) {
-            this.toUserId = intent.getStringExtra("toUserId");
-            showWifiDialog(intent.getStringExtra("wifi_address"), toUserId);
-        }
-        else if( intent != null && intent.getStringExtra("bluetooth_address") != null) {
-            this.toUserId = intent.getStringExtra("toUserId");
-            showBluetoothDialog(intent.getStringExtra("bluetooth_address"), toUserId);
-        }
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -168,7 +93,9 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         findViewById(R.id.data_usage_card_id).setOnClickListener(this);
         ImageCache.setContext(this);
         Intent intent = new Intent(this, GPSTracker.class);
-        mBluetoothDeviceFoundReceiver = new BluetoothDeviceReceiver();
+        mBluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
+        wifiDirectService = WifiDirectService.getInstance(this);
+
         this.startService(intent);
         apiCall = ApiClient.getClient().create(ApiCall.class);
         context = this;
@@ -236,20 +163,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
         sendAllAppdetail();
 
-        Intent intent1 = getIntent();
-
-        if( intent1 != null && intent1.getStringExtra("wifi_address") != null) {
-            this.toUserId = intent1.getStringExtra("toUserId");
-            showWifiDialog(intent1.getStringExtra("wifi_address"), toUserId);
-        }
-        else if( intent1 != null && intent1.getStringExtra("bluetooth_address") != null) {
-            this.toUserId = intent1.getStringExtra("toUserId");
-            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId);
-        }
-
         registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-
-        wifiDirectService = WifiDirectService.getInstance(this);
+        wifiDirectService.registerReceiver();
     }
 
     @Override
@@ -257,7 +172,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         super.onResume();
         Utils.setBluetoothAdapterName();
         Utils.makeDeviceDiscoverable(context);
-        wifiDirectService.registerReceiver();
     }
 
     @Override
@@ -373,13 +287,13 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     public void onClick(View v) {
         Log.d(TAG, "onClick: " + v.getId());
         switch (v.getId()) {
-
             case R.id.file_card_id:
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
                 break;
             case R.id.chat_card_id:
-                Intent chatIntent = new Intent(this, DeviceListActivityChat.class);
+                Intent chatIntent = new Intent(this, DialogActivity.class);
+                chatIntent.putExtra("module", Modules.CHAT.name());
                 startActivity(chatIntent);
                 break;
             case R.id.business_card_id:
@@ -400,10 +314,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
                 break;
 
         }
-
-
     }
-
 
     public void ReceiveMessage(String Message, final BluetoothSocket socket) {
         System.out.println(Message);
@@ -561,7 +472,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     @Override
     protected void onDestroy() {
         unregisterReceiver(mBluetoothDeviceFoundReceiver);
-//        wifiDirectService.unRegisterReceiver();
+        wifiDirectService.unRegisterReceiver();
         super.onDestroy();
     }
 }

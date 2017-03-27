@@ -22,6 +22,14 @@ import retrofit2.Response;
 public class BluetoothDeviceReceiver extends BroadcastReceiver {
     private String TAG = "BluetoothDeviceReceiver";
     private String remoteUserName = "";
+    private static BluetoothDeviceReceiver mBluetoothDeviceReceiver = null;
+
+    public static BluetoothDeviceReceiver getInstance() {
+        if( mBluetoothDeviceReceiver == null ) {
+            mBluetoothDeviceReceiver = new BluetoothDeviceReceiver();
+        }
+        return mBluetoothDeviceReceiver;
+    }
 
     @Override
     public void onReceive(final Context context, Intent intent) {
