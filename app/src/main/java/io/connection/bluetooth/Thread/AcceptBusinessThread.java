@@ -154,7 +154,6 @@ class ReadBusinessCard extends Thread {
                     e1.printStackTrace();
                 }
 
-
                 e.printStackTrace();
 
             } finally {

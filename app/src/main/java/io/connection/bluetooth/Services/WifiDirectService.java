@@ -8,6 +8,7 @@ import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,7 +28,7 @@ import io.connection.bluetooth.utils.UtilsHandler;
 /**
  * Created by KP49107 on 23-03-2017.
  */
-public class WifiDirectService {
+public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener {
     private static WifiDirectService wifiDirectService;
     private static String obj = "wifiDirectService";
     private static Context mContext = null;
@@ -205,6 +206,11 @@ public class WifiDirectService {
                         Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+
     }
 
     public WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
