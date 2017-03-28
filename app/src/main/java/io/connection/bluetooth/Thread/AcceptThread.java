@@ -1,9 +1,11 @@
 package io.connection.bluetooth.Thread;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import java.io.IOException;
@@ -11,9 +13,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import io.connection.bluetooth.activity.BusinessCardReceivedList;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by songline on 01/08/16.
@@ -69,6 +73,7 @@ public class AcceptThread extends Thread {
 class readFile extends Thread {
     private static final String TAG = "readFile";
     BluetoothSocket socket = null;
+    BluetoothDevice device = null;
     InputStream in = null;
     OutputStream out = null;
     Context context;
@@ -107,6 +112,24 @@ class readFile extends Thread {
                 }
                 e.printStackTrace();
                 break;
+            }
+            finally {
+                try {
+                    socket.close();
+                } catch (Exception ee) {
+                    ee.printStackTrace();
+                }
+
+                UtilsHandler.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(context, DeviceChatActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        intent.putExtra("device", device);
+                        context.startActivity(intent);
+
+                    }
+                });
             }
         }
 

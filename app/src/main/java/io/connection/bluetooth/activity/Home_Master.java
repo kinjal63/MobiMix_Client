@@ -5,10 +5,12 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -16,6 +18,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -46,6 +49,7 @@ import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.GPSTracker;
+import io.connection.bluetooth.Services.MobiMixService;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.AcceptBusinessThread;
 import io.connection.bluetooth.Thread.AcceptThread;
@@ -75,8 +79,9 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     private Handler mHandler;
     private String toUserId;
     private String toEmail;
-    private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
-    private WifiDirectService wifiDirectService;
+
+//    private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
+//    private WifiDirectService wifiDirectService;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,8 +98,10 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         findViewById(R.id.data_usage_card_id).setOnClickListener(this);
         ImageCache.setContext(this);
         Intent intent = new Intent(this, GPSTracker.class);
-        mBluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
-        wifiDirectService = WifiDirectService.getInstance(this);
+//        mBluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
+//        wifiDirectService = WifiDirectService.getInstance(this);
+
+        startMobiMixService();
 
         this.startService(intent);
         apiCall = ApiClient.getClient().create(ApiCall.class);
@@ -163,9 +170,26 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
         sendAllAppdetail();
 
-        registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-        wifiDirectService.registerReceiver();
+//        registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+//        wifiDirectService.registerReceiver();
     }
+
+    private void startMobiMixService() {
+        Intent intent = new Intent(this, MobiMixService.class);
+        startService(intent);
+    }
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MobiMixService.LocalBinder binder = (MobiMixService.LocalBinder)service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "Service could not be connected");
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -471,8 +495,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(mBluetoothDeviceFoundReceiver);
-        wifiDirectService.unRegisterReceiver();
+//        unregisterReceiver(mBluetoothDeviceFoundReceiver);
+//        wifiDirectService.unRegisterReceiver();
         super.onDestroy();
     }
 }

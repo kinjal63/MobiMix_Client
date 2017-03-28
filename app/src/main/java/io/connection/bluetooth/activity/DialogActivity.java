@@ -96,7 +96,7 @@ public class DialogActivity extends Activity {
         alertDialogBuilder
                 .setMessage("Do you want to make wifi direct connection with " + wifiDirectName)
                 .setCancelable(false)
-                .setIcon(R.drawable.bluetooth)
+                .setIcon(R.drawable.wifidirect)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())

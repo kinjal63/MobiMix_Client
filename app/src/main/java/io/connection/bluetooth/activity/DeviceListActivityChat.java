@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -42,7 +43,10 @@ import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
+import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
@@ -59,15 +63,19 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
     private Toolbar toolbar;
     static ConnectedThread connectedThread;
 
-    DeviceAdapter deviceAdapter;
+    BluetoothDeviceAdapter deviceAdapter;
+    WifiP2PDeviceAdapter wifiDeviceAdapter;
+
     RecyclerView deviceLayout;
     ApiCall apiCall;
-    private ArrayList<BluetoothDevice> bluetoothDevices = new ArrayList<>();
-    private ArrayList<BluetoothDevice> tempbluetoothDevices = new ArrayList<>();
+    private ArrayList<BluetoothDevice> listBluetoothDevices = new ArrayList<>();
+    private ArrayList<BluetoothDevice> listTempBluetoothDevices = new ArrayList<>();
+
+    private ArrayList<WifiP2pDevice> listWifiP2PDevices = new ArrayList<>();
+
     static Context mContext;
     static BluetoothDevice device;
     private SearchView searchView;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,23 +88,29 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         ImageCache.setContext(mContext);
         apiCall = ApiClient.getClient().create(ApiCall.class);
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            bluetoothAdapter.enable();
-            Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBlueTooth, 1);
-        } else {
-            bluetoothEnabled();
+        if( getIntent().getStringExtra("networkType") != null &&
+                getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.BLUETOOTH.name()))
+        {
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (!bluetoothAdapter.isEnabled()) {
+                bluetoothAdapter.enable();
+                Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBlueTooth, 1);
+            } else {
+                bluetoothEnabled();
+            }
+            registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+            deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+        }
+        else if( getIntent().getStringExtra("networkType") != null &&
+                getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.WIFI_DIRECT.name()))
+        {
+            listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
+            wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
         }
 
         deviceLayout = (RecyclerView) findViewById(R.id.list_chat);
-        deviceAdapter = new DeviceAdapter(this, bluetoothDevices);
         setDeviceLayout(deviceLayout);
-
-
-        registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-
-
     }
 
 
@@ -184,7 +198,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         return false;
     }
 
-    public static class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder> implements Filterable {
+    public static class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDeviceAdapter.ViewHolder> implements Filterable {
         List<String> names = new ArrayList<>();
         List<String> status = new ArrayList<>();
         static Context mContext;
@@ -193,7 +207,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         List<BluetoothDevice> listDevice = new ArrayList<>();
         FriendFilter friendFilter;
 
-        public DeviceAdapter(Context mContext, List<BluetoothDevice> devices) {
+        public BluetoothDeviceAdapter(Context mContext, List<BluetoothDevice> devices) {
             this.mContext = mContext;
             this.devices = devices;
         }
@@ -295,7 +309,6 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
             ImageView imageView;
             public Context context;
 
-
             public ViewHolder(View itemView, Context context, int type) {
                 super(itemView);
                 if (type == 0) {
@@ -322,8 +335,6 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
                 NotificationManagerCompat.from(context).cancelAll();
 
             }
-
-
         }
 
     }
@@ -358,7 +369,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
                 if (deviceBroadcast != null) {
                     String deviceMacAddress = deviceBroadcast.getAddress().trim();
                     Log.d(TAG, "onReceive: " + deviceMacAddress);
-                    if (!tempbluetoothDevices.contains(deviceBroadcast)) {
+                    if (!listTempBluetoothDevices.contains(deviceBroadcast)) {
                         User userAvailable = new User();
                         userAvailable.setMacAddress(deviceMacAddress);
                         userAvailable.setEmail(deviceBroadcast.getName());
@@ -370,7 +381,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
 
                                 if (user != null) {
                                     Log.d(TAG, "onResponse: " + user.getName());
-                                    tempbluetoothDevices.add(deviceBroadcast);
+                                    listTempBluetoothDevices.add(deviceBroadcast);
                                     deviceAdapter.add(user.getName(), deviceBroadcast);
                                     deviceAdapter.notifyDataSetChanged();
                                     ChatDataConversation.putUserName(deviceBroadcast.getAddress(), user.getName());
@@ -408,7 +419,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         if (Utils.isConnected(mContext)) {
             for (final BluetoothDevice deviceSet : listdevice) {
 
-                if (!tempbluetoothDevices.contains(deviceSet)) {
+                if (!listTempBluetoothDevices.contains(deviceSet)) {
                     User userAvailable = new User();
                     userAvailable.setMacAddress(deviceSet.getAddress());
                     userAvailable.setEmail(deviceSet.getName());
@@ -421,7 +432,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
 
                             if (user != null) {
                                 Log.d(TAG, "onResponse: " + user.getName());
-                                tempbluetoothDevices.add(deviceSet);
+                                listTempBluetoothDevices.add(deviceSet);
                                 deviceAdapter.add(user.getName(), deviceSet);
                                 ChatDataConversation.putUserName(deviceSet.getAddress(), user.getName());
                             }

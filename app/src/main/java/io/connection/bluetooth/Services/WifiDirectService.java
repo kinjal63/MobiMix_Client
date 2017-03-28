@@ -16,7 +16,9 @@ import android.widget.Toast;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import io.connection.bluetooth.receiver.WiFiDirectBroadcastReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
@@ -32,12 +34,11 @@ public class WifiDirectService {
     private String wifiDirectDeviceName = "";
 
     private WifiP2pManager manager;
-    private boolean isWifiP2pEnabled = false;
-    private boolean retryChannel = false;
-
     private WifiP2pManager.Channel channel;
     private IntentFilter mIntentFilter;
     private WiFiDirectBroadcastReceiver mReceiver;
+
+    private List<WifiP2pDevice> wifiP2PDeviceList = new ArrayList<>();
 
     private String TAG = "WifiDirectService";
 
@@ -79,7 +80,7 @@ public class WifiDirectService {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        manager.requestPeers(channel, WifiDirectService.getInstance(mContext).peerListListener);
+                        manager.requestPeers(channel, peerListListener);
                     }
                 }, 1500);
             }
@@ -211,6 +212,10 @@ public class WifiDirectService {
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
             boolean isDeviceFound = false;
             Collection<WifiP2pDevice> p2pDeviceList = peerList.getDeviceList();
+
+            wifiP2PDeviceList.clear();
+            wifiP2PDeviceList.addAll(p2pDeviceList);
+
             for(WifiP2pDevice device : p2pDeviceList) {
                 if( device.deviceName.equalsIgnoreCase(wifiDirectDeviceName) ) {
                     connectWithWifiAddress(device.deviceAddress);
@@ -233,6 +238,10 @@ public class WifiDirectService {
 
     public String getWifiDirectDeviceName() {
         return this.wifiDirectDeviceName;
+    }
+
+    public List<WifiP2pDevice> getWifiP2PDeviceList() {
+        return wifiP2PDeviceList;
     }
 
     public void registerReceiver() {

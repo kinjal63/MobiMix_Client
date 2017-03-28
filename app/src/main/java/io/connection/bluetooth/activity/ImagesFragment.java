@@ -180,7 +180,7 @@ public class ImagesFragment extends Fragment {
             } finally {
                 cc.close();
             }
-            ImageCache.setURIs(strUrls);
+//            ImageCache.setURIs(strUrls);
             return null;
         }
 
