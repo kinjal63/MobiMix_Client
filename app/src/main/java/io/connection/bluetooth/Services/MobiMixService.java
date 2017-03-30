@@ -5,8 +5,12 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 
@@ -14,15 +18,8 @@ import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
  * Created by KP49107 on 28-03-2017.
  */
 public class MobiMixService extends Service {
-    private LocalBinder mBinder = new LocalBinder();
     private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
     private WifiDirectService wifiDirectService;
-
-    public class LocalBinder extends Binder {
-        public MobiMixService getService() {
-            return MobiMixService.this;
-        }
-    }
 
     @Override
     public void onCreate() {
@@ -40,7 +37,7 @@ public class MobiMixService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
+        return null;
     }
 
     private void initBluetooth() {
@@ -51,6 +48,7 @@ public class MobiMixService extends Service {
     private void initWifiDirect() {
         wifiDirectService = WifiDirectService.getInstance(this);
         wifiDirectService.registerReceiver();
+        new Timer().schedule(new DiscoveryTask(), 1000, 90000);
         wifiDirectService.initiateDiscovery();
     }
 
@@ -59,5 +57,12 @@ public class MobiMixService extends Service {
         unregisterReceiver(mBluetoothDeviceFoundReceiver);
         wifiDirectService.unRegisterReceiver();
         super.onDestroy();
+    }
+
+    private class DiscoveryTask extends TimerTask {
+        @Override
+        public void run() {
+            wifiDirectService.initiateDiscovery();
+        }
     }
 }

@@ -3,7 +3,9 @@ package io.connection.bluetooth.receiver;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.NetworkInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.util.Log;
 
 import io.connection.bluetooth.Services.WifiDirectService;
 
@@ -12,6 +14,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
     private String wifiDirectDeviceName;
+    private String TAG = "WifiP2PBroadcastReceiver";
 
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel) {
         super();
@@ -34,13 +37,22 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             if (mManager != null) {
                 WifiDirectService wifiService = WifiDirectService.getInstance(context);
-                if(wifiService.getWifiDirectDeviceName() != null && wifiService.getWifiDirectDeviceName().length() > 0) {
+//                if(wifiService.getWifiDirectDeviceName() != null && wifiService.getWifiDirectDeviceName().length() > 0) {
                     mManager.requestPeers(mChannel, WifiDirectService.getInstance(context).peerListListener);
-                }
+//                }
             }
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
-            // Respond to new connection or disconnections
-        } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+                if (mManager == null) {
+                    return;
+                }
+                NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
+                if (networkInfo.isConnected()) {
+                    // we are connected with the other device, request connection
+                    // info to find group owner IP
+                    Log.d(TAG, "Connected to p2p network. Requesting network details");
+                    mManager.requestConnectionInfo(mChannel, (WifiP2pManager.ConnectionInfoListener) WifiDirectService.getInstance(context));
+                }
+            } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 //            if (mManager != null) {
 //                mManager.requestPeers(mChannel, WifiDirectService.getInstance(context).peerListListener);
 //            }

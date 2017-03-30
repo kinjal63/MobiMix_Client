@@ -121,7 +121,7 @@ public class DialogActivity extends Activity {
         builder.setTitle(message)
                 .setItems(R.array.wifi_bluetooth_array, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        NetworkType networkType = which == 1 ? NetworkType.BLUETOOTH : NetworkType.WIFI_DIRECT;
+                        NetworkType networkType = which == 0 ? NetworkType.BLUETOOTH : NetworkType.WIFI_DIRECT;
                         switch (module) {
                             case CHAT:
                                 Intent chatIntent = new Intent(DialogActivity.this, DeviceListActivityChat.class);
@@ -137,6 +137,7 @@ public class DialogActivity extends Activity {
                                 break;
                             default:
                         }
+                        finish();
                     }
                 });
         builder.create().show();

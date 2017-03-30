@@ -83,9 +83,9 @@ public class GPSTrackerUtil extends Service implements LocationListener {
     public GPSTrackerUtil(Context context, Handler handler) {
         this.mContext = context;
         this.mHandler = handler;
-        getLocation();
-        getRssi();
-        getDataUsage();
+//        getLocation();
+//        getRssi();
+//        getDataUsage();
     }
 
     private void getRssi() {

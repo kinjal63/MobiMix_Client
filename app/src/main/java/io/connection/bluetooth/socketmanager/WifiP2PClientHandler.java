@@ -35,6 +35,7 @@ public class WifiP2PClientHandler extends Thread {
             mSocket.connect(new InetSocketAddress(mAddress.getHostAddress(), Constants.GROUP_OWNER_PORT));
 
             socketManager = new SocketManager(mSocket, mHandler);
+            socketManager.setRemoteDeviceHostAddress(mAddress.getHostName());
             new Thread(socketManager).start();
         } catch (IOException e) {
             Log.e(TAG, "IOException throwed by socket", e);
@@ -63,5 +64,12 @@ public class WifiP2PClientHandler extends Thread {
             Log.d(TAG,"Stopping ClientSocketHandler");
             this.interrupt();
         }
+    }
+
+    public boolean checkSocketConnection(String hostName) {
+        if(mSocket != null && mSocket.isConnected()) {
+            return true;
+        }
+        return false;
     }
 }
