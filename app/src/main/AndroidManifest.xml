@@ -179,6 +179,15 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
         </activity>
 
+        <activity
+            android:name=".activity.WifiP2PChatActivity"
+            android:label="Chat"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <service android:name=".Services.MobiMixService">
+        </service>
+
         <service android:name=".Services.InstanceIdService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />

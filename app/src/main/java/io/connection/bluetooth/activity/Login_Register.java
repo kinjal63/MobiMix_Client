@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 
 /**
  * Created by songline on 20/09/16.
@@ -62,10 +64,12 @@ public class Login_Register extends AppCompatActivity {
             //accept.start();
         }
         sharedPref = this.getSharedPreferences("myPref", Context.MODE_PRIVATE);
-        if(sharedPref.getBoolean("is_login", false)) {
+
+        ApplicationSharedPreferences.getInstance(this).addValue("email", Build.MODEL);
+//        if(sharedPref.getBoolean("is_login", false)) {
             startActivity(new Intent(this, Home_Master.class));
             finish();
-        }
+//        }
         viewPager = (ViewPager) findViewById(R.id.pager_login_register);
         setupViewPager(viewPager);
         tabLayout = (TabLayout) findViewById(R.id.tabs_login_register);

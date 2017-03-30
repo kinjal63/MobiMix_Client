@@ -57,8 +57,10 @@ public class WifiP2PServerHandler extends Thread {
                 // there is a new connection
                 if(mSocket!=null && !mSocket.isClosed()) {
                     Socket clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
-                    pool.execute(new SocketManager(clientSocket, mHandler));
+                    SocketManager socketManager = new SocketManager(clientSocket, mHandler);
+                    pool.execute(socketManager);
                     ipAddress = clientSocket.getInetAddress();
+                    socketManager.setRemoteDeviceHostAddress(ipAddress.getHostName());
                     Log.d(TAG, "Launching the I/O handler");
                 }
             } catch (IOException e) {
@@ -97,6 +99,13 @@ public class WifiP2PServerHandler extends Thread {
             }
             pool.shutdown();
         }
+    }
+
+    public boolean checkSocketConnection(String hostName) {
+        if(mSocket != null && mSocket.isBound()) {
+            return true;
+        }
+        return false;
     }
 
     public InetAddress getIpAddress() {

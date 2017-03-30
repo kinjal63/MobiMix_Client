@@ -6,6 +6,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import io.connection.bluetooth.enums.Modules;
@@ -21,6 +23,7 @@ public class SocketManager implements Runnable {
     private InputStream is;
     private OutputStream os;
     private boolean disable = false;
+    private String remoteHostAddress;
 
     private String TAG = "SocketManager";
 
@@ -65,6 +68,24 @@ public class SocketManager implements Runnable {
                 socket.close();
             } catch (IOException e) {
                 Log.e(TAG,"Exception during close socket or isStream",  e);
+            }
+        }
+    }
+
+    public String  setRemoteDeviceHostAddress(String hostAddress) {
+        return this.remoteHostAddress = hostAddress;
+    }
+
+    public String getRemoteDeviceAddress() {
+        return this.remoteHostAddress;
+    }
+
+    public void close() {
+        if(socket!=null && !socket.isClosed()) {
+            try {
+                socket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "IOException during close Socket", e);
             }
         }
     }

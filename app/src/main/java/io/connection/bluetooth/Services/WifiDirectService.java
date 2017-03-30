@@ -15,13 +15,20 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.WiFiDirectBroadcastReceiver;
+import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
+import io.connection.bluetooth.socketmanager.WifiP2PServerHandler;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.UtilsHandler;
 
@@ -33,6 +40,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private static String obj = "wifiDirectService";
     private static Context mContext = null;
     private String wifiDirectDeviceName = "";
+    private Modules module = Modules.FILE_SHARING;
 
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
@@ -40,6 +48,10 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private WiFiDirectBroadcastReceiver mReceiver;
 
     private List<WifiP2pDevice> wifiP2PDeviceList = new ArrayList<>();
+    private Thread socketHandler;
+    private MessageHandler messageHandler;
+
+    private NearByDeviceFound nearByDeviceCallback;
 
     private String TAG = "WifiDirectService";
 
@@ -68,8 +80,10 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             wifiManager.setWifiEnabled(true);
         }
         setUp();
-        enableP2P();
+//        enableP2P();
         setDeviceName();
+
+        messageHandler = new MessageHandler(mContext, this);
     }
 
     public void connectWithPeer() {
@@ -185,10 +199,11 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
     }
 
-    public void connectWithWifiAddress(String wifiDirectAddress) {
+    public void connectWithWifiAddress(String wifiDirectAddress, final DeviceConnectionListener listener) {
         final WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = wifiDirectAddress;
         config.wps.setup = WpsInfo.PBC;
+        config.groupOwnerIntent = 0;
 
         manager.connect(channel, config, new WifiP2pManager.ActionListener() {
 
@@ -197,6 +212,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 UtilsHandler.dismissProgressDialog();
                 Toast.makeText(mContext, "Wifi direct connection is established.",
                         Toast.LENGTH_SHORT).show();
+                if( listener != null ) {
+                    listener.onDeviceConnected(true);
+                }
             }
 
             @Override
@@ -204,13 +222,62 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 UtilsHandler.dismissProgressDialog();
                 Toast.makeText(mContext, "Connect failed. Retry.",
                         Toast.LENGTH_SHORT).show();
+                if( listener != null ) {
+                    listener.onDeviceConnected(false);
+                }
             }
         });
     }
 
     @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+    public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
+/*
+         * The group owner accepts connections using a server socket and then spawns a
+         * client socket for every client. This is handled by {@code
+         * GroupOwnerSocketHandler}
+         */
+        if(p2pInfo.groupFormed) {
+            if( socketHandler != null ) {
+                closeConnetion();
+            }
 
+            if (p2pInfo.isGroupOwner) {
+                Log.d(TAG, "Connected as group owner");
+                try {
+                    Log.d(TAG, "socketHandler!=null? = " + (socketHandler != null));
+                    socketHandler = new WifiP2PServerHandler(messageHandler.getHandler());
+                    socketHandler.start();
+
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to cre" +
+                            "ate a server thread - " + e);
+                    return;
+                }
+            } else {
+                Log.d(TAG, "Connected as peer");
+                socketHandler = new WifiP2PClientHandler(messageHandler.getHandler(), p2pInfo.groupOwnerAddress);
+                socketHandler.start();
+            }
+        }
+    }
+
+    public void closeConnetion() {
+        if(socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
+            ((WifiP2PClientHandler)socketHandler).closeSocketAndKillThisThread();
+        }
+        else if(socketHandler != null && socketHandler instanceof WifiP2PServerHandler) {
+            ((WifiP2PServerHandler)socketHandler).closeSocketAndKillThisThread();
+        }
+    }
+
+    public boolean isSocketConnectedWithHost(String hostName) {
+        if(socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
+            return ((WifiP2PClientHandler)socketHandler).checkSocketConnection(hostName);
+        }
+        else if(socketHandler != null && socketHandler instanceof WifiP2PServerHandler) {
+            return ((WifiP2PServerHandler)socketHandler).checkSocketConnection(hostName);
+        }
+        return false;
     }
 
     public WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
@@ -222,9 +289,13 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             wifiP2PDeviceList.clear();
             wifiP2PDeviceList.addAll(p2pDeviceList);
 
+            if( nearByDeviceCallback != null ) {
+                nearByDeviceCallback.onDevicesAvailable(p2pDeviceList);
+            }
+
             for(WifiP2pDevice device : p2pDeviceList) {
                 if( device.deviceName.equalsIgnoreCase(wifiDirectDeviceName) ) {
-                    connectWithWifiAddress(device.deviceAddress);
+                    connectWithWifiAddress(device.deviceAddress, null);
                     isDeviceFound = true;
                 }
             }
@@ -232,14 +303,30 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
             if( !isDeviceFound ) {
                 UtilsHandler.dismissProgressDialog();
-                Toast.makeText(mContext, "Device not found. Please try again.",
-                        Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Device not found. Please try again.",
+//                        Toast.LENGTH_SHORT).show();
             }
         }
     };
 
+    public void setNearByDeviceFoundCallback(NearByDeviceFound nearByDeviceCallback) {
+        this.nearByDeviceCallback = nearByDeviceCallback;
+    }
+
     public void setWifiDirectDeviceName(String wifiDirectDeviceName) {
         this.wifiDirectDeviceName = wifiDirectDeviceName;
+    }
+
+    public MessageHandler getMessageHandler() {
+        return this.messageHandler;
+    }
+
+    public Modules getModule() {
+        return this.module;
+    }
+
+    public void setModule(Modules module) {
+        this.module = module;
     }
 
     public String getWifiDirectDeviceName() {
@@ -256,5 +343,14 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
     public void unRegisterReceiver() {
         mContext.unregisterReceiver(mReceiver);
+    }
+
+    public void closeSocket() {
+        if(socketHandler instanceof WifiP2PClientHandler) {
+            ((WifiP2PClientHandler)socketHandler).closeSocketAndKillThisThread();
+        }
+        else if(socketHandler instanceof WifiP2PServerHandler) {
+            ((WifiP2PServerHandler)socketHandler).closeSocketAndKillThisThread();
+        }
     }
 }

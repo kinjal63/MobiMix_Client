@@ -28,6 +28,7 @@ import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -79,7 +80,6 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         mSendButton.setEnabled(false);
         context = this;
 
-
         Intent intent = getIntent();
         device = intent.getParcelableExtra("device");
 
@@ -91,6 +91,27 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         setupChat();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.deviceName) ) {
+            WifiDirectService.getInstance(this).connectWithWifiAddress(device.deviceAddress, new DeviceConnectionListener() {
+                @Override
+                public void onDeviceConnected(boolean isConnected) {
+                    if (isConnected) {
+                        mSendButton.setEnabled(true);
+                        connectionStatus.setText("Connected");
+                    } else {
+                        mSendButton.setEnabled(false);
+                        connectionStatus.setText("Not Connneted");
+                    }
+                }
+            });
+//        }
+//        else {
+//            connectionStatus.setText("Connected");
+//        }
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -230,14 +251,14 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         WifiDirectService.getInstance(this).closeSocket();
     }
 
-    public static void readMessagae(final WifiP2pDevice deviceRemote) {
+    public static void readMessagae(final String remoteDeviceName) {
 
         UtilsHandler.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                List<String> listofStrings = ChatDataConversation.getChatConversation(deviceRemote.deviceName);
+                List<String> listofStrings = ChatDataConversation.getChatConversation(remoteDeviceName);
                 if (mConversationArrayAdapter != null) {
-                    if (deviceRemote.deviceName.equals(device.deviceName)) {
+                    if (remoteDeviceName.equals(device.deviceName)) {
                         mConversationArrayAdapter.clear();
                         mConversationArrayAdapter.addAll(listofStrings);
                         chatAdapter.notifyDataSetChanged();

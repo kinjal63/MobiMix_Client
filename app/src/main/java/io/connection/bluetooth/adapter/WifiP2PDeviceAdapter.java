@@ -13,9 +13,12 @@ import android.widget.TextView;
 import java.util.List;
 
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.activity.WifiP2PChatActivity;
+import io.connection.bluetooth.enums.NetworkType;
 
 /**
  * Created by KP49107 on 28-03-2017.
@@ -47,11 +50,13 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
         public void onClick(View v) {
             device = (WifiP2pDevice) v.getTag();
             ImageCache.setContext(context);
+
 //            connectedThread = new ConnectedThread(device);
 //            connectedThread.start();
 
-            Intent intent = new Intent(mContext, DeviceChatActivity.class);
+            Intent intent = new Intent(mContext, WifiP2PChatActivity.class);
             intent.putExtra("device", device);
+            intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
             context.startActivity(intent);
         }
     }

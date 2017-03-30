@@ -28,15 +28,14 @@ public class Constants {
     public static final String ERROR_MESSAGE = "Something went wrong, try again later";
     public static final String INTERNET_ERROR_MESSAGE = "No Internet Connection";
 
-    public static final int GROUP_OWNER_PORT = 4545;
-    public static final int CLIENT_PORT = 5000;
+    public static final int GROUP_OWNER_PORT = 5050;
+    public static final int SOCKET_TIMEOUT = 5000;
+    public static final int FIRSTMESSAGEXCHANGE = 0x400 + 1;
+    public static final int MESSAGE_READ = 0x400 + 2;
+    public static final int MODULE_READ = 0x400 + 3;
+
     public static final int THREAD_COUNT = 20; //maximum number of clients that this GO can manage
-    public static final int THREAD_POOL_EXECUTOR_KEEP_ALIVE_TIME = 10; //don't touch this!!!
-
-    public static final int MESSAGE_READ = 0x400 + 1;
-    public static final int FIRSTMESSAGEXCHANGE = 0x400 + 2;
-
-
+    public static final int THREAD_POOL_EXECUTOR_KEEP_ALIVE_TIME = 10;
 }
 //  Query
 

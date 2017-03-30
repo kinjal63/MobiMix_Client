@@ -79,6 +79,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     private Handler mHandler;
     private String toUserId;
     private String toEmail;
+    private Intent mService;
 
 //    private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
 //    private WifiDirectService wifiDirectService;
@@ -136,10 +137,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
             } else {
                 bluetoothEnabled();
             }
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1113);
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1112);
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1114);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1112);
 
             List<String> InstalledpackageName = Utils.getAllInstalledGames(this);
             if (Utils.isConnected(context)) {
@@ -175,21 +174,10 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     }
 
     private void startMobiMixService() {
-        Intent intent = new Intent(this, MobiMixService.class);
-        startService(intent);
+        mService = new Intent(this, MobiMixService.class);
+        startService(mService);
+
     }
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MobiMixService.LocalBinder binder = (MobiMixService.LocalBinder)service;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.d(TAG, "Service could not be connected");
-        }
-    };
 
     @Override
     protected void onResume() {
@@ -243,6 +231,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
     @Override
     public void onBackPressed() {
+        stopService(mService);
         finish();
         //super.finish();
     }
@@ -497,6 +486,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     protected void onDestroy() {
 //        unregisterReceiver(mBluetoothDeviceFoundReceiver);
 //        wifiDirectService.unRegisterReceiver();
+        stopService(mService);
         super.onDestroy();
     }
 }

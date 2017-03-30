@@ -57,7 +57,9 @@ import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
@@ -118,6 +120,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
         apiCall = ApiClient.getClient().create(ApiCall.class);
+
+        WifiDirectService.getInstance(this).setModule(Modules.FILE_SHARING);
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);

@@ -12,6 +12,8 @@ import android.content.pm.PackageManager;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -34,6 +36,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +48,9 @@ import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
@@ -77,6 +82,8 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
     static BluetoothDevice device;
     private SearchView searchView;
 
+    private NetworkType networkType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,9 +95,13 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         ImageCache.setContext(mContext);
         apiCall = ApiClient.getClient().create(ApiCall.class);
 
+        WifiDirectService.getInstance(this).setModule(Modules.CHAT);
+
         if( getIntent().getStringExtra("networkType") != null &&
                 getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.BLUETOOTH.name()))
         {
+            networkType = NetworkType.BLUETOOTH;
+
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
             if (!bluetoothAdapter.isEnabled()) {
                 bluetoothAdapter.enable();
@@ -99,18 +110,29 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
             } else {
                 bluetoothEnabled();
             }
-            registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
             deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
         }
         else if( getIntent().getStringExtra("networkType") != null &&
                 getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.WIFI_DIRECT.name()))
         {
+            networkType = NetworkType.WIFI_DIRECT;
+
             listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
             wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
         }
 
         deviceLayout = (RecyclerView) findViewById(R.id.list_chat);
         setDeviceLayout(deviceLayout);
+
+        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
+            @Override
+            public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
+                listWifiP2PDevices.clear();
+                listWifiP2PDevices.addAll(devices);
+            }
+        });
+
+        registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     }
 
 
@@ -344,7 +366,12 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
 
         deviceLayout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         deviceLayout.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        deviceLayout.setAdapter(deviceAdapter);
+        if( networkType == NetworkType.WIFI_DIRECT ) {
+            deviceLayout.setAdapter(wifiDeviceAdapter);
+        }
+        else {
+            deviceLayout.setAdapter(deviceAdapter);
+        }
 
     }
 
