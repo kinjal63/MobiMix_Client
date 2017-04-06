@@ -8,9 +8,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -32,7 +36,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +54,15 @@ import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedBusinessThread;
+import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
+import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
 import io.connection.bluetooth.enums.Modules;
+import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
+import io.connection.bluetooth.utils.UtilsHandler;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -55,19 +71,30 @@ import retrofit2.Response;
  * Created by songline on 07/09/16.
  */
 public class BusinessCardListActivityUser extends AppCompatActivity implements SearchView.OnQueryTextListener {
-    private static final String TAG = "BusinessCardListActivity";
+    private static final String TAG = "BusinessCardListActivit";
     BluetoothAdapter bluetoothAdapter;
     private Toolbar toolbar;
     static ConnectedBusinessThread connectedThread;
 
     static DeviceAdapter deviceAdapter;
+    WifiP2PDeviceAdapter wifiDeviceAdapter;
+
+    private ArrayList<BluetoothDevice> listBluetoothDevices = new ArrayList<>();
+    private ArrayList<BluetoothDevice> listTempBluetoothDevices = new ArrayList<>();
+
     static RecyclerView deviceLayout;
     ApiCall apiCall;
-    private ArrayList<BluetoothDevice> bluetoothDevices = new ArrayList<>();
-    private ArrayList<BluetoothDevice> tempbluetoothDevices = new ArrayList<>();
+//    private ArrayList<BluetoothDevice> bluetoothDevices = new ArrayList<>();
+//    private ArrayList<BluetoothDevice> tempbluetoothDevices = new ArrayList<>();
     static Context mContext;
     static BluetoothDevice device;
+    static WifiP2pDevice P2Pdevice;
     private SearchView searchView;
+
+    private ArrayList<WifiP2pDevice> listWifiP2PDevices = new ArrayList<>();
+    private NetworkType networkType;
+
+    private boolean isBluetoothReceiverRegistered;
 
 
     @Override
@@ -81,26 +108,30 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         ImageCache.setContext(mContext);
         apiCall = ApiClient.getClient().create(ApiCall.class);
 
-        WifiDirectService.getInstance(this).setModule(Modules.BUSINESS_CARD);
-
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            bluetoothAdapter.enable();
-            Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBlueTooth, 1);
-        } else {
-            bluetoothEnabled();
+        if( getIntent().getStringExtra("networkType") != null &&
+                getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.BLUETOOTH.name()))
+        {
+            networkType = NetworkType.BLUETOOTH;
+            initBluetooth();
+        }
+        else if( getIntent().getStringExtra("networkType") != null &&
+                getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.WIFI_DIRECT.name()))
+        {
+            networkType = NetworkType.WIFI_DIRECT;
+            initWifiDirect();
         }
 
         deviceLayout = (RecyclerView) findViewById(R.id.list_business);
-        deviceAdapter = new DeviceAdapter(this, bluetoothDevices);
         setDeviceLayout(deviceLayout);
-
-
-        registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+//        if( networkType == NetworkType.WIFI_DIRECT ) {
+//            closeWifiP2PSocketsIfAny();
+//        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -168,6 +199,39 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                     bluetoothAdapter.startDiscovery();
                 }
         }
+    }
+
+    private void initBluetooth() {
+        networkType = NetworkType.BLUETOOTH;
+
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!bluetoothAdapter.isEnabled()) {
+            bluetoothAdapter.enable();
+            Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBlueTooth, 1);
+        } else {
+            bluetoothEnabled();
+        }
+        deviceAdapter = new DeviceAdapter(this, listBluetoothDevices);
+
+        registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        isBluetoothReceiverRegistered = true;
+    }
+
+    private void initWifiDirect() {
+        WifiDirectService.getInstance(this).setModule(Modules.BUSINESS_CARD);
+        networkType = NetworkType.WIFI_DIRECT;
+
+        listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
+        wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
+
+        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
+            @Override
+            public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
+                listWifiP2PDevices.clear();
+                listWifiP2PDevices.addAll(devices);
+            }
+        });
     }
 
     void bluetoothEnabled() {
@@ -337,8 +401,12 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
 
         deviceLayout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         //deviceLayout.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        deviceLayout.setAdapter(deviceAdapter);
-        //   deviceLayout.addItemDecoration(new DividerItemDecoration(mContext, LinearLayoutManager.HORIZONTAL));
+        if( networkType == NetworkType.WIFI_DIRECT ) {
+            deviceLayout.setAdapter(wifiDeviceAdapter);
+        }
+        else {
+            deviceLayout.setAdapter(deviceAdapter);
+        }
 
     }
 
@@ -366,7 +434,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                     if (device != null) {
                         String deviceMacAddress = device.getAddress().trim();
                         Log.d(TAG, "onReceive: " + deviceMacAddress);
-                        if (!tempbluetoothDevices.contains(deviceSet)) {
+                        if (!listTempBluetoothDevices.contains(deviceSet)) {
                             User userAvailable = new User();
                             userAvailable.setMacAddress(deviceSet.getAddress());
                             userAvailable.setEmail(deviceSet.getName());
@@ -376,7 +444,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                                 public void onResponse(Call<User> call, Response<User> response) {
                                     User user = response.body();
                                     if (user != null) {
-                                        tempbluetoothDevices.add(deviceSet);
+                                        listTempBluetoothDevices.add(deviceSet);
                                         deviceAdapter.add(user.getName(), "Not Connected", deviceSet);
                                     }
 
@@ -403,7 +471,10 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(bluetoothDeviceFoundReceiver);
+        if( isBluetoothReceiverRegistered ) {
+            unregisterReceiver(bluetoothDeviceFoundReceiver);
+        }
+        closeWifiP2PSocketsIfAny();
     }
 
 
@@ -412,7 +483,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         if (Utils.isConnected(mContext)) {
             for (final BluetoothDevice deviceSet : listdevice) {
 
-                if (!tempbluetoothDevices.contains(deviceSet)) {
+                if (!listTempBluetoothDevices.contains(deviceSet)) {
                     User userAvailable = new User();
                     userAvailable.setMacAddress(deviceSet.getAddress());
                     userAvailable.setEmail(deviceSet.getName());
@@ -424,7 +495,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
 
                             if (user != null) {
                                 Log.d(TAG, "onResponse: " + user.getName());
-                                tempbluetoothDevices.add(deviceSet);
+                                listTempBluetoothDevices.add(deviceSet);
                                 deviceAdapter.add(user.getName(), "Paired", deviceSet);
                             }
 
@@ -446,4 +517,65 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         }
 
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if( intent != null && intent.getParcelableExtra("device") != null) {
+            P2Pdevice = intent.getParcelableExtra("device");
+
+            if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(P2Pdevice.deviceName) ) {
+                Toast.makeText(this, "Connecting to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+
+                WifiDirectService.getInstance(this).setSocketConnectionListener(new SocketConnectionListener() {
+                    @Override
+                    public void socketConnected(final boolean isClient) {
+                        UtilsHandler.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(isClient) {
+                                    Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+                                }
+                                else {
+                                    Toast.makeText(BusinessCardListActivityUser.this, "Receiving business card", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                        sendBusinessCard();
+                    }
+                });
+                WifiDirectService.getInstance(this).connectWithWifiAddress(P2Pdevice.deviceAddress, new DeviceConnectionListener() {
+                    @Override
+                    public void onDeviceConnected(boolean isConnected) {
+
+                        if (isConnected) {
+                            Toast.makeText(BusinessCardListActivityUser.this, "Connected with " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + P2Pdevice.deviceName, Toast.LENGTH_SHORT);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private void sendBusinessCard() {
+        WifiDirectService.getInstance(this).getMessageHandler().sendBusinessCard();
+    }
+
+    private void closeWifiP2PSocketsIfAny() {
+        WifiDirectService.getInstance(this).getMessageHandler().sendMessage(new String("NowClosing").getBytes());
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                WifiDirectService.getInstance(BusinessCardListActivityUser.this).closeSocket();
+                removeWifiP2PConnection();
+            }
+        }, 500);
+    }
+
+    private void removeWifiP2PConnection() {
+        WifiDirectService.getInstance(this).removeGroup();
+    }
+
 }

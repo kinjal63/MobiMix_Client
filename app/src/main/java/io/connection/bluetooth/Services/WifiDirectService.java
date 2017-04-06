@@ -8,6 +8,7 @@ import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Handler;
@@ -25,6 +26,7 @@ import java.util.List;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
+import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.WiFiDirectBroadcastReceiver;
 import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
@@ -52,6 +54,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private MessageHandler messageHandler;
 
     private NearByDeviceFound nearByDeviceCallback;
+    private SocketConnectionListener socketConnectionListener;
 
     private String TAG = "WifiDirectService";
 
@@ -249,8 +252,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                     socketHandler.start();
 
                 } catch (IOException e) {
-                    Log.e(TAG, "Failed to cre" +
-                            "ate a server thread - " + e);
+                    Log.e(TAG, "Failed to create a server thread - " + e);
                     return;
                 }
             } else {
@@ -258,6 +260,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 socketHandler = new WifiP2PClientHandler(messageHandler, p2pInfo.groupOwnerAddress);
                 socketHandler.start();
             }
+            messageHandler.setSocketConnectionListener(socketConnectionListener);
         }
     }
 
@@ -313,6 +316,10 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         this.nearByDeviceCallback = nearByDeviceCallback;
     }
 
+    public void setSocketConnectionListener(SocketConnectionListener socketConnectionListener) {
+        this.socketConnectionListener = socketConnectionListener;
+    }
+
     public void setWifiDirectDeviceName(String wifiDirectDeviceName) {
         this.wifiDirectDeviceName = wifiDirectDeviceName;
     }
@@ -346,17 +353,29 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void removeGroup() {
-        manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "removeGroup success");
-            }
+        if (manager != null && channel != null) {
+            manager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
+                @Override
+                public void onGroupInfoAvailable(WifiP2pGroup group) {
+                    if (group != null && manager != null && channel != null
+                            && group.isGroupOwner()) {
+                        manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
 
-            @Override
-            public void onFailure(int reason) {
-                Log.d(TAG, "removeGroup fail: " + reason);
-            }
-        });
+                            @Override
+                            public void onSuccess() {
+                                Log.d(TAG, "removeGroup onSuccess -");
+                                initiateDiscovery();
+                            }
+
+                            @Override
+                            public void onFailure(int reason) {
+                                Log.d(TAG, "removeGroup onFailure -" + reason);
+                            }
+                        });
+                    }
+                }
+            });
+        }
     }
 
     public void closeSocket() {

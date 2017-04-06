@@ -15,9 +15,11 @@ import java.util.List;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.activity.BusinessCardListActivityUser;
 import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 
 /**
@@ -51,12 +53,19 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
             device = (WifiP2pDevice) v.getTag();
             ImageCache.setContext(context);
 
-//            connectedThread = new ConnectedThread(device);
-//            connectedThread.start();
+            Intent intent = new Intent();
 
-            Intent intent = new Intent(mContext, WifiP2PChatActivity.class);
-            intent.putExtra("device", device);
-            intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
+            if(WifiDirectService.getInstance(mContext).getModule() == Modules.BUSINESS_CARD) {
+                intent.setClass(mContext, BusinessCardListActivityUser.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                intent.putExtra("device", device);
+                intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
+            }
+            else if(WifiDirectService.getInstance(mContext).getModule() == Modules.CHAT) {
+                intent.setClass(mContext, WifiP2PChatActivity.class);
+                intent.putExtra("device", device);
+                intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
+            }
             context.startActivity(intent);
         }
     }

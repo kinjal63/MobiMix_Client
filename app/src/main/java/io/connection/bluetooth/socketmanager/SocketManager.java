@@ -89,7 +89,11 @@ public class SocketManager implements Runnable {
     public void close() {
         if(socket!=null && !socket.isClosed()) {
             try {
+                is.close();
+                os.close();
+
                 socket.close();
+                disable = true;
             } catch (IOException e) {
                 Log.e(TAG, "IOException during close Socket", e);
             }
@@ -100,9 +104,10 @@ public class SocketManager implements Runnable {
         try {
             if (os != null) {
                 System.out.println("Writing message" + new String(buffer));
-                String messageToPass = String.valueOf(WifiDirectService.getInstance
-                        (MobileMeasurementApplication.getInstance().getContext()).getModule().ordinal()) + "_" + new String(buffer);
-                os.write(messageToPass.getBytes());
+//                String messageToPass = String.valueOf(WifiDirectService.getInstance
+//                        (MobileMeasurementApplication.getInstance().getContext()).getModule().ordinal()) + "_" + new String(buffer);
+                os.write(buffer);
+                os.flush();
             }
         }
         catch (IOException e) {

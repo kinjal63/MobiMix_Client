@@ -52,6 +52,9 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     Log.d(TAG, "Connected to p2p network. Requesting network details");
                     mManager.requestConnectionInfo(mChannel, (WifiP2pManager.ConnectionInfoListener) WifiDirectService.getInstance(context));
                 }
+                else {
+                    WifiDirectService.getInstance(context).initiateDiscovery();
+                }
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 //            if (mManager != null) {
 //                mManager.requestPeers(mChannel, WifiDirectService.getInstance(context).peerListListener);

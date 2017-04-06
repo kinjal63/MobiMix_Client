@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.os.ResultReceiver;
 import android.util.Log;
 
@@ -23,7 +24,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.utils.Constants;
 
 /**
@@ -35,6 +39,7 @@ public class WifiP2PServerHandler extends Thread {
     private InetAddress mAddress;
     private MessageHandler mHandler;
     private InetAddress ipAddress;
+    private boolean isSocketConnected = false;
 
     private String TAG = "WifiP2PServerHandler";
 
@@ -58,6 +63,8 @@ public class WifiP2PServerHandler extends Thread {
                 // there is a new connection
                 if(mSocket!=null && !mSocket.isClosed()) {
                     Socket clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
+
+                    isSocketConnected = true;
                     SocketManager socketManager = new SocketManager(clientSocket, mHandler);
                     pool.execute(socketManager);
                     ipAddress = clientSocket.getInetAddress();
@@ -97,6 +104,9 @@ public class WifiP2PServerHandler extends Thread {
         if(mSocket!=null && !mSocket.isClosed()) {
             try {
                 mSocket.close();
+                WifiDirectService.getInstance(
+                        MobileMeasurementApplication.getInstance().getContext()).removeGroup();
+                isSocketConnected = false;
             } catch (IOException e) {
                 Log.e(TAG, "IOException during close Socket", e);
             }
@@ -105,7 +115,7 @@ public class WifiP2PServerHandler extends Thread {
     }
 
     public boolean checkSocketConnection(String hostName) {
-        if(mSocket != null && mSocket.isBound()) {
+        if(isSocketConnected) {
             return true;
         }
         return false;

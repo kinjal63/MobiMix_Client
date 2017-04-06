@@ -84,6 +84,8 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
 
     private NetworkType networkType;
 
+    private boolean isBluetoothReceiverRegistered;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,50 +97,29 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         ImageCache.setContext(mContext);
         apiCall = ApiClient.getClient().create(ApiCall.class);
 
-        WifiDirectService.getInstance(this).setModule(Modules.CHAT);
-
         if( getIntent().getStringExtra("networkType") != null &&
                 getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.BLUETOOTH.name()))
         {
             networkType = NetworkType.BLUETOOTH;
-
-            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            if (!bluetoothAdapter.isEnabled()) {
-                bluetoothAdapter.enable();
-                Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBlueTooth, 1);
-            } else {
-                bluetoothEnabled();
-            }
-            deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+            initBluetooth();
         }
         else if( getIntent().getStringExtra("networkType") != null &&
                 getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.WIFI_DIRECT.name()))
         {
             networkType = NetworkType.WIFI_DIRECT;
-
-            listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
-            wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
+            initWifiDirect();
         }
 
         deviceLayout = (RecyclerView) findViewById(R.id.list_chat);
         setDeviceLayout(deviceLayout);
-
-        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
-            @Override
-            public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
-                listWifiP2PDevices.clear();
-                listWifiP2PDevices.addAll(devices);
-            }
-        });
-
-        registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        closeWifiP2PSocketsIfAny();
+        if( networkType == NetworkType.WIFI_DIRECT ) {
+            closeWifiP2PSocketsIfAny();
+        }
     }
 
 
@@ -198,6 +179,39 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
                     bluetoothAdapter.startDiscovery();
                 }
         }
+    }
+
+    private void initBluetooth() {
+        networkType = NetworkType.BLUETOOTH;
+
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (!bluetoothAdapter.isEnabled()) {
+            bluetoothAdapter.enable();
+            Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBlueTooth, 1);
+        } else {
+            bluetoothEnabled();
+        }
+        deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+
+        registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        isBluetoothReceiverRegistered = true;
+    }
+
+    private void initWifiDirect() {
+        WifiDirectService.getInstance(this).setModule(Modules.CHAT);
+        networkType = NetworkType.WIFI_DIRECT;
+
+        listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
+        wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
+
+        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
+            @Override
+            public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
+                listWifiP2PDevices.clear();
+                listWifiP2PDevices.addAll(devices);
+            }
+        });
     }
 
     void bluetoothEnabled() {
@@ -443,7 +457,9 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(bluetoothDeviceFoundReceiver);
+        if( isBluetoothReceiverRegistered ) {
+            unregisterReceiver(bluetoothDeviceFoundReceiver);
+        }
     }
 
 

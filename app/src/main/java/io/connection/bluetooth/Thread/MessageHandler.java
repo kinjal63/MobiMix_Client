@@ -2,12 +2,14 @@ package io.connection.bluetooth.Thread;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
 import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
@@ -26,6 +28,7 @@ public class MessageHandler implements Handler.Callback {
 
     private Context context;
     private WifiDirectService wifiP2PService;
+    private SocketConnectionListener mSocketConnectionListener;
 
     private String TAG = "MessageHandler";
 
@@ -36,6 +39,10 @@ public class MessageHandler implements Handler.Callback {
 
     public Handler getHandler() {
         return this.handler;
+    }
+
+    public void setSocketConnectionListener(SocketConnectionListener socketConnectionListener) {
+        this.mSocketConnectionListener = socketConnectionListener;
     }
 
     @Override
@@ -49,6 +56,10 @@ public class MessageHandler implements Handler.Callback {
 
                 socketManager = (SocketManager) obj;
                 socketManager.write(this.wifiP2PService.getModule().name().getBytes());
+
+                if( this.mSocketConnectionListener != null ) {
+                    this.mSocketConnectionListener.socketConnected(false);
+                }
 
                 break;
             case Constants.MESSAGE_READ:
@@ -65,15 +76,11 @@ public class MessageHandler implements Handler.Callback {
     }
 
     private void handleObject(String message) {
-        System.out.println("Actual message received");
         String str[] = message.split("_");
+        System.out.println("Actual message received::" + str[0]);
         if( str[0].equalsIgnoreCase("1") ) {
             String readMessage = new String(str[1]);
 
-            if(readMessage.startsWith("closeConnection")){
-                socketManager.close();
-                return;
-            }
             Log.d(TAG, "run:  Accept Thread Receive Message"+readMessage);
             ChatDataConversation.putChatConversation(socketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(socketManager.getRemoteDeviceAddress()) + ":  " + readMessage);
             Log.d(TAG, "run: Accept thread Receive Message Count -> "+ChatDataConversation.getChatConversation(socketManager.getRemoteDeviceAddress()).size());
@@ -97,13 +104,36 @@ public class MessageHandler implements Handler.Callback {
 
         }
         else if( str[0].equalsIgnoreCase("2") ) {
-
+            String businessCardInfo = new String(str[1]);
+            System.out.println("Business card received :: " + businessCardInfo);
+        }
+        else if(str[0].startsWith("NowClosing")) {
+            socketManager.close();
+            socketManager = null;
         }
     }
 
     public void sendMessage(byte[] message) {
         if(socketManager != null) {
             socketManager.write(message);
+        }
+    }
+
+    public void sendBusinessCard() {
+        if(socketManager != null) {
+            SharedPreferences prefs = context.getSharedPreferences("businesscard", Context.MODE_PRIVATE);
+
+            String name = prefs.getString("name", "");
+            String email = prefs.getString("email", "");
+            String phone = prefs.getString("phone", "");
+            String picture = prefs.getString("picture", "");
+            String deviceId = prefs.getString("device_id", "");
+
+            String businessCardInfo = Modules.BUSINESS_CARD.ordinal() + "_" + name + "," + email + "" + phone
+                    + "," + picture + "," + deviceId;
+
+            System.out.println("Business card info->" + businessCardInfo);
+            socketManager.write(businessCardInfo.getBytes());
         }
     }
 }

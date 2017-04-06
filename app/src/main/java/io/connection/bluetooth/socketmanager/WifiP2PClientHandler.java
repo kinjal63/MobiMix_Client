@@ -8,7 +8,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.utils.Constants;
 
 /**
@@ -21,6 +24,8 @@ public class WifiP2PClientHandler extends Thread {
     private InetAddress mAddress;
     private MessageHandler mHandler;
     private SocketManager socketManager;
+    private SocketConnectionListener mSocketConnectionListener;
+    private boolean isSocketConnected = false;
     private String TAG = "WifiP2PClientHandler";
 
     public WifiP2PClientHandler(MessageHandler mHandler, InetAddress mAddress) {
@@ -37,6 +42,8 @@ public class WifiP2PClientHandler extends Thread {
 
             System.out.println("Hostname by client side :" + mSocket.getInetAddress().getHostName()
                     + ",Host Address by client side :" + mSocket.getInetAddress().getHostAddress());
+
+            isSocketConnected = true;
 
             socketManager = new SocketManager(mSocket, mHandler);
             socketManager.setRemoteDeviceHostAddress(mAddress.getHostName());
@@ -58,6 +65,8 @@ public class WifiP2PClientHandler extends Thread {
         if(mSocket!=null && !mSocket.isClosed()) {
             try {
                 mSocket.close();
+                isSocketConnected = false;
+                socketManager = null;
             } catch (IOException e) {
                 Log.e(TAG,"IOException during close Socket" , e);
             }
@@ -71,7 +80,7 @@ public class WifiP2PClientHandler extends Thread {
     }
 
     public boolean checkSocketConnection(String hostName) {
-        if(mSocket != null && mSocket.isConnected()) {
+        if(isSocketConnected) {
             return true;
         }
         return false;
