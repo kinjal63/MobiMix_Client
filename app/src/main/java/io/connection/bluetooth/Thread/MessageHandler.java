@@ -40,6 +40,7 @@ public class MessageHandler implements Handler.Callback {
 
     @Override
     public boolean handleMessage(Message msg) {
+        System.out.println("Message received in handler, message object : " + msg.what);
         switch (msg.what) {
             case Constants.FIRSTMESSAGEXCHANGE:
                 final Object obj = msg.obj;
@@ -64,12 +65,14 @@ public class MessageHandler implements Handler.Callback {
     }
 
     private void handleObject(String message) {
+        System.out.println("Actual message received");
         String str[] = message.split("_");
-        if( str[0].equalsIgnoreCase("0") ) {
+        if( str[0].equalsIgnoreCase("1") ) {
             String readMessage = new String(str[1]);
 
-            if(readMessage.startsWith("NOWweArECloSing")){
+            if(readMessage.startsWith("closeConnection")){
                 socketManager.close();
+                return;
             }
             Log.d(TAG, "run:  Accept Thread Receive Message"+readMessage);
             ChatDataConversation.putChatConversation(socketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(socketManager.getRemoteDeviceAddress()) + ":  " + readMessage);
@@ -90,7 +93,7 @@ public class MessageHandler implements Handler.Callback {
                 }
             });
         }
-        else if( str[0].equalsIgnoreCase("1") ) {
+        else if( str[0].equalsIgnoreCase("0") ) {
 
         }
         else if( str[0].equalsIgnoreCase("2") ) {

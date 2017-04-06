@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.utils.Constants;
 
 /**
@@ -18,11 +19,11 @@ public class WifiP2PClientHandler extends Thread {
 
     private Socket mSocket;
     private InetAddress mAddress;
-    private Handler mHandler;
+    private MessageHandler mHandler;
     private SocketManager socketManager;
     private String TAG = "WifiP2PClientHandler";
 
-    public WifiP2PClientHandler(Handler mHandler, InetAddress mAddress) {
+    public WifiP2PClientHandler(MessageHandler mHandler, InetAddress mAddress) {
         this.mHandler = mHandler;
         this.mAddress = mAddress;
     }
@@ -33,6 +34,9 @@ public class WifiP2PClientHandler extends Thread {
         try {
             mSocket.bind(null);
             mSocket.connect(new InetSocketAddress(mAddress.getHostAddress(), Constants.GROUP_OWNER_PORT));
+
+            System.out.println("Hostname by client side :" + mSocket.getInetAddress().getHostName()
+                    + ",Host Address by client side :" + mSocket.getInetAddress().getHostAddress());
 
             socketManager = new SocketManager(mSocket, mHandler);
             socketManager.setRemoteDeviceHostAddress(mAddress.getHostName());

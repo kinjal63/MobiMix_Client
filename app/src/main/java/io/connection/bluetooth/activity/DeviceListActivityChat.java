@@ -135,6 +135,12 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        closeWifiP2PSocketsIfAny();
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -481,6 +487,21 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
             Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
         }
 
+    }
+
+    private void closeWifiP2PSocketsIfAny() {
+        WifiDirectService.getInstance(this).getMessageHandler().sendMessage(new String("NowClosing").getBytes());
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                WifiDirectService.getInstance(DeviceListActivityChat.this).closeSocket();
+                removeWifiP2PConnection();
+            }
+        }, 500);
+    }
+
+    private void removeWifiP2PConnection() {
+        WifiDirectService.getInstance(this).removeGroup();
     }
 }
 

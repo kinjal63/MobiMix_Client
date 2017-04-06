@@ -23,6 +23,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.utils.Constants;
 
 /**
@@ -32,12 +33,12 @@ import io.connection.bluetooth.utils.Constants;
 public class WifiP2PServerHandler extends Thread {
     private ServerSocket mSocket;
     private InetAddress mAddress;
-    private Handler mHandler;
+    private MessageHandler mHandler;
     private InetAddress ipAddress;
 
     private String TAG = "WifiP2PServerHandler";
 
-    public WifiP2PServerHandler(Handler mHandler) throws IOException {
+    public WifiP2PServerHandler(MessageHandler mHandler) throws IOException {
         try {
             mSocket = new ServerSocket(Constants.GROUP_OWNER_PORT);
             this.mHandler = mHandler;
@@ -62,6 +63,8 @@ public class WifiP2PServerHandler extends Thread {
                     ipAddress = clientSocket.getInetAddress();
                     socketManager.setRemoteDeviceHostAddress(ipAddress.getHostName());
                     Log.d(TAG, "Launching the I/O handler");
+                    System.out.println("Hostname by server side :" + clientSocket.getInetAddress().getHostName()
+                    + ",Host Address by server side :" + clientSocket.getInetAddress().getHostAddress());
                 }
             } catch (IOException e) {
                 //if there is an exception, after closing socket and pool, the execution stops with a "break".

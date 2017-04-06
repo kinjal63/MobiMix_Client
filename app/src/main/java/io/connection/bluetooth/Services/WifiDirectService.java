@@ -237,15 +237,15 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
          * GroupOwnerSocketHandler}
          */
         if(p2pInfo.groupFormed) {
-            if( socketHandler != null ) {
-                closeConnetion();
-            }
+//            if( socketHandler != null ) {
+//                closeConnetion();
+//            }
 
             if (p2pInfo.isGroupOwner) {
                 Log.d(TAG, "Connected as group owner");
                 try {
                     Log.d(TAG, "socketHandler!=null? = " + (socketHandler != null));
-                    socketHandler = new WifiP2PServerHandler(messageHandler.getHandler());
+                    socketHandler = new WifiP2PServerHandler(messageHandler);
                     socketHandler.start();
 
                 } catch (IOException e) {
@@ -255,7 +255,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 }
             } else {
                 Log.d(TAG, "Connected as peer");
-                socketHandler = new WifiP2PClientHandler(messageHandler.getHandler(), p2pInfo.groupOwnerAddress);
+                socketHandler = new WifiP2PClientHandler(messageHandler, p2pInfo.groupOwnerAddress);
                 socketHandler.start();
             }
         }
@@ -345,12 +345,27 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         mContext.unregisterReceiver(mReceiver);
     }
 
+    public void removeGroup() {
+        manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "removeGroup success");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Log.d(TAG, "removeGroup fail: " + reason);
+            }
+        });
+    }
+
     public void closeSocket() {
-        if(socketHandler instanceof WifiP2PClientHandler) {
-            ((WifiP2PClientHandler)socketHandler).closeSocketAndKillThisThread();
-        }
-        else if(socketHandler instanceof WifiP2PServerHandler) {
-            ((WifiP2PServerHandler)socketHandler).closeSocketAndKillThisThread();
+        if(socketHandler != null) {
+            if (socketHandler instanceof WifiP2PClientHandler) {
+                ((WifiP2PClientHandler) socketHandler).closeSocketAndKillThisThread();
+            } else if (socketHandler instanceof WifiP2PServerHandler) {
+                ((WifiP2PServerHandler) socketHandler).closeSocketAndKillThisThread();
+            }
         }
     }
 }

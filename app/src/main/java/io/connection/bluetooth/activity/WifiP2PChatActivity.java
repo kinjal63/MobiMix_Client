@@ -89,12 +89,8 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         handler = WifiDirectService.getInstance(this).getMessageHandler();
 
         setupChat();
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.deviceName) ) {
+        if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.deviceName) ) {
             WifiDirectService.getInstance(this).connectWithWifiAddress(device.deviceAddress, new DeviceConnectionListener() {
                 @Override
                 public void onDeviceConnected(boolean isConnected) {
@@ -107,10 +103,12 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                     }
                 }
             });
-//        }
-//        else {
-//            connectionStatus.setText("Connected");
-//        }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -218,6 +216,11 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         }
     }
 
+    private void closeSocket(String message) {
+        byte[] send = message.getBytes();
+        handler.sendMessage(send);
+    }
+
 
     public static void disconnectedChat(final String deviceAddress) {
         UtilsHandler.runOnUiThread(new Runnable() {
@@ -241,14 +244,12 @@ public class WifiP2PChatActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        WifiDirectService.getInstance(this).closeSocket();
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         Log.d(TAG, "onBackPressed: List View ");
-        WifiDirectService.getInstance(this).closeSocket();
     }
 
     public static void readMessagae(final String remoteDeviceName) {

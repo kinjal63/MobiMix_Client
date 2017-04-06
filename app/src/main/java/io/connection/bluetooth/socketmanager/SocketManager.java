@@ -10,6 +10,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.Constants;
@@ -19,7 +22,7 @@ import io.connection.bluetooth.utils.Constants;
  */
 public class SocketManager implements Runnable {
     private Socket socket;
-    private Handler handler;
+    private MessageHandler handler;
     private InputStream is;
     private OutputStream os;
     private boolean disable = false;
@@ -27,7 +30,7 @@ public class SocketManager implements Runnable {
 
     private String TAG = "SocketManager";
 
-    SocketManager(Socket socket, Handler handler) {
+    SocketManager(Socket socket, MessageHandler handler) {
         this.socket = socket;
         this.handler = handler;
     }
@@ -41,7 +44,9 @@ public class SocketManager implements Runnable {
             byte [] buffer = new byte[1024];
             int bytes;
 
-            handler.obtainMessage(Constants.FIRSTMESSAGEXCHANGE, this).sendToTarget();
+            handler.getHandler().obtainMessage(Constants.FIRSTMESSAGEXCHANGE, this).sendToTarget();
+
+            System.out.println("Sending first message");
 
             while(!disable) {
                 try {
@@ -51,7 +56,8 @@ public class SocketManager implements Runnable {
                             break;
                         }
 
-                        handler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer);
+                        System.out.println("Getting message" + new String(buffer));
+                        handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
                     }
                 }
                 catch (IOException e) {
@@ -93,7 +99,10 @@ public class SocketManager implements Runnable {
     public void write(byte[] buffer) {
         try {
             if (os != null) {
-                os.write(buffer);
+                System.out.println("Writing message" + new String(buffer));
+                String messageToPass = String.valueOf(WifiDirectService.getInstance
+                        (MobileMeasurementApplication.getInstance().getContext()).getModule().ordinal()) + "_" + new String(buffer);
+                os.write(messageToPass.getBytes());
             }
         }
         catch (IOException e) {
