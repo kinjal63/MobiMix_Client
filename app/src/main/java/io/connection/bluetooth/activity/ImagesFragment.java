@@ -262,7 +262,6 @@ public class ImagesFragment extends Fragment {
                         ++count;
                         countText.setText(count + "");
                         mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
                     }
                     mBottomSheetBehaviorforFooter.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 }

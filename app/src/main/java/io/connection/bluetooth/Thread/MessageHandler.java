@@ -12,6 +12,7 @@ import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.DeviceChatActivity;
+import io.connection.bluetooth.activity.Home_Master;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.SocketManager;
@@ -55,8 +56,11 @@ public class MessageHandler implements Handler.Callback {
                 Log.d(TAG, "handleMessage, " + Constants.FIRSTMESSAGEXCHANGE + " case");
 
                 socketManager = (SocketManager) obj;
-                socketManager.write(this.wifiP2PService.getModule().name().getBytes());
+                String moduleName = this.wifiP2PService.getModule() == Modules.FILE_SHARING?
+                        Constants.FILESHARING_MODULE : (this.wifiP2PService.getModule() == Modules.BUSINESS_CARD ?
+                        Constants.BUSINESSCARD_MODULE : (this.wifiP2PService.getModule() == Modules.CHAT ? Constants.CHAT_MODULE : "None"));
 
+                socketManager.writeMessage(moduleName.getBytes());
                 if( this.mSocketConnectionListener != null ) {
                     this.mSocketConnectionListener.socketConnected(false);
                 }
@@ -76,64 +80,71 @@ public class MessageHandler implements Handler.Callback {
     }
 
     private void handleObject(String message) {
-        String str[] = message.split("_");
-        System.out.println("Actual message received::" + str[0]);
-        if( str[0].equalsIgnoreCase("1") ) {
-            String readMessage = new String(str[1]);
-
-            Log.d(TAG, "run:  Accept Thread Receive Message"+readMessage);
-            ChatDataConversation.putChatConversation(socketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(socketManager.getRemoteDeviceAddress()) + ":  " + readMessage);
-            Log.d(TAG, "run: Accept thread Receive Message Count -> "+ChatDataConversation.getChatConversation(socketManager.getRemoteDeviceAddress()).size());
-            WifiP2PChatActivity.readMessagae(socketManager.getRemoteDeviceAddress());
-
-            UtilsHandler.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    WifiP2pDevice device = new WifiP2pDevice();
-                    device.deviceName = socketManager.getRemoteDeviceAddress();
-
-                    Intent intent = new Intent(context, WifiP2PChatActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    intent.putExtra("device", device);
-                    context.startActivity(intent);
-
-                }
-            });
-        }
-        else if( str[0].equalsIgnoreCase("0") ) {
+        System.out.println("Actual message received::" + message);
+        if(message.equalsIgnoreCase(Constants.NO_MODULE)) {
 
         }
-        else if( str[0].equalsIgnoreCase("2") ) {
-            String businessCardInfo = new String(str[1]);
-            System.out.println("Business card received :: " + businessCardInfo);
+        else if(message.equalsIgnoreCase(Constants.FILESHARING_MODULE)) {
+            wifiP2PService.setModule(Modules.FILE_SHARING);
+            socketManager.readFiles();
         }
-        else if(str[0].startsWith("NowClosing")) {
+        else if(message.equalsIgnoreCase(Constants.CHAT_MODULE)) {
+            wifiP2PService.setModule(Modules.CHAT);
+            socketManager.readChatData();
+        }
+        else if(message.equalsIgnoreCase(Constants.BUSINESSCARD_MODULE)) {
+            wifiP2PService.setModule(Modules.BUSINESS_CARD);
+            socketManager.readBusinessCard();
+        }
+        else if(message.startsWith("NowClosing")) {
             socketManager.close();
             socketManager = null;
+            wifiP2PService.setModule(Modules.NONE);
+            Intent intent = new Intent(context, Home_Master.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            context.startActivity(intent);
+        }
+        else {
+            int module = wifiP2PService.getModule().ordinal();
+            switch (module) {
+                case 0:
+                    ChatDataConversation.putChatConversation(socketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(socketManager.getRemoteDeviceAddress()) + ":  " + message);
+                    Log.d(TAG, "run: Accept thread Receive Message Count -> "+ChatDataConversation.getChatConversation(socketManager.getRemoteDeviceAddress()).size());
+                    WifiP2PChatActivity.readMessagae(socketManager.getRemoteDeviceAddress());
+
+                    UtilsHandler.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            WifiP2pDevice device = new WifiP2pDevice();
+                            device.deviceName = socketManager.getRemoteDeviceAddress();
+
+                            Intent intent = new Intent(context, WifiP2PChatActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            intent.putExtra("device", device);
+                            context.startActivity(intent);
+
+                        }
+                    });
+                    break;
+                case 1:
+                    String businessCardInfo = message;
+                    System.out.println("Business card received :: " + businessCardInfo);
+                    break;
+                case 2:
+                    break;
+            }
         }
     }
 
     public void sendMessage(byte[] message) {
         if(socketManager != null) {
-            socketManager.write(message);
+            socketManager.writeMessage(message);
         }
     }
 
     public void sendBusinessCard() {
         if(socketManager != null) {
-            SharedPreferences prefs = context.getSharedPreferences("businesscard", Context.MODE_PRIVATE);
-
-            String name = prefs.getString("name", "");
-            String email = prefs.getString("email", "");
-            String phone = prefs.getString("phone", "");
-            String picture = prefs.getString("picture", "");
-            String deviceId = prefs.getString("device_id", "");
-
-            String businessCardInfo = Modules.BUSINESS_CARD.ordinal() + "_" + name + "," + email + "" + phone
-                    + "," + picture + "," + deviceId;
-
-            System.out.println("Business card info->" + businessCardInfo);
-            socketManager.write(businessCardInfo.getBytes());
+            socketManager.writeBusinessCard();
         }
     }
 }

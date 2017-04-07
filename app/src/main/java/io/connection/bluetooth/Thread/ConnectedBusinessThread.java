@@ -114,7 +114,6 @@ public class ConnectedBusinessThread extends Thread {
         byte[] buffer = new byte[8 * bufferSize];
         int bytes;
 
-
         try {
 
             DataOutputStream dos = new DataOutputStream(mmSocket.getOutputStream());

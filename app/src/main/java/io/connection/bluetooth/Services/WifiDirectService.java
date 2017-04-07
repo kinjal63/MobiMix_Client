@@ -42,7 +42,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private static String obj = "wifiDirectService";
     private static Context mContext = null;
     private String wifiDirectDeviceName = "";
-    private Modules module = Modules.FILE_SHARING;
+    private Modules module = Modules.NONE;
 
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;

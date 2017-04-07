@@ -556,6 +556,9 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                     }
                 });
             }
+            else {
+                sendBusinessCard();
+            }
         }
     }
 

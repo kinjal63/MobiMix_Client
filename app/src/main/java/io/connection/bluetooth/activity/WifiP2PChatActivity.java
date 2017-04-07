@@ -207,8 +207,8 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             mConversationArrayAdapter.add("Me:  " + message);
             ChatDataConversation.putChatConversation(device.deviceName, "Me:  " + message);
             chatAdapter.notifyDataSetChanged();
-            byte[] send = message.getBytes();
-            handler.sendMessage(send);
+            byte[] messageToSend = message.getBytes();
+            handler.sendMessage(messageToSend);
 
             // Reset out string buffer to zero and clear the edit text field
             mOutStringBuffer.setLength(0);
@@ -217,8 +217,8 @@ public class WifiP2PChatActivity extends AppCompatActivity {
     }
 
     private void closeSocket(String message) {
-        byte[] send = message.getBytes();
-        handler.sendMessage(send);
+        byte[] messageToSend = message.getBytes();
+        handler.sendMessage(messageToSend);
     }
 
 
