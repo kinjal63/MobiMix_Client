@@ -207,7 +207,9 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             mConversationArrayAdapter.add("Me:  " + message);
             ChatDataConversation.putChatConversation(device.deviceName, "Me:  " + message);
             chatAdapter.notifyDataSetChanged();
-            byte[] send = message.getBytes();
+
+            String msg = "1" + "_" + message;
+            byte[] send = msg.getBytes();
             handler.sendMessage(send);
 
             // Reset out string buffer to zero and clear the edit text field

@@ -7,6 +7,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
@@ -76,7 +77,7 @@ public class MessageHandler implements Handler.Callback {
     }
 
     private void handleObject(String message) {
-        String str[] = message.split("_");
+        final String str[] = message.split("_");
         System.out.println("Actual message received::" + str[0]);
         if( str[0].equalsIgnoreCase("1") ) {
             String readMessage = new String(str[1]);
@@ -89,13 +90,15 @@ public class MessageHandler implements Handler.Callback {
             UtilsHandler.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    WifiP2pDevice device = new WifiP2pDevice();
-                    device.deviceName = socketManager.getRemoteDeviceAddress();
+                    Toast.makeText(context, str[1], Toast.LENGTH_LONG).show();
 
-                    Intent intent = new Intent(context, WifiP2PChatActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    intent.putExtra("device", device);
-                    context.startActivity(intent);
+//                    WifiP2pDevice device = new WifiP2pDevice();
+//                    device.deviceName = socketManager.getRemoteDeviceAddress();
+//
+//                    Intent intent = new Intent(context, WifiP2PChatActivity.class);
+//                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//                    intent.putExtra("device", device);
+//                    context.startActivity(intent);
 
                 }
             });
@@ -104,8 +107,15 @@ public class MessageHandler implements Handler.Callback {
 
         }
         else if( str[0].equalsIgnoreCase("2") ) {
-            String businessCardInfo = new String(str[1]);
+            final String businessCardInfo = new String(str[1]);
             System.out.println("Business card received :: " + businessCardInfo);
+
+            UtilsHandler.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(context, businessCardInfo, Toast.LENGTH_LONG).show();
+                }
+            });
         }
         else if(str[0].startsWith("NowClosing")) {
             socketManager.close();
@@ -129,8 +139,8 @@ public class MessageHandler implements Handler.Callback {
             String picture = prefs.getString("picture", "");
             String deviceId = prefs.getString("device_id", "");
 
-            String businessCardInfo = Modules.BUSINESS_CARD.ordinal() + "_" + name + "," + email + "" + phone
-                    + "," + picture + "," + deviceId;
+            String businessCardInfo = Modules.BUSINESS_CARD.ordinal() + "_" + name + ",\n" + email + ",\n" + phone
+                    + ",\n" + picture + ",\n" + deviceId;
 
             System.out.println("Business card info->" + businessCardInfo);
             socketManager.write(businessCardInfo.getBytes());

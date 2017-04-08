@@ -533,12 +533,12 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                         UtilsHandler.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if(isClient) {
-                                    Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
-                                }
-                                else {
-                                    Toast.makeText(BusinessCardListActivityUser.this, "Receiving business card", Toast.LENGTH_SHORT).show();
-                                }
+//                                if(isClient) {
+//                                    Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+//                                }
+//                                else {
+//                                    Toast.makeText(BusinessCardListActivityUser.this, "Receiving business card", Toast.LENGTH_SHORT).show();
+//                                }
                             }
                         });
                         sendBusinessCard();
@@ -555,6 +555,9 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
                         }
                     }
                 });
+            }
+            else {
+                sendBusinessCard();
             }
         }
     }
