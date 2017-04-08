@@ -6,5 +6,6 @@ package io.connection.bluetooth.enums;
 public enum Modules {
     FILE_SHARING,
     CHAT,
-    BUSINESS_CARD;
+    BUSINESS_CARD,
+    NONE;
 }
