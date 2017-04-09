@@ -28,10 +28,15 @@ import io.connection.bluetooth.enums.NetworkType;
 public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdapter.ViewHolder>  {
     private Context mContext;
     private List<WifiP2pDevice> devices;
+    private View.OnClickListener clickListener;
 
     public WifiP2PDeviceAdapter(Context mContext, List<WifiP2pDevice> devices) {
         this.mContext = mContext;
         this.devices = devices;
+    }
+
+    public void setDeviceClickListener(View.OnClickListener clickListener) {
+        this.clickListener = clickListener;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -60,13 +65,17 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 intent.putExtra("device", device);
                 intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
+                context.startActivity(intent);
             }
             else if(WifiDirectService.getInstance(mContext).getModule() == Modules.CHAT) {
                 intent.setClass(mContext, WifiP2PChatActivity.class);
                 intent.putExtra("device", device);
                 intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
+                context.startActivity(intent);
             }
-            context.startActivity(intent);
+            else if(WifiDirectService.getInstance(mContext).getModule() == Modules.FILE_SHARING) {
+                clickListener.onClick(v);
+            }
         }
     }
 

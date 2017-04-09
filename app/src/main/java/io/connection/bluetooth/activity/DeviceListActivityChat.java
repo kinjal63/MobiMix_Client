@@ -117,9 +117,6 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
     @Override
     protected void onResume() {
         super.onResume();
-        if( networkType == NetworkType.WIFI_DIRECT ) {
-            closeWifiP2PSocketsIfAny();
-        }
     }
 
 
@@ -153,6 +150,8 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         super.onPause();
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
     }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -460,6 +459,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         if( isBluetoothReceiverRegistered ) {
             unregisterReceiver(bluetoothDeviceFoundReceiver);
         }
+        closeWifiP2PSocketsIfAny();
     }
 
 

@@ -3,11 +3,15 @@ package io.connection.bluetooth.Thread;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
@@ -47,6 +51,10 @@ public class MessageHandler implements Handler.Callback {
         this.mSocketConnectionListener = socketConnectionListener;
     }
 
+    public WifiDirectService getWifiP2PService() {
+        return wifiP2PService;
+    }
+
     @Override
     public boolean handleMessage(Message msg) {
         System.out.println("Message received in handler, message object : " + msg.what);
@@ -82,24 +90,23 @@ public class MessageHandler implements Handler.Callback {
 
     private void handleObject(String message) {
         System.out.println("Actual message received::" + message);
-        if(message.equalsIgnoreCase(Constants.NO_MODULE)) {
+        if(message.startsWith(Constants.NO_MODULE)) {
 
         }
-        else if(message.equalsIgnoreCase(Constants.FILESHARING_MODULE)) {
+        else if(message.startsWith(Constants.FILESHARING_MODULE)) {
             wifiP2PService.setModule(Modules.FILE_SHARING);
-            socketManager.readFiles();
+            readFiles();
         }
-        else if(message.equalsIgnoreCase(Constants.CHAT_MODULE)) {
+        else if(message.startsWith(Constants.CHAT_MODULE)) {
             wifiP2PService.setModule(Modules.CHAT);
-            socketManager.readChatData();
+            readChatData();
         }
-        else if(message.equalsIgnoreCase(Constants.BUSINESSCARD_MODULE)) {
+        else if(message.startsWith(Constants.BUSINESSCARD_MODULE)) {
             wifiP2PService.setModule(Modules.BUSINESS_CARD);
-            socketManager.readBusinessCard();
+            readBusinessCard();
         }
         else if(message.startsWith("NowClosing")) {
-            socketManager.close();
-            socketManager = null;
+            closeSocket();
             wifiP2PService.setModule(Modules.NONE);
             Intent intent = new Intent(context, Home_Master.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -108,7 +115,7 @@ public class MessageHandler implements Handler.Callback {
         else {
             int module = wifiP2PService.getModule().ordinal();
             switch (module) {
-                case 0:
+                case 1:
                     ChatDataConversation.putChatConversation(socketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(socketManager.getRemoteDeviceAddress()) + ":  " + message);
                     Log.d(TAG, "run: Accept thread Receive Message Count -> "+ChatDataConversation.getChatConversation(socketManager.getRemoteDeviceAddress()).size());
                     WifiP2PChatActivity.readMessagae(socketManager.getRemoteDeviceAddress());
@@ -120,18 +127,18 @@ public class MessageHandler implements Handler.Callback {
                             device.deviceName = socketManager.getRemoteDeviceAddress();
 
                             Intent intent = new Intent(context, WifiP2PChatActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                             intent.putExtra("device", device);
                             context.startActivity(intent);
 
                         }
                     });
                     break;
-                case 1:
+                case 2:
                     String businessCardInfo = message;
                     System.out.println("Business card received :: " + businessCardInfo);
                     break;
-                case 2:
+                case 0:
                     break;
             }
         }
@@ -147,5 +154,34 @@ public class MessageHandler implements Handler.Callback {
         if(socketManager != null) {
             socketManager.writeBusinessCard();
         }
+    }
+
+    public void sendFiles(List<Uri> files) {
+        if(socketManager != null) {
+            socketManager.writeFiles(files);
+        }
+    }
+
+    public void readChatData() {
+        if(socketManager != null) {
+            socketManager.readChatData();
+        }
+    }
+
+    public void readBusinessCard() {
+        if(socketManager != null) {
+            socketManager.readBusinessCard();
+        }
+    }
+
+    public void readFiles() {
+        if(socketManager != null) {
+            socketManager.readFiles();
+        }
+    }
+
+    public void closeSocket() {
+        wifiP2PService.closeConnection();
+        wifiP2PService.removeGroup();
     }
 }

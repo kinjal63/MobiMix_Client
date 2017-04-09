@@ -48,7 +48,7 @@ public class MobiMixService extends Service {
     private void initWifiDirect() {
         wifiDirectService = WifiDirectService.getInstance(this);
         wifiDirectService.registerReceiver();
-        new Timer().schedule(new DiscoveryTask(), 1000, 90000);
+        new Timer().schedule(new DiscoveryTask(), 500, 30000);
         wifiDirectService.initiateDiscovery();
     }
 
@@ -56,6 +56,7 @@ public class MobiMixService extends Service {
     public void onDestroy() {
         unregisterReceiver(mBluetoothDeviceFoundReceiver);
         wifiDirectService.unRegisterReceiver();
+
         super.onDestroy();
     }
 

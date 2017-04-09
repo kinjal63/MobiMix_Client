@@ -264,7 +264,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
     }
 
-    public void closeConnetion() {
+    public void closeConnection() {
         if(socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
             ((WifiP2PClientHandler)socketHandler).closeSocketAndKillThisThread();
         }

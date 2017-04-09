@@ -134,6 +134,10 @@ public class DialogActivity extends Activity {
                                 startActivity(businessIntent);
                                 break;
                             case FILE_SHARING:
+                                Class className = networkType == NetworkType.BLUETOOTH ? MainActivity.class : WifiDirectMainActivity.class;
+                                Intent intent = new Intent();
+                                intent.setClass(DialogActivity.this, className);
+                                startActivity(intent);
                                 break;
                             default:
                         }

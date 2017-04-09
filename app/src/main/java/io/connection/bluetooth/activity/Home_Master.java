@@ -301,8 +301,9 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         Log.d(TAG, "onClick: " + v.getId());
         switch (v.getId()) {
             case R.id.file_card_id:
-                Intent intent = new Intent(this, MainActivity.class);
-                startActivity(intent);
+                Intent fileIntent = new Intent(this, DialogActivity.class);
+                fileIntent.putExtra("module", Modules.FILE_SHARING.name());
+                startActivity(fileIntent);
                 break;
             case R.id.chat_card_id:
                 Intent chatIntent = new Intent(this, DialogActivity.class);

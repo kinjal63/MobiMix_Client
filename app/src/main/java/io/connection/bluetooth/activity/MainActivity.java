@@ -560,8 +560,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
             @Override
             public void onClick(View v) {
-
-
                 final Dialog dialog = new Dialog(context);
                 dialog.setContentView(R.layout.final_dialog_box);
                 dialog.setTitle("Transfer File ... ");

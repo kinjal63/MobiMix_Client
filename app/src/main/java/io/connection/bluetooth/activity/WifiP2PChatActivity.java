@@ -29,6 +29,7 @@ import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -91,6 +92,12 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         setupChat();
 
         if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.deviceName) ) {
+            WifiDirectService.getInstance(this).setSocketConnectionListener(new SocketConnectionListener() {
+                @Override
+                public void socketConnected(boolean isClient) {
+                    WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readChatData();
+                }
+            });
             WifiDirectService.getInstance(this).connectWithWifiAddress(device.deviceAddress, new DeviceConnectionListener() {
                 @Override
                 public void onDeviceConnected(boolean isConnected) {
@@ -99,10 +106,14 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                         connectionStatus.setText("Connected");
                     } else {
                         mSendButton.setEnabled(false);
-                        connectionStatus.setText("Not Connneted");
+                        connectionStatus.setText("Not Connnected");
                     }
                 }
             });
+        }
+        else {
+            mSendButton.setEnabled(true);
+            connectionStatus.setText("Connnected");
         }
     }
 
