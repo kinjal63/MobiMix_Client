@@ -34,7 +34,7 @@ public class ReadChatData {
                 if (is != null) {
                     bytes = is.read(buffer);
                     if (bytes == -1) {
-                        continue;
+                        break;
                     }
 
                     System.out.println("Getting message" + new String(buffer));

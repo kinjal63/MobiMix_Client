@@ -230,6 +230,8 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
             public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
                 listWifiP2PDevices.clear();
                 listWifiP2PDevices.addAll(devices);
+
+                wifiDeviceAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -571,14 +573,9 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                WifiDirectService.getInstance(BusinessCardListActivityUser.this).closeSocket();
-                removeWifiP2PConnection();
+                WifiDirectService.getInstance(BusinessCardListActivityUser.this).getMessageHandler().closeSocket();
             }
-        }, 500);
-    }
-
-    private void removeWifiP2PConnection() {
-        WifiDirectService.getInstance(this).removeGroup();
+        }, 1000);
     }
 
 }

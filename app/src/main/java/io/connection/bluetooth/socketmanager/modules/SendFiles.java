@@ -90,6 +90,7 @@ public class SendFiles extends Thread {
 
                         bis.close();
                         bos.flush();
+                        bos.close();
 
                         mBuilder.setContentText("Send Successfully").setProgress(0, 0, false);
                         notificationManager.notify(i, mBuilder.build());
@@ -104,6 +105,7 @@ public class SendFiles extends Thread {
 //                        Thread.sleep(3000);
 //                        dos.close();
 //                        mSocket.close();
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

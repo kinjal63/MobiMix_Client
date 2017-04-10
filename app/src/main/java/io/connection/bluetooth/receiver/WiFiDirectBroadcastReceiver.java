@@ -8,6 +8,8 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
 import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Constants;
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
@@ -49,10 +51,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 if (networkInfo.isConnected()) {
                     // we are connected with the other device, request connection
                     // info to find group owner IP
+                    ApplicationSharedPreferences.getInstance(context).addBooleanValue(Constants.PREF_WIFIDIRECT_CONNECTED, true);
                     Log.d(TAG, "Connected to p2p network. Requesting network details");
                     mManager.requestConnectionInfo(mChannel, (WifiP2pManager.ConnectionInfoListener) WifiDirectService.getInstance(context));
                 }
                 else {
+                    ApplicationSharedPreferences.getInstance(context).addBooleanValue(Constants.PREF_WIFIDIRECT_CONNECTED, false);
+                    WifiDirectService.getInstance(context).closeConnection();
                     WifiDirectService.getInstance(context).initiateDiscovery();
                 }
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {

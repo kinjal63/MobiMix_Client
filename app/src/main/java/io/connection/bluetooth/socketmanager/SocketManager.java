@@ -160,7 +160,7 @@ public class SocketManager implements Runnable {
         byte[] buffer = new byte[8 * bufferSize];
 
         try {
-
+            Thread.sleep(2000);
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
             try {
 
@@ -200,6 +200,27 @@ public class SocketManager implements Runnable {
             }
         } catch (IOException e) {
             Log.e(TAG, "disconnected", e);
+        } catch (InterruptedException e) {
+            Log.e(TAG, "disconnected", e);
+        }
+
+
+        //read message
+        try {
+            byte[] inBuffer = new byte[1024];
+            int bytes;
+            is = socket.getInputStream();
+
+            if (is != null) {
+                bytes = is.read(inBuffer);
+                if (bytes != -1) {
+                    System.out.println("Getting message" + new String(buffer));
+                    handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                }
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

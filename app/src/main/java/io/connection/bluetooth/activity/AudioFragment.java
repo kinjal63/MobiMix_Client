@@ -58,10 +58,10 @@ public class AudioFragment extends Fragment {
         cc = getActivity().getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Audio.Media.TITLE, MediaStore.Audio.Media.ARTIST, MediaStore.Audio.Media.DURATION, MediaStore.Audio.Media.ALBUM_ID, MediaStore.Audio.Media.SIZE, MediaStore.Audio.Media.DATA}, null, null,
                 MediaStore.Audio.Media.DATE_ADDED + " DESC");
 
+        setRecycleView();
+
         if (audioList.isEmpty()) {
             new asyncAudioLoader().execute();
-        } else {
-            setRecycleView();
         }
         return view;
     }
@@ -287,7 +287,7 @@ public class AudioFragment extends Fragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            setRecycleView();
+            audioAdapter.notifyDataSetChanged();
         }
     }
 

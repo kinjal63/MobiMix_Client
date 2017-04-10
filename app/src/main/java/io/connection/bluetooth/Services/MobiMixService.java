@@ -56,6 +56,7 @@ public class MobiMixService extends Service {
     public void onDestroy() {
         unregisterReceiver(mBluetoothDeviceFoundReceiver);
         wifiDirectService.unRegisterReceiver();
+        wifiDirectService.closeSocket();
 
         super.onDestroy();
     }

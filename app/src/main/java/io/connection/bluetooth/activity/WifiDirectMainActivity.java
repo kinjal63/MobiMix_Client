@@ -91,6 +91,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
             public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
                 wifiP2PDevices.clear();
                 wifiP2PDevices.addAll(devices);
+
                 deviceAdapter.notifyDataSetChanged();
             }
         });
@@ -520,10 +521,9 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                WifiDirectService.getInstance(WifiDirectMainActivity.this).closeSocket();
-                removeWifiP2PConnection();
+                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().closeSocket();
             }
-        }, 800);
+        }, 1000);
     }
 
     private void removeWifiP2PConnection() {

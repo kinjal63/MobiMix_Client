@@ -37,11 +37,20 @@ public class ApplicationSharedPreferences {
         editor.commit();
     }
 
+    public void addBooleanValue( String name, boolean value ) {
+        editor.putBoolean(name, value);
+        editor.commit();
+    }
+
     public String getValue(String name) {
         return sharedPreferences.getString(name, "");
     }
 
     public long getLongValue(String name) {
         return sharedPreferences.getLong(name, 0);
+    }
+
+    public boolean getBooleanValue(String name) {
+        return sharedPreferences.getBoolean(name, false);
     }
 }

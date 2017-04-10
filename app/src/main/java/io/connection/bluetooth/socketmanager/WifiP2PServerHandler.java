@@ -17,7 +17,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -40,6 +42,7 @@ public class WifiP2PServerHandler extends Thread {
     private MessageHandler mHandler;
     private InetAddress ipAddress;
     private boolean isSocketConnected = false;
+    private Socket clientSocket;
 
     private String TAG = "WifiP2PServerHandler";
 
@@ -62,7 +65,7 @@ public class WifiP2PServerHandler extends Thread {
                 // A blocking operation. Initiate a ChatManager instance when
                 // there is a new connection
                 if(mSocket!=null && !mSocket.isClosed()) {
-                    Socket clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
+                    clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
 
                     isSocketConnected = true;
                     SocketManager socketManager = new SocketManager(clientSocket, mHandler);
@@ -104,13 +107,12 @@ public class WifiP2PServerHandler extends Thread {
         if(mSocket!=null && !mSocket.isClosed()) {
             try {
                 mSocket.close();
-                WifiDirectService.getInstance(
-                        MobileMeasurementApplication.getInstance().getContext()).removeGroup();
                 isSocketConnected = false;
             } catch (IOException e) {
                 Log.e(TAG, "IOException during close Socket", e);
             }
             pool.shutdown();
+            Log.d(TAG,"Stopping ServerSocketHandler");
         }
     }
 

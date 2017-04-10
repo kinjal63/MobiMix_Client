@@ -71,7 +71,7 @@ public class MessageHandler implements Handler.Callback {
 
                 socketManager.writeMessage(moduleName.getBytes());
                 if( this.mSocketConnectionListener != null ) {
-                    this.mSocketConnectionListener.socketConnected(false);
+                    this.mSocketConnectionListener.socketConnected(true);
                 }
 
                 break;
@@ -109,7 +109,7 @@ public class MessageHandler implements Handler.Callback {
             closeSocket();
             wifiP2PService.setModule(Modules.NONE);
             Intent intent = new Intent(context, Home_Master.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         }
         else {

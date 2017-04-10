@@ -41,6 +41,8 @@ public class Constants {
 
     public static final int THREAD_COUNT = 20; //maximum number of clients that this GO can manage
     public static final int THREAD_POOL_EXECUTOR_KEEP_ALIVE_TIME = 10;
+
+    public static final String PREF_WIFIDIRECT_CONNECTED = "WifiDirect_Connected";
 }
 //  Query
 

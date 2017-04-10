@@ -209,6 +209,8 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
             public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
                 listWifiP2PDevices.clear();
                 listWifiP2PDevices.addAll(devices);
+
+                wifiDeviceAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -510,14 +512,9 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                WifiDirectService.getInstance(DeviceListActivityChat.this).closeSocket();
-                removeWifiP2PConnection();
+                WifiDirectService.getInstance(DeviceListActivityChat.this).getMessageHandler().closeSocket();
             }
-        }, 500);
-    }
-
-    private void removeWifiP2PConnection() {
-        WifiDirectService.getInstance(this).removeGroup();
+        }, 1000);
     }
 }
 

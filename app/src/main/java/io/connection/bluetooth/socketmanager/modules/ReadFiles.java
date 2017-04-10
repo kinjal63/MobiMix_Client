@@ -23,7 +23,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.utils.UtilsHandler;
 
@@ -159,8 +161,7 @@ public class ReadFiles {
             Log.d(TAG, "run:  readFile  " + e.getMessage());
         } finally {
             try {
-//                Log.d(TAG, "run: socket close");
-//                socket.close();
+                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
             } catch (Exception e1) {
                 e1.printStackTrace();
             }

@@ -32,6 +32,7 @@ import io.connection.bluetooth.receiver.WiFiDirectBroadcastReceiver;
 import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
 import io.connection.bluetooth.socketmanager.WifiP2PServerHandler;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -349,7 +350,12 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void unRegisterReceiver() {
-        mContext.unregisterReceiver(mReceiver);
+        try {
+            mContext.unregisterReceiver(mReceiver);
+        }
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 
     public void removeGroup() {
@@ -379,6 +385,14 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void closeSocket() {
+        if(messageHandler != null) {
+            messageHandler.sendMessage(new String("NowClosing").getBytes());
+            try {
+                Thread.sleep(1000);
+            }catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         if(socketHandler != null) {
             if (socketHandler instanceof WifiP2PClientHandler) {
                 ((WifiP2PClientHandler) socketHandler).closeSocketAndKillThisThread();
@@ -386,5 +400,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 ((WifiP2PServerHandler) socketHandler).closeSocketAndKillThisThread();
             }
         }
+        removeGroup();
     }
 }

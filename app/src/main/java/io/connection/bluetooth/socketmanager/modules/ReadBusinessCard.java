@@ -12,6 +12,8 @@ import java.net.Socket;
 
 import io.connection.bluetooth.Database.BusinessCard;
 import io.connection.bluetooth.Database.DataBaseHelper;
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.activity.BusinessCardReceivedList;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.socketmanager.SocketManager;
@@ -41,8 +43,10 @@ public class ReadBusinessCard {
 
         while(!disable) {
             try {
+
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
                 DataInputStream dis = new DataInputStream(bis);
+
                 String name = dis.readUTF();
                 String email = dis.readUTF();
                 String phone = dis.readUTF();
@@ -87,11 +91,22 @@ public class ReadBusinessCard {
 
 
                 fos.close();
-                dis.close();
 
-                // socket.close();
+                UtilsHandler.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(ImageCache.getContext(), BusinessCardReceivedList.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        ImageCache.getContext().startActivity(intent);
+
+                    }
+                });
+
+                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
+
             } catch (Exception e) {
                 try {
+                    disable = true;
                     fos.close();
                 } catch (Exception e1) {
                     e1.printStackTrace();
@@ -101,21 +116,12 @@ public class ReadBusinessCard {
 
             } finally {
                 try {
-                    socket.close();
+//                    WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
+//                    socket.close();
                     disable = true;
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }
-
-
-                UtilsHandler.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Intent intent = new Intent(ImageCache.getContext(), BusinessCardReceivedList.class);
-                        ImageCache.getContext().startActivity(intent);
-
-                    }
-                });
 
             }
         }
