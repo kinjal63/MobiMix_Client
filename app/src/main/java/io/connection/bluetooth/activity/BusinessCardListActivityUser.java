@@ -529,29 +529,12 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
             if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(P2Pdevice.deviceName) ) {
                 Toast.makeText(this, "Connecting to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
 
-                WifiDirectService.getInstance(this).setSocketConnectionListener(new SocketConnectionListener() {
-                    @Override
-                    public void socketConnected(final boolean isClient) {
-                        UtilsHandler.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-//                                if(isClient) {
-//                                    Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
-//                                }
-//                                else {
-//                                    Toast.makeText(BusinessCardListActivityUser.this, "Receiving business card", Toast.LENGTH_SHORT).show();
-//                                }
-                            }
-                        });
-                        sendBusinessCard();
-                    }
-                });
                 WifiDirectService.getInstance(this).connectWithWifiAddress(P2Pdevice.deviceAddress, new DeviceConnectionListener() {
                     @Override
                     public void onDeviceConnected(boolean isConnected) {
 
                         if (isConnected) {
-                            Toast.makeText(BusinessCardListActivityUser.this, "Connected with " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+                            setSocketListeners();
                         } else {
                             Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + P2Pdevice.deviceName, Toast.LENGTH_SHORT);
                         }
@@ -565,7 +548,27 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     }
 
     private void sendBusinessCard() {
+        UtilsHandler.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+            }
+        });
         WifiDirectService.getInstance(this).getMessageHandler().sendBusinessCard();
+    }
+
+    private void setSocketListeners() {
+        WifiDirectService.getInstance(this).setSocketConnectionListener(new SocketConnectionListener() {
+            @Override
+            public void socketConnected(final boolean isClient, final String remoteDeviceAddress) {
+                sendBusinessCard();
+            }
+
+            @Override
+            public void socketClosed() {
+
+            }
+        });
     }
 
     private void closeWifiP2PSocketsIfAny() {

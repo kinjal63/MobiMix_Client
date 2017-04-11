@@ -275,13 +275,14 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public boolean isSocketConnectedWithHost(String hostName) {
-        if(socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
-            return ((WifiP2PClientHandler)socketHandler).checkSocketConnection(hostName);
-        }
-        else if(socketHandler != null && socketHandler instanceof WifiP2PServerHandler) {
-            return ((WifiP2PServerHandler)socketHandler).checkSocketConnection(hostName);
-        }
-        return false;
+        return messageHandler.isSocketConnected();
+//        if(socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
+//            return ((WifiP2PClientHandler)socketHandler).checkSocketConnection(hostName);
+//        }
+//        else if(socketHandler != null && socketHandler instanceof WifiP2PServerHandler) {
+//            return ((WifiP2PServerHandler)socketHandler).checkSocketConnection(hostName);
+//        }
+//        return false;
     }
 
     public WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
@@ -323,39 +324,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
     public void setWifiDirectDeviceName(String wifiDirectDeviceName) {
         this.wifiDirectDeviceName = wifiDirectDeviceName;
-    }
-
-    public MessageHandler getMessageHandler() {
-        return this.messageHandler;
-    }
-
-    public Modules getModule() {
-        return this.module;
-    }
-
-    public void setModule(Modules module) {
-        this.module = module;
-    }
-
-    public String getWifiDirectDeviceName() {
-        return this.wifiDirectDeviceName;
-    }
-
-    public List<WifiP2pDevice> getWifiP2PDeviceList() {
-        return wifiP2PDeviceList;
-    }
-
-    public void registerReceiver() {
-        mContext.registerReceiver(mReceiver, mIntentFilter);
-    }
-
-    public void unRegisterReceiver() {
-        try {
-            mContext.unregisterReceiver(mReceiver);
-        }
-        catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
     }
 
     public void removeGroup() {
@@ -401,5 +369,48 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             }
         }
         removeGroup();
+    }
+
+    public void notifyUserForClosedSocket() {
+        if( socketConnectionListener != null ) {
+            socketConnectionListener.socketClosed();
+        }
+    }
+
+    public MessageHandler getMessageHandler() {
+        return this.messageHandler;
+    }
+
+    public Modules getModule() {
+        return this.module;
+    }
+
+    public void setModule(Modules module) {
+        this.module = module;
+    }
+
+    public String getWifiDirectDeviceName() {
+        return this.wifiDirectDeviceName;
+    }
+
+    public String getRemoteDeviceAddress() {
+        return messageHandler.getRemoteDeviceAddress();
+    }
+
+    public List<WifiP2pDevice> getWifiP2PDeviceList() {
+        return wifiP2PDeviceList;
+    }
+
+    public void registerReceiver() {
+        mContext.registerReceiver(mReceiver, mIntentFilter);
+    }
+
+    public void unRegisterReceiver() {
+        try {
+            mContext.unregisterReceiver(mReceiver);
+        }
+        catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
     }
 }

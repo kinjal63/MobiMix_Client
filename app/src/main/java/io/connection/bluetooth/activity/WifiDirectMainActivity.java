@@ -470,8 +470,13 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
                         public void onDeviceConnected(boolean isConnected) {
                             WifiDirectService.getInstance(WifiDirectMainActivity.this).setSocketConnectionListener(new SocketConnectionListener() {
                                 @Override
-                                public void socketConnected(boolean isClient) {
+                                public void socketConnected(boolean isClient, String remoteDeviceAddress) {
                                     WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().sendFiles(listSendFiless);
+                                }
+
+                                @Override
+                                public void socketClosed() {
+
                                 }
                             });
                         }

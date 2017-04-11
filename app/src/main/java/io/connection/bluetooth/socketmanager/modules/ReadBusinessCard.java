@@ -89,7 +89,6 @@ public class ReadBusinessCard {
                 }
                 Log.d(TAG, "run: data inserted id  is  " + value);
 
-
                 fos.close();
 
                 UtilsHandler.runOnUiThread(new Runnable() {
@@ -98,7 +97,6 @@ public class ReadBusinessCard {
                         Intent intent = new Intent(ImageCache.getContext(), BusinessCardReceivedList.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                         ImageCache.getContext().startActivity(intent);
-
                     }
                 });
 
@@ -116,8 +114,6 @@ public class ReadBusinessCard {
 
             } finally {
                 try {
-//                    WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
-//                    socket.close();
                     disable = true;
                 } catch (Exception ee) {
                     ee.printStackTrace();

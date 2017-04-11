@@ -20,6 +20,7 @@ import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.Home_Master;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.enums.Modules;
+import io.connection.bluetooth.socketmanager.SocketHeartBeat;
 import io.connection.bluetooth.socketmanager.SocketManager;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.UtilsHandler;
@@ -36,15 +37,13 @@ public class MessageHandler implements Handler.Callback {
     private WifiDirectService wifiP2PService;
     private SocketConnectionListener mSocketConnectionListener;
 
+    private boolean isSocketConnected = false;
+
     private String TAG = "MessageHandler";
 
     public MessageHandler(Context context, WifiDirectService service) {
         this.context = context;
         this.wifiP2PService = service;
-    }
-
-    public Handler getHandler() {
-        return this.handler;
     }
 
     public void setSocketConnectionListener(SocketConnectionListener socketConnectionListener) {
@@ -70,9 +69,14 @@ public class MessageHandler implements Handler.Callback {
                         Constants.BUSINESSCARD_MODULE : (this.wifiP2PService.getModule() == Modules.CHAT ? Constants.CHAT_MODULE : "None"));
 
                 socketManager.writeMessage(moduleName.getBytes());
+
+                socketConnected();
                 if( this.mSocketConnectionListener != null ) {
-                    this.mSocketConnectionListener.socketConnected(true);
+                    this.mSocketConnectionListener.socketConnected(true, socketManager.getRemoteDeviceAddress());
                 }
+
+                SocketHeartBeat heartbeat = new SocketHeartBeat(socketManager);
+                heartbeat.start();
 
                 break;
             case Constants.MESSAGE_READ:
@@ -107,10 +111,12 @@ public class MessageHandler implements Handler.Callback {
         }
         else if(message.startsWith("NowClosing")) {
             closeSocket();
+            if(wifiP2PService.getModule().ordinal() == 1) {
+                Intent intent = new Intent(context, Home_Master.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            }
             wifiP2PService.setModule(Modules.NONE);
-            Intent intent = new Intent(context, Home_Master.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
         }
         else {
             int module = wifiP2PService.getModule().ordinal();
@@ -129,6 +135,7 @@ public class MessageHandler implements Handler.Callback {
                             Intent intent = new Intent(context, WifiP2PChatActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                             intent.putExtra("device", device);
+                            intent.putExtra("remoteDeviceAddress", socketManager.getRemoteDeviceAddress());
                             context.startActivity(intent);
 
                         }
@@ -178,6 +185,31 @@ public class MessageHandler implements Handler.Callback {
         if(socketManager != null) {
             socketManager.readFiles();
         }
+    }
+
+    public void socketConnected() {
+        isSocketConnected = true;
+    }
+
+    public void socketClosed() {
+        isSocketConnected = false;
+        wifiP2PService.notifyUserForClosedSocket();
+        closeSocket();
+    }
+
+    public Handler getHandler() {
+        return this.handler;
+    }
+
+    public boolean isSocketConnected() {
+        return this.isSocketConnected;
+    }
+
+    public String getRemoteDeviceAddress() {
+        if(socketManager != null) {
+            return socketManager.getRemoteDeviceAddress();
+        }
+        return null;
     }
 
     public void closeSocket() {

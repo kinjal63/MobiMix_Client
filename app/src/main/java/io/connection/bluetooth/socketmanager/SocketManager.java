@@ -94,7 +94,7 @@ public class SocketManager implements Runnable {
     }
 
     public void startModule() {
-        if(socket.isConnected()) {
+        if(handler.isSocketConnected()) {
             WifiDirectService wifiP2PService = handler.getWifiP2PService();
 
             if( wifiP2PService != null ) {
@@ -160,7 +160,6 @@ public class SocketManager implements Runnable {
         byte[] buffer = new byte[8 * bufferSize];
 
         try {
-            Thread.sleep(2000);
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
             try {
 
@@ -191,19 +190,14 @@ public class SocketManager implements Runnable {
                 e.printStackTrace();
             } finally {
                 try {
-//                    Thread.sleep(3000);
-                    dos.close();
-//                    socket.close();
+//                    dos.close();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         } catch (IOException e) {
             Log.e(TAG, "disconnected", e);
-        } catch (InterruptedException e) {
-            Log.e(TAG, "disconnected", e);
         }
-
 
         //read message
         try {
@@ -237,6 +231,18 @@ public class SocketManager implements Runnable {
 
     public String getRemoteDeviceAddress() {
         return this.remoteHostAddress;
+    }
+
+    public Socket getConnectedSocket() {
+        return this.socket;
+    }
+
+    public void socketConnected() {
+        handler.socketConnected();
+    }
+
+    public void socketClosed() {
+        handler.socketClosed();
     }
 
     public void close() {
