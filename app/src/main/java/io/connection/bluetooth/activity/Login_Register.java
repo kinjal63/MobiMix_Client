@@ -65,11 +65,10 @@ public class Login_Register extends AppCompatActivity {
         }
         sharedPref = this.getSharedPreferences("myPref", Context.MODE_PRIVATE);
 
-        ApplicationSharedPreferences.getInstance(this).addValue("email", Build.MODEL);
-//        if(sharedPref.getBoolean("is_login", false)) {
+        if(sharedPref.getBoolean("is_login", false)) {
             startActivity(new Intent(this, Home_Master.class));
             finish();
-//        }
+        }
         viewPager = (ViewPager) findViewById(R.id.pager_login_register);
         setupViewPager(viewPager);
         tabLayout = (TabLayout) findViewById(R.id.tabs_login_register);
