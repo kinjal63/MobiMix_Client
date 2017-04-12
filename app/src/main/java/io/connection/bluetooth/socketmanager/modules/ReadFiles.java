@@ -26,7 +26,9 @@ import java.net.Socket;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -38,13 +40,15 @@ public class ReadFiles {
     InputStream in = null;
     OutputStream out = null;
     Context context;
+    MessageHandler handler;
     NotificationManager notificationManager;
     NotificationCompat.Builder mBuilder;
 
     private static final String TAG = "readFile";
 
-    public ReadFiles(Socket socket) {
+    public ReadFiles(Socket socket, MessageHandler handler) {
         this.socket = socket;
+        this.handler = handler;
         this.context = ImageCache.getContext();
 
         notificationManager =
@@ -56,6 +60,8 @@ public class ReadFiles {
         int bufferSize = 1024;
         byte[] buffer = new byte[8 * bufferSize];
         File[] files = null;
+
+        handler.setModule(Modules.NONE);
 
         try {
             if (context.checkCallingOrSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && context.checkCallingOrSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {

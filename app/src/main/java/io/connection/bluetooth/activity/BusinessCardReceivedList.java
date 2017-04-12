@@ -86,6 +86,16 @@ public class BusinessCardReceivedList extends AppCompatActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if(intent != null && intent.getBooleanExtra("received", false)) {
+            businessCardList.clear();
+            businessCardList.addAll(db.getAllBusinessCard());
+            businessCardAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -106,6 +116,7 @@ public class BusinessCardReceivedList extends AppCompatActivity {
         recycleListView.setAdapter(businessCardAdapter);
 
     }
+
 
 
     static class BusinessCardAdapter extends RecyclerView.Adapter<BusinessCardAdapter.BusinessCardViewHolder> implements View.OnClickListener {

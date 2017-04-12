@@ -103,6 +103,8 @@ public class MessageHandler implements Handler.Callback {
         }
         else if(message.startsWith(Constants.BUSINESSCARD_MODULE)) {
             wifiP2PService.setModule(Modules.BUSINESS_CARD);
+
+            System.out.println("Socket is connected 2");
             readBusinessCard();
         }
         else if(message.startsWith("NowClosing")) {
@@ -198,6 +200,10 @@ public class MessageHandler implements Handler.Callback {
             mSocketConnectionListener.socketClosed();
         }
         closeSocket();
+    }
+
+    public void setModule(Modules module) {
+        wifiP2PService.setModule(module);
     }
 
     public Handler getHandler() {

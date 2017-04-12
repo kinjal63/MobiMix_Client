@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,16 +89,17 @@ public class SendBusinessCard {
 
         //read message
         try {
-            byte[] inBuffer = new byte[1024];
-            int bytes;
-            InputStream is = mSocket.getInputStream();
+            byte[] inBuffer;
 
-            if (is != null) {
-                bytes = is.read(inBuffer);
-                if (bytes != -1) {
-                    System.out.println("Getting message" + new String(buffer));
-                    handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
-                }
+            BufferedInputStream bis = new BufferedInputStream(mSocket.getInputStream(), buffer.length);
+            DataInputStream dis = new DataInputStream(bis);
+
+            if (dis != null) {
+                inBuffer = dis.readUTF().getBytes();
+                dis.close();
+
+                System.out.println("Getting message" + new String(buffer));
+                handler.getHandler().obtainMessage(Constants.MESSAGE_READ, 0, -1, inBuffer).sendToTarget();
             }
         }
         catch (IOException e) {

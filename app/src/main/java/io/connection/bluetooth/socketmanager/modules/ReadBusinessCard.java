@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.Socket;
@@ -14,8 +15,11 @@ import io.connection.bluetooth.Database.BusinessCard;
 import io.connection.bluetooth.Database.DataBaseHelper;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.activity.BusinessCardListActivityUser;
 import io.connection.bluetooth.activity.BusinessCardReceivedList;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.SocketManager;
 import io.connection.bluetooth.utils.UtilsHandler;
 
@@ -25,12 +29,14 @@ import io.connection.bluetooth.utils.UtilsHandler;
 
 public class ReadBusinessCard {
     private Socket socket;
+    private MessageHandler handler;
     private boolean disable = false;
     private DataBaseHelper db;
     private String TAG = "ReadBusinessCard";
 
-    public ReadBusinessCard(Socket socket) {
+    public ReadBusinessCard(Socket socket, MessageHandler handler) {
         this.socket = socket;
+        this.handler = handler;
         db = new DataBaseHelper(ImageCache.getContext());
     }
 
@@ -40,6 +46,7 @@ public class ReadBusinessCard {
         File files;
 
         FileOutputStream fos = null;
+        handler.setModule(Modules.NONE);
 
         while(!disable) {
             try {
@@ -97,6 +104,7 @@ public class ReadBusinessCard {
                     @Override
                     public void run() {
                         Intent intent = new Intent(ImageCache.getContext(), BusinessCardReceivedList.class);
+                        intent.putExtra("received", true);
                         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                         ImageCache.getContext().startActivity(intent);
                     }
@@ -117,7 +125,11 @@ public class ReadBusinessCard {
             } finally {
                 try {
                     disable = true;
-                    WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
+                    DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+                    dos.writeUTF("NowClosing");
+
+                    Thread.sleep(1000);
+                    handler.closeSocket();
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }

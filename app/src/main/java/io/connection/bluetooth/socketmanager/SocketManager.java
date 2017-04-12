@@ -106,7 +106,15 @@ public class SocketManager implements Runnable {
     }
 
     public void startReadModule() {
+        try {
+            Thread.sleep(500);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Socket is connected 2" + handler.isSocketConnected());
         if(handler.isSocketConnected()) {
+            System.out.println("Socket is connected 2.1");
             WifiDirectService wifiP2PService = handler.getWifiP2PService();
 
             if( wifiP2PService != null ) {
@@ -115,11 +123,12 @@ public class SocketManager implements Runnable {
                     chatData.readChatData();
                 }
                 else if(wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
-                    ReadBusinessCard businessCard = new ReadBusinessCard(socket);
+                    System.out.println("Socket is connected 3");
+                    ReadBusinessCard businessCard = new ReadBusinessCard(socket, handler);
                     businessCard.readData();
                 }
                 else if(wifiP2PService.getModule() == Modules.FILE_SHARING) {
-                    ReadFiles file = new ReadFiles(socket);
+                    ReadFiles file = new ReadFiles(socket, handler);
                     file.readFiles();
                 }
             }
@@ -132,9 +141,10 @@ public class SocketManager implements Runnable {
     public void startWriteModule() {
         if(handler.isSocketConnected()) {
             WifiDirectService wifiP2PService = handler.getWifiP2PService();
+            System.out.println("Socket is write connected 2");
 
             try {
-                Thread.sleep(2000);
+                Thread.sleep(500);
             }
             catch (InterruptedException e) {
                 e.printStackTrace();

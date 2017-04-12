@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.Socket;
 
 import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.utils.Constants;
 
 /**
@@ -27,6 +28,7 @@ public class ReadChatData {
     public void readChatData() {
         byte[] buffer = new byte[1024];
         int bytes;
+
         try {
             is = socket.getInputStream();
             while (!disable) {

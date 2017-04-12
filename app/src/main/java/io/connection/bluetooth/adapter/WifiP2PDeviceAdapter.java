@@ -63,6 +63,8 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
             Intent intent = new Intent();
 
             if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(BusinessCardListActivityUser.class.getSimpleName())) {
+                WifiDirectService.getInstance(context).getMessageHandler().setModule(Modules.BUSINESS_CARD);
+
                 intent.setClass(mContext, BusinessCardListActivityUser.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 intent.putExtra("device", device);
@@ -70,12 +72,15 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
                 context.startActivity(intent);
             }
             else if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(DeviceListActivityChat.class.getSimpleName())) {
+                WifiDirectService.getInstance(context).getMessageHandler().setModule(Modules.CHAT);
+
                 intent.setClass(mContext, WifiP2PChatActivity.class);
                 intent.putExtra("device", device);
                 intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
                 context.startActivity(intent);
             }
             else if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(WifiDirectMainActivity.class.getSimpleName())) {
+                WifiDirectService.getInstance(context).getMessageHandler().setModule(Modules.FILE_SHARING);
                 clickListener.onClick(v);
             }
         }
