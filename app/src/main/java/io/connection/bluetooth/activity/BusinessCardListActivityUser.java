@@ -219,12 +219,12 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     }
 
     private void initWifiDirect() {
-        WifiDirectService.getInstance(this).setModule(Modules.BUSINESS_CARD);
         networkType = NetworkType.WIFI_DIRECT;
 
         listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
         wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
 
+        WifiDirectService.getInstance(this).setClassName(BusinessCardListActivityUser.class.getSimpleName());
         WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
             @Override
             public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
@@ -526,32 +526,17 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         if( intent != null && intent.getParcelableExtra("device") != null) {
             P2Pdevice = intent.getParcelableExtra("device");
 
+            WifiDirectService.getInstance(this).setModule(Modules.BUSINESS_CARD);
+
             if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(P2Pdevice.deviceName) ) {
                 Toast.makeText(this, "Connecting to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
 
-                WifiDirectService.getInstance(this).setSocketConnectionListener(new SocketConnectionListener() {
-                    @Override
-                    public void socketConnected(final boolean isClient) {
-                        UtilsHandler.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-//                                if(isClient) {
-//                                    Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
-//                                }
-//                                else {
-//                                    Toast.makeText(BusinessCardListActivityUser.this, "Receiving business card", Toast.LENGTH_SHORT).show();
-//                                }
-                            }
-                        });
-                        sendBusinessCard();
-                    }
-                });
                 WifiDirectService.getInstance(this).connectWithWifiAddress(P2Pdevice.deviceAddress, new DeviceConnectionListener() {
                     @Override
                     public void onDeviceConnected(boolean isConnected) {
 
                         if (isConnected) {
-                            Toast.makeText(BusinessCardListActivityUser.this, "Connected with " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+                            setSocketListeners();
                         } else {
                             Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + P2Pdevice.deviceName, Toast.LENGTH_SHORT);
                         }
@@ -565,7 +550,28 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     }
 
     private void sendBusinessCard() {
+        UtilsHandler.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+            }
+        });
         WifiDirectService.getInstance(this).getMessageHandler().sendBusinessCard();
+    }
+
+    private void setSocketListeners() {
+        WifiDirectService.getInstance(this).setSocketConnectionListener(new SocketConnectionListener() {
+            @Override
+            public void socketConnected(final boolean isClient, final String remoteDeviceAddress) {
+                sendBusinessCard();
+                WifiDirectService.getInstance(BusinessCardListActivityUser.this).setSocketConnectionListener(null);
+            }
+
+            @Override
+            public void socketClosed() {
+
+            }
+        });
     }
 
     private void closeWifiP2PSocketsIfAny() {

@@ -32,6 +32,7 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -86,6 +87,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         deviceAdapter = new WifiP2PDeviceAdapter(this, wifiP2PDevices);
         deviceAdapter.setDeviceClickListener(this);
 
+        WifiDirectService.getInstance(this).setClassName(WifiDirectMainActivity.class.getSimpleName());
         WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
             @Override
             public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
@@ -464,22 +466,8 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
                     listSendFiless.add(uri);
                 }
 
-                if( !WifiDirectService.getInstance(WifiDirectMainActivity.this).isSocketConnectedWithHost(device.deviceName) ) {
-                    WifiDirectService.getInstance(WifiDirectMainActivity.this).connectWithWifiAddress(device.deviceAddress, new DeviceConnectionListener() {
-                        @Override
-                        public void onDeviceConnected(boolean isConnected) {
-                            WifiDirectService.getInstance(WifiDirectMainActivity.this).setSocketConnectionListener(new SocketConnectionListener() {
-                                @Override
-                                public void socketConnected(boolean isClient) {
-                                    WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().sendFiles(listSendFiless);
-                                }
-                            });
-                        }
-                    });
-                }
-                else {
-                    WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().sendFiles(listSendFiless);
-                }
+                SenderThread sender = new SenderThread(device, listSendFiless);
+                sender.start();
 
                 // ConnectedThread connectedThread = new ConnectedThread(device, listSendFiless);
                 Log.d(TAG, "onDrag: Started Without sending Request");
@@ -502,7 +490,47 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         });
 
         dialog.show();
+    }
 
+    private class SenderThread extends Thread {
+        private List<Uri> filesToSend;
+        private WifiP2pDevice device;
+
+        SenderThread(WifiP2pDevice device, List<Uri> filesToSend) {
+            this.filesToSend = filesToSend;
+            this.device = device;
+        }
+
+        @Override
+        public void run() {
+            if( !WifiDirectService.getInstance(WifiDirectMainActivity.this).isSocketConnectedWithHost(device.deviceName) ) {
+                WifiDirectService.getInstance(WifiDirectMainActivity.this).connectWithWifiAddress(device.deviceAddress, new DeviceConnectionListener() {
+                    @Override
+                    public void onDeviceConnected(boolean isConnected) {
+                        if (isConnected) {
+                            setSocketListeners(filesToSend);
+                        }
+                    }
+                });
+            }
+            else {
+                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().sendFiles(filesToSend);
+            }
+        }
+    }
+
+    private void setSocketListeners(final List<Uri> listSendFiless) {
+        WifiDirectService.getInstance(WifiDirectMainActivity.this).setSocketConnectionListener(new SocketConnectionListener() {
+            @Override
+            public void socketConnected(boolean isClient, String remoteDeviceAddress) {
+                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().sendFiles(listSendFiless);
+            }
+
+            @Override
+            public void socketClosed() {
+
+            }
+        });
     }
 
     public void setDeviceLayout(RecyclerView deviceLayout) {

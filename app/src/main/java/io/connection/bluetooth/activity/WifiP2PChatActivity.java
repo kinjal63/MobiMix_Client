@@ -30,6 +30,7 @@ import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -65,6 +66,8 @@ public class WifiP2PChatActivity extends AppCompatActivity {
      */
     private StringBuffer mOutStringBuffer;
 
+    private static String remoteDeviceAddress;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +86,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         device = intent.getParcelableExtra("device");
+        remoteDeviceAddress = intent.getStringExtra("remoteDeviceAddress");
 
         chatUserName.setText(ChatDataConversation.getUserName(device.deviceName));
         connectionStatus.setText("Connecting...");
@@ -92,26 +96,26 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         setupChat();
 
         if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.deviceName) ) {
-            WifiDirectService.getInstance(this).setSocketConnectionListener(new SocketConnectionListener() {
-                @Override
-                public void socketConnected(boolean isClient) {
-                    WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readChatData();
-                }
-            });
             WifiDirectService.getInstance(this).connectWithWifiAddress(device.deviceAddress, new DeviceConnectionListener() {
                 @Override
                 public void onDeviceConnected(boolean isConnected) {
-                    if (isConnected) {
+                    if(isConnected) {
+                        setSocketListeners();
+
                         mSendButton.setEnabled(true);
                         connectionStatus.setText("Connected");
-                    } else {
+                    }
+                    else {
                         mSendButton.setEnabled(false);
-                        connectionStatus.setText("Not Connnected");
+                        connectionStatus.setText("Not Connected");
                     }
                 }
             });
         }
         else {
+            remoteDeviceAddress = WifiDirectService.getInstance(this).getRemoteDeviceAddress();
+            setSocketListeners();
+
             mSendButton.setEnabled(true);
             connectionStatus.setText("Connnected");
         }
@@ -147,6 +151,40 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         }
     };
 
+    private void setSocketListeners() {
+        WifiDirectService.getInstance(WifiP2PChatActivity.this).setSocketConnectionListener(new SocketConnectionListener() {
+            @Override
+            public void socketConnected(boolean isClient, String remoteDeviceAddress) {
+                WifiP2PChatActivity.this.remoteDeviceAddress = remoteDeviceAddress;
+
+                UtilsHandler.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSendButton.setEnabled(true);
+                        connectionStatus.setText("Connected");
+
+                        WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readChatData();
+                    }
+                });
+            }
+
+            @Override
+            public void socketClosed() {
+                if(!WifiP2PChatActivity.this.isFinishing() || !WifiP2PChatActivity.this.isDestroyed()) {
+                    UtilsHandler.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSendButton.setEnabled(false);
+                            connectionStatus.setText("Not Connected");
+
+                            Toast.makeText(WifiP2PChatActivity.this, "Device is not connected, please try again.", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     /**
      * Set up the UI and background operations for chat.
      */
@@ -156,7 +194,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
 
         //mConversationView.setAdapter(mConversationArrayAdapter);
 
-        List<String> stringList = ChatDataConversation.getChatConversation(device.deviceName);
+        List<String> stringList = ChatDataConversation.getChatConversation(remoteDeviceAddress);
         if (stringList != null && stringList.size() > 0) {
             Log.d(TAG, "setupChat:  Value of " + stringList.size());
             mConversationArrayAdapter.addAll(stringList);
@@ -216,7 +254,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         if (message.length() > 0) {
             // Get the message bytes and tell the BluetoothChatService to write
             mConversationArrayAdapter.add("Me:  " + message);
-            ChatDataConversation.putChatConversation(device.deviceName, "Me:  " + message);
+            ChatDataConversation.putChatConversation(remoteDeviceAddress, "Me:  " + message);
             chatAdapter.notifyDataSetChanged();
 
             byte[] messageToSend = message.getBytes();
@@ -255,6 +293,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        WifiDirectService.getInstance(WifiP2PChatActivity.this).setSocketConnectionListener(null);
         super.onDestroy();
     }
 
@@ -271,7 +310,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             public void run() {
                 List<String> listofStrings = ChatDataConversation.getChatConversation(remoteDeviceName);
                 if (mConversationArrayAdapter != null) {
-                    if (remoteDeviceName.equals(device.deviceName)) {
+                    if (remoteDeviceName.equals(remoteDeviceAddress)) {
                         mConversationArrayAdapter.clear();
                         mConversationArrayAdapter.addAll(listofStrings);
                         chatAdapter.notifyDataSetChanged();
@@ -342,7 +381,6 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             }
 
             return vi;
-
         }
 
     }

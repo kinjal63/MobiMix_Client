@@ -14,14 +14,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
+import io.connection.bluetooth.Domain.QueueManager;
+import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.enums.Modules;
+import io.connection.bluetooth.enums.SocketOperationType;
 import io.connection.bluetooth.socketmanager.modules.ReadBusinessCard;
 import io.connection.bluetooth.socketmanager.modules.ReadChatData;
 import io.connection.bluetooth.socketmanager.modules.ReadFiles;
+import io.connection.bluetooth.socketmanager.modules.SendBusinessCard;
 import io.connection.bluetooth.socketmanager.modules.SendFiles;
 import io.connection.bluetooth.utils.Constants;
 
@@ -30,6 +36,7 @@ import io.connection.bluetooth.utils.Constants;
  */
 public class SocketManager implements Runnable {
     private Socket socket;
+    private SocketOperationType operationType = SocketOperationType.NONE;
     private MessageHandler handler;
     private InputStream is;
     private OutputStream os;
@@ -69,7 +76,12 @@ public class SocketManager implements Runnable {
                         this.obj.wait();
                     }
 
-                    startModule();
+                    if(operationType == SocketOperationType.READ) {
+                        startReadModule();
+                    }
+                    else {
+                        startWriteModule();
+                    }
                 }
             }
             catch (IOException e) {
@@ -93,8 +105,8 @@ public class SocketManager implements Runnable {
         }
     }
 
-    public void startModule() {
-        if(socket.isConnected()) {
+    public void startReadModule() {
+        if(handler.isSocketConnected()) {
             WifiDirectService wifiP2PService = handler.getWifiP2PService();
 
             if( wifiP2PService != null ) {
@@ -111,22 +123,54 @@ public class SocketManager implements Runnable {
                     file.readFiles();
                 }
             }
+
+            operationType = SocketOperationType.NONE;
+            handler.getWifiP2PService().setModule(Modules.NONE);
+        }
+    }
+
+    public void startWriteModule() {
+        if(handler.isSocketConnected()) {
+            WifiDirectService wifiP2PService = handler.getWifiP2PService();
+
+            try {
+                Thread.sleep(2000);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if( wifiP2PService != null ) {
+                if(wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
+                    SendBusinessCard businessCard = new SendBusinessCard(socket, handler);
+                    businessCard.sendCard();
+                }
+                else if(wifiP2PService.getModule() == Modules.FILE_SHARING) {
+                    SendFiles sendFiles = new SendFiles(socket, handler);
+                    sendFiles.start();
+                }
+            }
+
+            operationType = SocketOperationType.NONE;
+            handler.getWifiP2PService().setModule(Modules.NONE);
         }
     }
 
     public void readChatData() {
+        operationType = SocketOperationType.READ;
         synchronized (this.obj) {
             this.obj.notify();
         }
     }
 
     public void readBusinessCard() {
+        operationType = SocketOperationType.READ;
         synchronized (this.obj) {
             this.obj.notify();
         }
     }
 
     public void readFiles() {
+        operationType = SocketOperationType.READ;
         synchronized (this.obj) {
             this.obj.notify();
         }
@@ -147,87 +191,16 @@ public class SocketManager implements Runnable {
     }
 
     public void writeBusinessCard() {
-        SharedPreferences prefs = ImageCache.getContext().getSharedPreferences("businesscard", Context.MODE_PRIVATE);
-        String name = prefs.getString("name", "");
-        String email = prefs.getString("email", "");
-        String phone = prefs.getString("phone", "");
-        String picture = prefs.getString("picture", "");
-        String deviceId = prefs.getString("device_id", "");
-
-        Uri file = Uri.parse(picture);
-
-        int bufferSize = 1024;
-        byte[] buffer = new byte[8 * bufferSize];
-
-        try {
-            Thread.sleep(2000);
-            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-            try {
-
-                File f = new File(file.getPath());
-                long filelength = f.length();
-                //uriFile = Uri.fromFile(f);
-                Log.d(TAG, "sendFile: " + f.length());
-                dos.writeUTF(name);
-                dos.writeUTF(email);
-                dos.writeUTF(phone);
-                final String fileName = f.getName();
-                dos.writeUTF(fileName);
-                dos.writeUTF(deviceId);
-                dos.writeInt((int) filelength);
-
-                FileInputStream fis = new FileInputStream(f);
-                int total = 0;
-                int counting = 0;
-
-                while (fis.read(buffer) > 0) {
-                    dos.write(buffer);
-                    Log.d(TAG, "doInBackground: " + filelength + "   " + total + "  counting " + counting);
-                }
-                dos.flush();
-                fis.close();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-//                    Thread.sleep(3000);
-                    dos.close();
-//                    socket.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "disconnected", e);
-        } catch (InterruptedException e) {
-            Log.e(TAG, "disconnected", e);
-        }
-
-
-        //read message
-        try {
-            byte[] inBuffer = new byte[1024];
-            int bytes;
-            is = socket.getInputStream();
-
-            if (is != null) {
-                bytes = is.read(inBuffer);
-                if (bytes != -1) {
-                    System.out.println("Getting message" + new String(buffer));
-                    handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
-                }
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
+        operationType = SocketOperationType.WRITE;
+        synchronized (this.obj) {
+            this.obj.notify();
         }
     }
 
-    public void writeFiles(List<Uri> files) {
-        if( socket.isConnected() ) {
-            SendFiles sendFiles = new SendFiles(socket, files);
-            sendFiles.start();
+    public void writeFiles() {
+        operationType = SocketOperationType.WRITE;
+        synchronized (this.obj) {
+            this.obj.notify();
         }
     }
 
@@ -239,17 +212,15 @@ public class SocketManager implements Runnable {
         return this.remoteHostAddress;
     }
 
-    public void close() {
-        if(socket!=null && !socket.isClosed()) {
-            try {
-                is.close();
-                os.close();
+    public Socket getConnectedSocket() {
+        return this.socket;
+    }
 
-                socket.close();
-                disable = true;
-            } catch (IOException e) {
-                Log.e(TAG, "IOException during close Socket", e);
-            }
-        }
+    public void socketConnected() {
+        handler.socketConnected();
+    }
+
+    public void socketClosed() {
+        handler.socketClosed();
     }
 }

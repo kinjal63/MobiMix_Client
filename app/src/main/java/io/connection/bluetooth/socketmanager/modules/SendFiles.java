@@ -14,12 +14,16 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.List;
 
+import io.connection.bluetooth.Domain.QueueManager;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.utils.Constants;
 
 /**
  * Created by Kinjal on 4/9/2017.
@@ -27,19 +31,23 @@ import io.connection.bluetooth.activity.ImageCache;
 
 public class SendFiles extends Thread {
     private final Socket mSocket;
+    private MessageHandler handler;
     NotificationManager notificationManager;
     NotificationCompat.Builder mBuilder;
     List<Uri> uri;
 
     private String TAG = "SendFiles";
 
-    public SendFiles(Socket socket, List<Uri> uris) {
-        mSocket = socket;
-        uri = uris;
+    public SendFiles(Socket socket, MessageHandler handler) {
+        this.mSocket = socket;
+        this.handler = handler;
     }
 
     public void run() {
         Log.d(TAG, "BEGIN mConnectedThread");
+
+        uri = QueueManager.getFilesToSend();
+
         int bufferSize = 1024;
         byte[] buffer = new byte[8 * bufferSize];
 
@@ -102,9 +110,6 @@ public class SendFiles extends Thread {
                     e.printStackTrace();
                 } finally {
                     try {
-//                        Thread.sleep(3000);
-//                        dos.close();
-//                        mSocket.close();
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -114,5 +119,23 @@ public class SendFiles extends Thread {
         } catch (IOException e) {
             Log.e(TAG, "disconnected", e);
         }
+
+        //read message
+//        try {
+//            byte[] inBuffer = new byte[1024];
+//            int bytes;
+//            InputStream is = mSocket.getInputStream();
+//
+//            if (is != null) {
+//                bytes = is.read(inBuffer);
+//                if (bytes != -1) {
+//                    System.out.println("Getting message" + new String(buffer));
+//                    handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+//                }
+//            }
+//        }
+//        catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 }
