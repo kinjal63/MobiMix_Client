@@ -17,7 +17,9 @@ import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.activity.BusinessCardListActivityUser;
 import io.connection.bluetooth.activity.DeviceChatActivity;
+import io.connection.bluetooth.activity.DeviceListActivityChat;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.activity.WifiDirectMainActivity;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
@@ -60,20 +62,20 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
 
             Intent intent = new Intent();
 
-            if(WifiDirectService.getInstance(mContext).getModule() == Modules.BUSINESS_CARD) {
+            if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(BusinessCardListActivityUser.class.getSimpleName())) {
                 intent.setClass(mContext, BusinessCardListActivityUser.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 intent.putExtra("device", device);
                 intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
                 context.startActivity(intent);
             }
-            else if(WifiDirectService.getInstance(mContext).getModule() == Modules.CHAT) {
+            else if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(DeviceListActivityChat.class.getSimpleName())) {
                 intent.setClass(mContext, WifiP2PChatActivity.class);
                 intent.putExtra("device", device);
                 intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
                 context.startActivity(intent);
             }
-            else if(WifiDirectService.getInstance(mContext).getModule() == Modules.FILE_SHARING) {
+            else if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(WifiDirectMainActivity.class.getSimpleName())) {
                 clickListener.onClick(v);
             }
         }

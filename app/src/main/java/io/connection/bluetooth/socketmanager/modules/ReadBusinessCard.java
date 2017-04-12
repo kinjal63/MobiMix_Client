@@ -44,6 +44,8 @@ public class ReadBusinessCard {
         while(!disable) {
             try {
 
+                Log.d(TAG, "Starting to read business card");
+
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
                 DataInputStream dis = new DataInputStream(bis);
 
@@ -100,7 +102,7 @@ public class ReadBusinessCard {
                     }
                 });
 
-                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
+//                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
 
             } catch (Exception e) {
                 try {
@@ -115,6 +117,7 @@ public class ReadBusinessCard {
             } finally {
                 try {
                     disable = true;
+                    WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }

@@ -43,6 +43,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private static String obj = "wifiDirectService";
     private static Context mContext = null;
     private String wifiDirectDeviceName = "";
+
+    private String className = "";
     private Modules module = Modules.NONE;
 
     private WifiP2pManager manager;
@@ -372,9 +374,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void notifyUserForClosedSocket() {
-        if( socketConnectionListener != null ) {
-            socketConnectionListener.socketClosed();
-        }
+
     }
 
     public MessageHandler getMessageHandler() {
@@ -383,6 +383,14 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
     public Modules getModule() {
         return this.module;
+    }
+
+    public String getClassName() {
+        return this.className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public void setModule(Modules module) {

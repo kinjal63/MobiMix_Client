@@ -13,6 +13,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.connection.bluetooth.Domain.QueueManager;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.activity.ChatDataConversation;
@@ -69,11 +70,6 @@ public class MessageHandler implements Handler.Callback {
                         Constants.BUSINESSCARD_MODULE : (this.wifiP2PService.getModule() == Modules.CHAT ? Constants.CHAT_MODULE : "None"));
 
                 socketManager.writeMessage(moduleName.getBytes());
-
-                socketConnected();
-                if( this.mSocketConnectionListener != null ) {
-                    this.mSocketConnectionListener.socketConnected(true, socketManager.getRemoteDeviceAddress());
-                }
 
                 SocketHeartBeat heartbeat = new SocketHeartBeat(socketManager);
                 heartbeat.start();
@@ -158,14 +154,16 @@ public class MessageHandler implements Handler.Callback {
     }
 
     public void sendBusinessCard() {
+        Log.d(TAG, "Starting to write business card");
         if(socketManager != null) {
             socketManager.writeBusinessCard();
         }
     }
 
     public void sendFiles(List<Uri> files) {
+        QueueManager.addFilesToSend(files);
         if(socketManager != null) {
-            socketManager.writeFiles(files);
+            socketManager.writeFiles();
         }
     }
 
@@ -189,11 +187,16 @@ public class MessageHandler implements Handler.Callback {
 
     public void socketConnected() {
         isSocketConnected = true;
+        if( this.mSocketConnectionListener != null ) {
+            this.mSocketConnectionListener.socketConnected(true, socketManager.getRemoteDeviceAddress());
+        }
     }
 
     public void socketClosed() {
         isSocketConnected = false;
-        wifiP2PService.notifyUserForClosedSocket();
+        if( this.mSocketConnectionListener != null ) {
+            mSocketConnectionListener.socketClosed();
+        }
         closeSocket();
     }
 
@@ -213,6 +216,7 @@ public class MessageHandler implements Handler.Callback {
     }
 
     public void closeSocket() {
+        wifiP2PService.setModule(Modules.NONE);
         wifiP2PService.closeConnection();
         wifiP2PService.removeGroup();
     }

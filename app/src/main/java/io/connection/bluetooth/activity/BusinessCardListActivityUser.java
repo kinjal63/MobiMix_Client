@@ -219,12 +219,12 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     }
 
     private void initWifiDirect() {
-        WifiDirectService.getInstance(this).setModule(Modules.BUSINESS_CARD);
         networkType = NetworkType.WIFI_DIRECT;
 
         listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
         wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
 
+        WifiDirectService.getInstance(this).setClassName(BusinessCardListActivityUser.class.getSimpleName());
         WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
             @Override
             public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
@@ -526,6 +526,8 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         if( intent != null && intent.getParcelableExtra("device") != null) {
             P2Pdevice = intent.getParcelableExtra("device");
 
+            WifiDirectService.getInstance(this).setModule(Modules.BUSINESS_CARD);
+
             if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(P2Pdevice.deviceName) ) {
                 Toast.makeText(this, "Connecting to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
 
@@ -562,6 +564,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
             @Override
             public void socketConnected(final boolean isClient, final String remoteDeviceAddress) {
                 sendBusinessCard();
+                WifiDirectService.getInstance(BusinessCardListActivityUser.this).setSocketConnectionListener(null);
             }
 
             @Override

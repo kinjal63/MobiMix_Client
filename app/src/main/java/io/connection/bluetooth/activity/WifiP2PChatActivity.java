@@ -157,10 +157,15 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             public void socketConnected(boolean isClient, String remoteDeviceAddress) {
                 WifiP2PChatActivity.this.remoteDeviceAddress = remoteDeviceAddress;
 
-                mSendButton.setEnabled(true);
-                connectionStatus.setText("Connected");
+                UtilsHandler.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSendButton.setEnabled(true);
+                        connectionStatus.setText("Connected");
 
-                WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readChatData();
+                        WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readChatData();
+                    }
+                });
             }
 
             @Override
