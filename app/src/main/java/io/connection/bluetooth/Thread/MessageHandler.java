@@ -38,6 +38,8 @@ public class MessageHandler implements Handler.Callback {
     private WifiDirectService wifiP2PService;
     private SocketConnectionListener mSocketConnectionListener;
 
+    private SocketHeartBeat heartbeat;
+
     private boolean isSocketConnected = false;
 
     private String TAG = "MessageHandler";
@@ -71,7 +73,7 @@ public class MessageHandler implements Handler.Callback {
 
                 socketManager.writeMessage(moduleName.getBytes());
 
-                SocketHeartBeat heartbeat = new SocketHeartBeat(socketManager);
+                heartbeat = new SocketHeartBeat(socketManager);
                 heartbeat.start();
 
                 break;
@@ -222,6 +224,10 @@ public class MessageHandler implements Handler.Callback {
     }
 
     public void closeSocket() {
+        if( heartbeat!= null && !heartbeat.isInterrupted() ) {
+            heartbeat.interrupt();
+        }
+
         wifiP2PService.setModule(Modules.NONE);
         wifiP2PService.closeConnection();
         wifiP2PService.removeGroup();

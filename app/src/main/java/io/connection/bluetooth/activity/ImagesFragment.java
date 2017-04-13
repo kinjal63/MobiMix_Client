@@ -84,6 +84,7 @@ public class ImagesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home_fragment_, container, false);
         RelativeLayout bottomSheet = (RelativeLayout) getActivity().findViewById(R.id.footerSend);
         mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+
         RelativeLayout recyclerView = (RelativeLayout) getActivity().findViewById(R.id.footer_device);
         mBottomSheetBehaviorforFooter = BottomSheetBehavior.from(recyclerView);
 
@@ -240,7 +241,8 @@ public class ImagesFragment extends Fragment {
                 public void onClick(View v) {
                     CheckBox cb = (CheckBox) v;
 
-                    if (ImageCache.getImageCheckBox(holder.itemView.getTag().toString())) {
+                    if (ImageCache.getImageCheckBox(holder.itemView.getTag().toString()) != null &&
+                        ImageCache.getImageCheckBox(holder.itemView.getTag().toString())) {
                         cb.setChecked(false);
                         ImageCache.setImageCheckBoxValue(holder.itemView.getTag().toString(), false);
                         --count;

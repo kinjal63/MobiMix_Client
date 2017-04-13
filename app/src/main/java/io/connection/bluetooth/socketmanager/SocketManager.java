@@ -88,6 +88,12 @@ public class SocketManager implements Runnable {
                 e.printStackTrace();
             }
             catch (InterruptedException i) {
+                synchronized (this.obj) {
+                    this.obj.notify();
+                }
+                if( !Thread.currentThread().isInterrupted() ) {
+                    Thread.currentThread().interrupt();
+                }
                 i.printStackTrace();
             }
 //            }
@@ -119,15 +125,17 @@ public class SocketManager implements Runnable {
 
             if( wifiP2PService != null ) {
                 if(wifiP2PService.getModule() == Modules.CHAT) {
+                    System.out.println("Socket is read 3 Chat");
                     ReadChatData chatData = new ReadChatData(socket, handler);
                     chatData.readChatData();
                 }
                 else if(wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
-                    System.out.println("Socket is connected 3");
+                    System.out.println("Socket is read 3 Business");
                     ReadBusinessCard businessCard = new ReadBusinessCard(socket, handler);
                     businessCard.readData();
                 }
                 else if(wifiP2PService.getModule() == Modules.FILE_SHARING) {
+                    System.out.println("Socket is read 3 file sharing");
                     ReadFiles file = new ReadFiles(socket, handler);
                     file.readFiles();
                 }

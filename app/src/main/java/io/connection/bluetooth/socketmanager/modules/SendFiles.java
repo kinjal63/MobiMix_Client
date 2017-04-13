@@ -10,6 +10,7 @@ import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -121,21 +122,22 @@ public class SendFiles extends Thread {
         }
 
         //read message
-//        try {
-//            byte[] inBuffer = new byte[1024];
-//            int bytes;
-//            InputStream is = mSocket.getInputStream();
-//
-//            if (is != null) {
-//                bytes = is.read(inBuffer);
-//                if (bytes != -1) {
-//                    System.out.println("Getting message" + new String(buffer));
-//                    handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
-//                }
-//            }
-//        }
-//        catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            byte[] inBuffer;
+
+            BufferedInputStream bis = new BufferedInputStream(mSocket.getInputStream(), buffer.length);
+            DataInputStream dis = new DataInputStream(bis);
+
+            if (dis != null) {
+                inBuffer = dis.readUTF().getBytes();
+                dis.close();
+
+                System.out.println("Getting message" + new String(buffer));
+                handler.getHandler().obtainMessage(Constants.MESSAGE_READ, 0, -1, inBuffer).sendToTarget();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

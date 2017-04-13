@@ -17,6 +17,7 @@ import android.webkit.MimeTypeMap;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -167,9 +168,13 @@ public class ReadFiles {
             Log.d(TAG, "run:  readFile  " + e.getMessage());
         } finally {
             try {
-                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
-            } catch (Exception e1) {
-                e1.printStackTrace();
+                DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+                dos.writeUTF("NowClosing");
+
+                Thread.sleep(1000);
+                handler.closeSocket();
+            } catch (Exception ee) {
+                ee.printStackTrace();
             }
         }
     }
