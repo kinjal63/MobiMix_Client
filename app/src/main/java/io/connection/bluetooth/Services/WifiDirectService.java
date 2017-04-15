@@ -27,6 +27,7 @@ import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.WiFiDirectBroadcastReceiver;
 import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
@@ -52,7 +53,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private IntentFilter mIntentFilter;
     private WiFiDirectBroadcastReceiver mReceiver;
 
-    private List<WifiP2pDevice> wifiP2PDeviceList = new ArrayList<>();
+    private List<WifiP2PRemoteDevice> wifiP2PDeviceList = new ArrayList<>();
     private Thread socketHandler;
     private MessageHandler messageHandler;
 
@@ -86,31 +87,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             wifiManager.setWifiEnabled(true);
         }
         setUp();
-//        enableP2P();
         setDeviceName();
 
         messageHandler = new MessageHandler(mContext, this);
-    }
-
-    public void connectWithPeer() {
-        manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "discovery is initiated.");
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        manager.requestPeers(channel, peerListListener);
-                    }
-                }, 1500);
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                Log.d(TAG, "discovery initiation is failed.");
-            }
-        });
     }
 
     public void initiateDiscovery() {
@@ -294,13 +273,15 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             Collection<WifiP2pDevice> p2pDeviceList = peerList.getDeviceList();
 
             wifiP2PDeviceList.clear();
-            wifiP2PDeviceList.addAll(p2pDeviceList);
 
             if( nearByDeviceCallback != null ) {
                 nearByDeviceCallback.onDevicesAvailable(p2pDeviceList);
             }
 
             for(WifiP2pDevice device : p2pDeviceList) {
+                WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
+                wifiP2PDeviceList.add(remoteDevice);
+
                 if( device.deviceName.equalsIgnoreCase(wifiDirectDeviceName) ) {
                     connectWithWifiAddress(device.deviceAddress, null);
                     isDeviceFound = true;
@@ -310,8 +291,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
             if( !isDeviceFound ) {
                 UtilsHandler.dismissProgressDialog();
-//                Toast.makeText(mContext, "Device not found. Please try again.",
-//                        Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -405,7 +384,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         return messageHandler.getRemoteDeviceAddress();
     }
 
-    public List<WifiP2pDevice> getWifiP2PDeviceList() {
+    public List<WifiP2PRemoteDevice> getWifiP2PDeviceList() {
         return wifiP2PDeviceList;
     }
 

@@ -58,6 +58,7 @@ import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.Constants;
@@ -91,7 +92,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     static WifiP2pDevice P2Pdevice;
     private SearchView searchView;
 
-    private ArrayList<WifiP2pDevice> listWifiP2PDevices = new ArrayList<>();
+    private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
     private NetworkType networkType;
 
     private boolean isBluetoothReceiverRegistered;
@@ -227,7 +228,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         WifiDirectService.getInstance(this).setClassName(BusinessCardListActivityUser.class.getSimpleName());
         WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
             @Override
-            public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
+            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
                 listWifiP2PDevices.clear();
                 listWifiP2PDevices.addAll(devices);
 

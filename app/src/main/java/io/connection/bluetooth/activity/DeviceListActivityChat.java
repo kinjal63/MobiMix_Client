@@ -45,11 +45,14 @@ import java.util.Set;
 import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Domain.User;
+import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.Constants;
@@ -71,12 +74,14 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
     BluetoothDeviceAdapter deviceAdapter;
     WifiP2PDeviceAdapter wifiDeviceAdapter;
 
+    BluetoothService bluetoothService;
+
     RecyclerView deviceLayout;
     ApiCall apiCall;
     private ArrayList<BluetoothDevice> listBluetoothDevices = new ArrayList<>();
     private ArrayList<BluetoothDevice> listTempBluetoothDevices = new ArrayList<>();
 
-    private ArrayList<WifiP2pDevice> listWifiP2PDevices = new ArrayList<>();
+    private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
 
     static Context mContext;
     static BluetoothDevice device;
@@ -91,6 +96,9 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         super.onCreate(savedInstanceState);
         // requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.device_layout_list_chat);
+
+        MobileMeasurementApplication.getInstance().registerActivity(this);
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         mContext = this;
@@ -183,18 +191,8 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
     private void initBluetooth() {
         networkType = NetworkType.BLUETOOTH;
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            bluetoothAdapter.enable();
-            Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBlueTooth, 1);
-        } else {
-            bluetoothEnabled();
-        }
+        bluetoothService = BluetoothService.getInstance();
         deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
-
-        registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-        isBluetoothReceiverRegistered = true;
     }
 
     private void initWifiDirect() {
@@ -207,7 +205,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         WifiDirectService.getInstance(this).setClassName(DeviceListActivityChat.class.getSimpleName());
         WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
             @Override
-            public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
+            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
                 listWifiP2PDevices.clear();
                 listWifiP2PDevices.addAll(devices);
 
@@ -224,9 +222,7 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         if (Build.VERSION.SDK_INT >= 21)
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1111);
         else {
-            if (bluetoothAdapter.isDiscovering())
-                bluetoothAdapter.cancelDiscovery();
-            bluetoothAdapter.startDiscovery();
+            bluetoothService.initiateDiscovery();
         }
     }
 

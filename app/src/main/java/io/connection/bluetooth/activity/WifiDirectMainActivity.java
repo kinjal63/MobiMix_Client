@@ -49,6 +49,7 @@ import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 
 public class WifiDirectMainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, View.OnClickListener {
@@ -58,10 +59,9 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
     private ViewPager viewPager;
     WifiP2PDeviceAdapter deviceAdapter;
     RecyclerView deviceLayout;
-    private ArrayList<WifiP2pDevice> tempWifiP2PDevices = new ArrayList<>();
     ApiCall apiCall;
     private SearchView searchView;
-    private ArrayList<WifiP2pDevice> wifiP2PDevices = new ArrayList<>();
+    private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
     private static BottomSheetBehavior mBottomSheetBehavior;
     Context mContext;
     Activity activity;
@@ -82,17 +82,17 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         deviceLayout = (RecyclerView) findViewById(R.id.footer);
 
         WifiDirectService.getInstance(this).initiateDiscovery();
-        wifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
+        listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
 
-        deviceAdapter = new WifiP2PDeviceAdapter(this, wifiP2PDevices);
+        deviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
         deviceAdapter.setDeviceClickListener(this);
 
         WifiDirectService.getInstance(this).setClassName(WifiDirectMainActivity.class.getSimpleName());
         WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
             @Override
-            public void onDevicesAvailable(Collection<WifiP2pDevice> devices) {
-                wifiP2PDevices.clear();
-                wifiP2PDevices.addAll(devices);
+            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
+                listWifiP2PDevices.clear();
+                listWifiP2PDevices.addAll(devices);
 
                 deviceAdapter.notifyDataSetChanged();
             }
