@@ -39,6 +39,8 @@ public class WifiP2PClientHandler extends Thread {
             mSocket.bind(null);
             mSocket.connect(new InetSocketAddress(mAddress.getHostAddress(), Constants.GROUP_OWNER_PORT));
 
+            this.mHandler.socketConnected();
+
             System.out.println("Hostname by client side :" + mSocket.getInetAddress().getHostName()
                     + ",Host Address by client side :" + mSocket.getInetAddress().getHostAddress());
 

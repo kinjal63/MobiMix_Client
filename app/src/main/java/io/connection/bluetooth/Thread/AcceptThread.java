@@ -113,24 +113,18 @@ class readFile extends Thread {
                 e.printStackTrace();
                 break;
             }
-            finally {
-                try {
-                    socket.close();
-                } catch (Exception ee) {
-                    ee.printStackTrace();
-                }
-            }
 
-            UtilsHandler.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Intent intent = new Intent(context, DeviceChatActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    intent.putExtra("device", device);
-                    context.startActivity(intent);
 
-                }
-            });
+//            UtilsHandler.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Intent intent = new Intent(context, DeviceChatActivity.class);
+//                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+//                    intent.putExtra("device", device);
+//                    context.startActivity(intent);
+//
+//                }
+//            });
         }
 
     }

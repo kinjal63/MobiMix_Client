@@ -23,7 +23,6 @@ public class SocketHeartBeat extends Thread {
         Socket socketToMonitor = socketManager.getConnectedSocket();
         InetAddress address = socketToMonitor.getInetAddress();
 
-        this.socketManager.socketConnected();
         while (isSocketConnected) {
             try {
                 Thread.sleep(5000);

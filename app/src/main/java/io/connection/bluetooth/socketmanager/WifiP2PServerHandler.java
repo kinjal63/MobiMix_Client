@@ -45,6 +45,8 @@ public class WifiP2PServerHandler extends Thread {
                 // there is a new connection
                 if(mSocket!=null && !mSocket.isClosed()) {
                     clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
+
+                    this.mHandler.socketConnected();
                     ipAddress = clientSocket.getInetAddress();
 
                     SocketManager socketManager = new SocketManager(clientSocket, mHandler);

@@ -262,10 +262,14 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         }
 
         public void add(String name, BluetoothDevice receivedDevice) {
-            names.add(name);
-            devices.add(receivedDevice);
-            listName.add(name);
-            listDevice.add(receivedDevice);
+            if(!names.contains(name)) {
+                names.add(name);
+                listName.add(name);
+            }
+            if(!devices.contains(receivedDevice)) {
+                devices.add(receivedDevice);
+                listDevice.add(receivedDevice);
+            }
             notifyDataSetChanged();
         }
 
