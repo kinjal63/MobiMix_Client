@@ -103,7 +103,6 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         mContext = this;
         ImageCache.setContext(mContext);
-        apiCall = ApiClient.getClient().create(ApiCall.class);
 
         if( getIntent().getStringExtra("networkType") != null &&
                 getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.BLUETOOTH.name()))

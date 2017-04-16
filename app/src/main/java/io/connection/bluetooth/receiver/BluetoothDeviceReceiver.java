@@ -1,5 +1,6 @@
 package io.connection.bluetooth.receiver;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,11 +10,15 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.User;
+import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
+import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.utils.Constants;
@@ -31,11 +36,13 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
     private String remoteUserName = "";
     private List<BluetoothRemoteDevice> bluetoothRemoteDevices = new ArrayList<BluetoothRemoteDevice>();
     private static BluetoothDeviceReceiver mBluetoothDeviceReceiver = null;
+    private Context mContext;
 
     private BluetoothService bluetoothService;
 
     public BluetoothDeviceReceiver() {
         bluetoothService = BluetoothService.getInstance();
+        mContext = MobileMeasurementApplication.getInstance().getContext();
     }
 
     public static BluetoothDeviceReceiver getInstance() {
@@ -56,32 +63,24 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
             if (remoteDevice != null) {
                 Log.d(TAG, "onReceive: " + remoteDevice.getAddress().trim());
 
-//                User userAvailable = new User();
-//                userAvailable.setMacAddress(deviceMacAddress);
-//                userAvailable.setEmail(deviceBroadcast.getName());
-//                Call<User> name = apiCall.isAvailable(userAvailable);
-//                name.enqueue(new Callback<User>() {
-//                    @Override
-//                    public void onResponse(Call<User> call, Response<User> response) {
-//                        User user = response.body();
+                User userAvailable = new User();
+                userAvailable.setMacAddress(remoteDevice.getAddress());
+                userAvailable.setEmail(remoteDevice.getName());
 
+                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback() {
+                    @Override
+                    public void onResponceSuccess(Call call, Response response) {
                         BluetoothRemoteDevice device = new BluetoothRemoteDevice(remoteDevice, remoteDevice.getName());
                         bluetoothService.setRemoteBluetoothDevice(device);
+                    }
 
-//                        if (user != null) {
-//                            Log.d(TAG, "onResponse: " + user.getName());
-//                        }
-            }
+                    @Override
+                    public void onResponseFailure(Call call) {
 
-//                    @Override
-//                    public void onFailure(Call<User> call, Throwable t) {
-//                        Log.d(TAG, "onFailure: " + t.getMessage());
-//                        Toast.makeText(context, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-//
-//                    }
-//                });
+                    }
+                });
 
-                if(remoteDevice.getName() != null) {
+                if (remoteDevice.getName() != null) {
                     Log.d(TAG, "onReceive Remote device name: " + remoteDevice.getName().trim());
                     if (remoteDevice.getName().trim().equalsIgnoreCase(remoteUserName)) {
                         String deviceMacAddressToPair = remoteDevice.getAddress().trim();
@@ -89,6 +88,35 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
                     }
                 }
             }
+        }
+    }
+
+    public void findAlreadyBondedDevice() {
+        Set<BluetoothDevice> listdevice = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
+        if (Utils.isConnected(mContext)) {
+            for (final BluetoothDevice deviceSet : listdevice) {
+                User userAvailable = new User();
+                userAvailable.setMacAddress(deviceSet.getAddress());
+                userAvailable.setEmail(deviceSet.getName());
+
+                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+                    @Override
+                    public void onResponceSuccess(Call<User> call, Response<User> response) {
+                        User user = response.body();
+                        BluetoothRemoteDevice device = new BluetoothRemoteDevice(deviceSet, user.getName());
+                        bluetoothService.setRemoteBluetoothDevice(device);
+                    }
+
+                    @Override
+                    public void onResponseFailure(Call call) {
+                        Toast.makeText(mContext, "No users are found.", Toast.LENGTH_SHORT);
+                    }
+                });
+
+            }
+        } else {
+            Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
+        }
     }
 
     public void setUserId(String remoteUserName) {
