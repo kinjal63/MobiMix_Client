@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.UUID;
 
+import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.utils.UtilsHandler;
@@ -56,9 +57,13 @@ public class ConnectedThread extends Thread implements Serializable {
         try {
             Log.d(TAG, "run: connected  " + mmSocket.isConnected());
             mmSocket.connect();
-            DeviceChatActivity.enableSendButton();
+            BluetoothService.getInstance().notifyConnectEventToUser(mmSocket.getRemoteDevice().getAddress());
+//            DeviceChatActivity.enableSendButton();
         } catch (IOException connectException) {
-            DeviceChatActivity.setConnectionStatus();
+//            DeviceChatActivity.setConnectionStatus();
+            BluetoothService.getInstance().notifyDisconnectEventToUser();
+            BluetoothService.getInstance().removeSocketConnection();
+            this.interrupt();
             connectException.printStackTrace();
             Log.d(TAG, "run: " + connectException.getMessage());
             return;
@@ -81,9 +86,11 @@ public class ConnectedThread extends Thread implements Serializable {
             }
         } catch (Exception e) {
 
-            DeviceChatActivity.disconnectedChat(device.getAddress());
+//            DeviceChatActivity.disconnectedChat(device.getAddress());
             try {
                 mmSocket.close();
+                this.interrupt();
+                BluetoothService.getInstance().removeSocketConnection();
                 Log.d(TAG, "cancel: Socket Close ");
             } catch (Exception e1) {
                 e1.printStackTrace();
@@ -102,8 +109,6 @@ public class ConnectedThread extends Thread implements Serializable {
             e.printStackTrace();
         }
     }
-
-
 }
 
 

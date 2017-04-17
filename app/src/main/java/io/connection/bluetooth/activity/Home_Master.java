@@ -60,6 +60,7 @@ import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GPSTrackerUtil;
+import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 import retrofit2.Call;
@@ -90,6 +91,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         setContentView(R.layout.home_page_layout);
 
         MobileMeasurementApplication.getInstance().registerActivity(this);
+        NotificationUtil.initialize(this);
+
         getSupportActionBar().setIcon(R.mipmap.ic_logo);
         findViewById(R.id.file_card_id).setOnClickListener(this);
         findViewById(R.id.game_card_id).setOnClickListener(this);

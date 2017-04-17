@@ -1,11 +1,16 @@
 package io.connection.bluetooth.Thread;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.io.IOException;
@@ -13,10 +18,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.activity.BusinessCardReceivedList;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.DeviceChatActivity;
+import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -47,11 +59,16 @@ public class AcceptThread extends Thread {
     }
 
     public void run() {
-
-
         while (true) {
             try {
                 socket = serverSocket.accept();
+
+                BluetoothDevice remoteDevice = socket.getRemoteDevice();
+
+                BluetoothService.getInstance().addSocketConnectionForAddress(remoteDevice.getAddress());
+                if(!BluetoothService.getInstance().isSocketConnectedForAddress(remoteDevice.getAddress())) {
+                    BluetoothService.getInstance().startChatThread(remoteDevice);
+                }
 
                 if (socket.isConnected()) {
                     Log.d(TAG, "run:  connection successfull");
@@ -89,11 +106,11 @@ class readFile extends Thread {
     @Override
     public void run() {
         while (socket.isConnected() ) {
-
+            final String readMessage;
             try {
                 Log.d(TAG, "run: Avaliable   Size  before" +socket.getInputStream().available());
                 bytes = socket.getInputStream().read(buffer);
-                String readMessage = new String(buffer);
+                readMessage = new String(buffer);
                 buffer=new byte[1024];
                 if(readMessage.startsWith("NOWweArECloSing")){
                     socket.close();
@@ -107,6 +124,8 @@ class readFile extends Thread {
             } catch (Exception e) {
                 try {
                     socket.close();
+                    BluetoothService.getInstance().removeSocketConnection();
+                    BluetoothService.getInstance().notifyDisconnectEventToUser();
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }
@@ -114,17 +133,19 @@ class readFile extends Thread {
                 break;
             }
 
+            UtilsHandler.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    device = socket.getRemoteDevice();
+                    BluetoothRemoteDevice remoteDevice = new BluetoothRemoteDevice(device, device.getName());
 
-//            UtilsHandler.runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Intent intent = new Intent(context, DeviceChatActivity.class);
-//                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-//                    intent.putExtra("device", device);
-//                    context.startActivity(intent);
-//
-//                }
-//            });
+                    Intent intent = new Intent(MobileMeasurementApplication.getInstance().getActivity(), DeviceChatActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("device", remoteDevice);
+
+                    NotificationUtil.sendChatNotification(intent, readMessage, remoteDevice.getName());
+                }
+            });
         }
 
     }

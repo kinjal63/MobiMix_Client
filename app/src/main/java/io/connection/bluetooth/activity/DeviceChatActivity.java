@@ -24,13 +24,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by songline on 26/08/16.
  */
-public class DeviceChatActivity extends AppCompatActivity {
+public class DeviceChatActivity extends BaseActivity {
 
     // Intent request codes
     private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
@@ -43,7 +49,7 @@ public class DeviceChatActivity extends AppCompatActivity {
     private EditText mOutEditText;
     private static Button mSendButton;
     ConnectedThread connectedThread;
-    static BluetoothDevice device;
+    static BluetoothRemoteDevice device;
     static ChatAdapter chatAdapter;
     private static TextView chatUserName;
     private static TextView connectionStatus;
@@ -86,31 +92,39 @@ public class DeviceChatActivity extends AppCompatActivity {
         mSendButton.setEnabled(false);
         context = this;
 
-
-        // If the adapter is null, then Bluetooth is not supported
-        if (mBluetoothAdapter == null) {
-
-            Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
-            finish();
-        }
-
-
         Intent intent = getIntent();
-        connectedThread = DeviceListActivityChat.getCurrentThread();
         device = intent.getParcelableExtra("device");
 
-        chatUserName.setText(ChatDataConversation.getUserName(device.getAddress()));
+        bluetoothService.setSocketConnectionListener(new SocketConnectionListener() {
+            @Override
+            public void socketConnected(boolean isClient, String remoteDeviceAddress) {
+                enableSendButton();
+            }
+
+            @Override
+            public void socketClosed() {
+                disableSendButton();
+            }
+        });
+
+        if(!BluetoothService.getInstance().isSocketConnectedForAddress(device.getDevice().getAddress())) {
+            BluetoothService.getInstance().startChatThread(device.getDevice());
+        }
+        else {
+            BluetoothService.getInstance().notifyConnectEventToUser(device.getDevice().getAddress());
+        }
+
+        chatUserName.setText(ChatDataConversation.getUserName(device.getDevice().getAddress()));
         connectionStatus.setText("Connecting ...");
 
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-            // Otherwise, setup the chat session
-        } else {
-            setupChat();
-        }
+        setupChat();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ApplicationSharedPreferences.getInstance(this).addBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN, true);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -120,6 +134,12 @@ public class DeviceChatActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        ApplicationSharedPreferences.getInstance(this).addBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN, false);
     }
 
     /**
@@ -146,7 +166,7 @@ public class DeviceChatActivity extends AppCompatActivity {
 
         //mConversationView.setAdapter(mConversationArrayAdapter);
 
-        List<String> stringList = ChatDataConversation.getChatConversation(device.getAddress());
+        List<String> stringList = ChatDataConversation.getChatConversation(device.getDevice().getAddress());
         if (stringList != null && stringList.size() > 0) {
             Log.d(TAG, "setupChat:  Value of " + stringList.size());
             mConversationArrayAdapter.addAll(stringList);
@@ -182,7 +202,16 @@ public class DeviceChatActivity extends AppCompatActivity {
                 connectionStatus.setText("Connected");
             }
         });
+    }
 
+    private void disableSendButton() {
+        UtilsHandler.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mSendButton.setEnabled(true);
+                connectionStatus.setText("Disconnected");
+            }
+        });
     }
 
     public static void setConnectionStatus() {
@@ -207,12 +236,11 @@ public class DeviceChatActivity extends AppCompatActivity {
             // Get the message bytes and tell the BluetoothChatService to write
             if (!message.equals("NOWweArECloSing")) {
                 mConversationArrayAdapter.add("Me:  " + message);
-                ChatDataConversation.putChatConversation(device.getAddress(), "Me:  " + message);
+                ChatDataConversation.putChatConversation(device.getDevice().getAddress(), "Me:  " + message);
                 chatAdapter.notifyDataSetChanged();
             }
             byte[] send = message.getBytes();
-            connectedThread.sendMessage(send);
-
+            bluetoothService.sendChatMessage(send);
 
             // Reset out string buffer to zero and clear the edit text field
             mOutStringBuffer.setLength(0);
@@ -243,8 +271,8 @@ public class DeviceChatActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        sendMessage("NOWweArECloSing");
-        connectedThread.cancel();
+//        sendMessage("NOWweArECloSing");
+//        connectedThread.cancel();
 
     }
 
@@ -252,8 +280,8 @@ public class DeviceChatActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         Log.d(TAG, "onBackPressed: List View ");
-        sendMessage("NOWweArECloSing");
-        connectedThread.cancel();
+//        sendMessage("NOWweArECloSing");
+//        connectedThread.cancel();
     }
 
     public static void readMessagae(final BluetoothDevice deviceRemote) {
@@ -263,7 +291,7 @@ public class DeviceChatActivity extends AppCompatActivity {
             public void run() {
                 List<String> listofStrings = ChatDataConversation.getChatConversation(deviceRemote.getAddress());
                 if (mConversationArrayAdapter != null) {
-                    if (deviceRemote.getAddress().equals(device.getAddress())) {
+                    if (deviceRemote.getAddress().equals(device.getDevice().getAddress())) {
                         mConversationArrayAdapter.clear();
                         mConversationArrayAdapter.addAll(listofStrings);
                         chatAdapter.notifyDataSetChanged();

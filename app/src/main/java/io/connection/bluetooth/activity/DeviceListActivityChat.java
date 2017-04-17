@@ -50,11 +50,15 @@ import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
+import io.connection.bluetooth.adapter.BluetoothDeviceAdapter;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
@@ -64,22 +68,17 @@ import retrofit2.Response;
 /**
  * Created by songline on 26/08/16.
  */
-public class DeviceListActivityChat extends AppCompatActivity implements SearchView.OnQueryTextListener {
-
+public class DeviceListActivityChat extends BaseActivity implements SearchView.OnQueryTextListener {
     private static final String TAG = "MainActivity";
     BluetoothAdapter bluetoothAdapter;
     private Toolbar toolbar;
     static ConnectedThread connectedThread;
 
-    BluetoothDeviceAdapter deviceAdapter;
+    BluetoothDeviceAdapter bluetoothDeviceAdapter;
     WifiP2PDeviceAdapter wifiDeviceAdapter;
 
-    BluetoothService bluetoothService;
-
     RecyclerView deviceLayout;
-    ApiCall apiCall;
-    private ArrayList<BluetoothDevice> listBluetoothDevices = new ArrayList<>();
-    private ArrayList<BluetoothDevice> listTempBluetoothDevices = new ArrayList<>();
+    private ArrayList<BluetoothRemoteDevice> listBluetoothDevices = new ArrayList<>();
 
     private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
 
@@ -88,8 +87,6 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
     private SearchView searchView;
 
     private NetworkType networkType;
-
-    private boolean isBluetoothReceiverRegistered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,22 +155,6 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
     }
 
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult: " + resultCode);
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK)
-                bluetoothEnabled();
-
-        } else {
-
-            Toast.makeText(getApplicationContext(), "Please Turn On Bluetooth ", Toast.LENGTH_LONG).show();
-            finish();
-        }
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
@@ -191,7 +172,20 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         networkType = NetworkType.BLUETOOTH;
 
         bluetoothService = BluetoothService.getInstance();
-        deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+
+        listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
+        bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+
+        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
+            @Override
+            public void onBluetoothDeviceAvailable(BluetoothRemoteDevice device) {
+                listBluetoothDevices.add(device);
+
+                ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
+
+                bluetoothDeviceAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     private void initWifiDirect() {
@@ -213,18 +207,6 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
         });
     }
 
-    void bluetoothEnabled() {
-        alreadyBondedDevice();
-        //AcceptThread thread = new AcceptThread(BluetoothAdapter.getDefaultAdapter(), mContext);
-        //thread.start();
-
-        if (Build.VERSION.SDK_INT >= 21)
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1111);
-        else {
-            bluetoothService.initiateDiscovery();
-        }
-    }
-
     @Override
     public boolean onQueryTextSubmit(String query) {
         return false;
@@ -233,155 +215,9 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
     @Override
     public boolean onQueryTextChange(String newText) {
 
-        deviceAdapter.getFilter().filter(newText);
+        bluetoothDeviceAdapter.getFilter().filter(newText);
         return false;
     }
-
-    public static class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDeviceAdapter.ViewHolder> implements Filterable {
-        List<String> names = new ArrayList<>();
-        List<String> status = new ArrayList<>();
-        static Context mContext;
-        List<BluetoothDevice> devices = new ArrayList<>();
-        List<String> listName = new ArrayList<>();
-        List<BluetoothDevice> listDevice = new ArrayList<>();
-        FriendFilter friendFilter;
-
-        public BluetoothDeviceAdapter(Context mContext, List<BluetoothDevice> devices) {
-            this.mContext = mContext;
-            this.devices = devices;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(mContext).inflate(viewType == 0 ? R.layout.device_layout_chat : R.layout.searching_devices, parent, false), mContext, viewType);
-        }
-
-        public void add(String name, BluetoothDevice receivedDevice) {
-            if(!names.contains(name)) {
-                names.add(name);
-                listName.add(name);
-            }
-            if(!devices.contains(receivedDevice)) {
-                devices.add(receivedDevice);
-                listDevice.add(receivedDevice);
-            }
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return position == 0 && names.isEmpty() ? 1 : 0;
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            if (holder.getItemViewType() == 0) {
-                holder.nameTV.setText(names.get(position));
-                holder.itemView.setTag(devices.get(position));
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return names.isEmpty() ? 1 : names.size();
-        }
-
-        @Override
-        public Filter getFilter() {
-            if (friendFilter == null) {
-                friendFilter = new FriendFilter();
-            }
-            return friendFilter;
-        }
-
-
-        private class FriendFilter extends Filter {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-
-                FilterResults filterResults = new FilterResults();
-                Map<BluetoothDevice, String> map = new HashMap<>();
-                if (constraint != null && constraint.length() > 0 && constraint.toString().trim().length() > 0) {
-                    ArrayList<String> tempList = new ArrayList<String>();
-                    int i = 0;
-                    // search content in friend list
-                    for (String user : listName) {
-                        if (user.toLowerCase().contains(constraint.toString().toLowerCase())) {
-                            //tempList.add(user);
-                            map.put(listDevice.get(i), user);
-                            i++;
-                        } else {
-                            i++;
-                        }
-                    }
-                    filterResults.count = map.size();
-                    filterResults.values = map;
-                } else {
-                    int i = 0;
-                    for (String user : listName) {
-                        map.put(listDevice.get(i++), user);
-                    }
-                    filterResults.count = map.size();
-                    filterResults.values = map;
-                }
-                return filterResults;
-            }
-
-            /**
-             * Notify about filtered list to ui
-             *
-             * @param constraint text
-             * @param results    filtered result
-             */
-            @SuppressWarnings("unchecked")
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                Map<BluetoothDevice, String> objDeviceMap = (Map) results.values;
-                names.clear();
-                names.addAll(objDeviceMap.values());
-                devices.clear();
-                devices.addAll(objDeviceMap.keySet());
-                notifyDataSetChanged();
-
-            }
-        }
-
-
-        static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-            TextView nameTV;
-            ImageView imageView;
-            public Context context;
-
-            public ViewHolder(View itemView, Context context, int type) {
-                super(itemView);
-                if (type == 0) {
-                    nameTV = (TextView) itemView.findViewById(R.id.chat_user_name);
-                    this.context = context;
-                    itemView.setOnClickListener(this);
-                }
-            }
-
-            @Override
-            public void onClick(View v) {
-
-
-                device = (BluetoothDevice) v.getTag();
-                ImageCache.setContext(context);
-                connectedThread = new ConnectedThread(device);
-                connectedThread.start();
-
-                Intent intent = new Intent(mContext, DeviceChatActivity.class);
-                //intent.putExtra("connectThread", connectedThread);
-                intent.putExtra("device", device);
-                mContext.startActivity(intent);
-
-                NotificationManagerCompat.from(context).cancelAll();
-
-            }
-        }
-
-    }
-
 
     public void setDeviceLayout(RecyclerView deviceLayout) {
 
@@ -391,120 +227,15 @@ public class DeviceListActivityChat extends AppCompatActivity implements SearchV
             deviceLayout.setAdapter(wifiDeviceAdapter);
         }
         else {
-            deviceLayout.setAdapter(deviceAdapter);
+            deviceLayout.setAdapter(bluetoothDeviceAdapter);
         }
 
     }
-
-    public static ConnectedThread getCurrentThread() {
-        return connectedThread;
-    }
-
-    public final BroadcastReceiver bluetoothDeviceFoundReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            String action = intent.getAction();
-            Log.d(TAG, "onReceive: bluetooth receiver here");
-            Log.d("bluetooth", action);
-            if (action.equals(BluetoothDevice.ACTION_FOUND) && Utils.isConnected(context)) {
-                final BluetoothDevice deviceBroadcast = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                /*if (!tempbluetoothDevices.contains(deviceBroadcast)) {
-                   tempbluetoothDevices.add(deviceBroadcast);
-                    deviceAdapter.add(deviceBroadcast.getName(),deviceBroadcast);
-                    ChatDataConversation.putUserName(deviceBroadcast.getAddress(), deviceBroadcast.getName());
-                }*/
-                if (deviceBroadcast != null) {
-                    String deviceMacAddress = deviceBroadcast.getAddress().trim();
-                    Log.d(TAG, "onReceive: " + deviceMacAddress);
-                    if (!listTempBluetoothDevices.contains(deviceBroadcast)) {
-                        User userAvailable = new User();
-                        userAvailable.setMacAddress(deviceMacAddress);
-                        userAvailable.setEmail(deviceBroadcast.getName());
-                        Call<User> name = apiCall.isAvailable(userAvailable);
-                        name.enqueue(new Callback<User>() {
-                            @Override
-                            public void onResponse(Call<User> call, Response<User> response) {
-                                User user = response.body();
-
-                                if (user != null) {
-                                    Log.d(TAG, "onResponse: " + user.getName());
-                                    listTempBluetoothDevices.add(deviceBroadcast);
-                                    deviceAdapter.add(user.getName(), deviceBroadcast);
-                                    deviceAdapter.notifyDataSetChanged();
-                                    ChatDataConversation.putUserName(deviceBroadcast.getAddress(), user.getName());
-                                }
-
-                            }
-
-                            @Override
-                            public void onFailure(Call<User> call, Throwable t) {
-                                Log.d(TAG, "onFailure: " + t.getMessage());
-                                Toast.makeText(context, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-
-                            }
-                        });
-                    }
-
-                }
-            } else {
-                Toast.makeText(context, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-            }
-
-
-        }
-    };
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if( isBluetoothReceiverRegistered ) {
-            unregisterReceiver(bluetoothDeviceFoundReceiver);
-        }
         closeWifiP2PSocketsIfAny();
-    }
-
-
-    public void alreadyBondedDevice() {
-        Set<BluetoothDevice> listdevice = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-        if (Utils.isConnected(mContext)) {
-            for (final BluetoothDevice deviceSet : listdevice) {
-
-                if (!listTempBluetoothDevices.contains(deviceSet)) {
-                    User userAvailable = new User();
-                    userAvailable.setMacAddress(deviceSet.getAddress());
-                    userAvailable.setEmail(deviceSet.getName());
-                    Call<User> name = apiCall.isAvailable(userAvailable);
-                    name.enqueue(new Callback<User>() {
-                        @Override
-                        public void onResponse(Call<User> call, Response<User> response) {
-
-                            User user = response.body();
-
-                            if (user != null) {
-                                Log.d(TAG, "onResponse: " + user.getName());
-                                listTempBluetoothDevices.add(deviceSet);
-                                deviceAdapter.add(user.getName(), deviceSet);
-                                ChatDataConversation.putUserName(deviceSet.getAddress(), user.getName());
-                            }
-
-                        }
-
-                        @Override
-                        public void onFailure(Call<User> call, Throwable t) {
-                            Log.d(TAG, "onFailure: " + t.getMessage());
-                            Toast.makeText(getApplicationContext(), Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-
-                        }
-                    });
-                }
-
-
-            }
-        } else {
-            Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-        }
-
     }
 
     private void closeWifiP2PSocketsIfAny() {

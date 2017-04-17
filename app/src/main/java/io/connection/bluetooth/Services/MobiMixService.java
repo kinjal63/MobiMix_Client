@@ -18,7 +18,7 @@ import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
  * Created by KP49107 on 28-03-2017.
  */
 public class MobiMixService extends Service {
-    private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
+    private BluetoothService bluetoothService;
     private WifiDirectService wifiDirectService;
 
     @Override
@@ -41,8 +41,8 @@ public class MobiMixService extends Service {
     }
 
     private void initBluetooth() {
-        mBluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
-        registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        bluetoothService = BluetoothService.getInstance();
+        bluetoothService.init();
     }
 
     private void initWifiDirect() {
@@ -54,7 +54,8 @@ public class MobiMixService extends Service {
 
     @Override
     public void onDestroy() {
-        unregisterReceiver(mBluetoothDeviceFoundReceiver);
+        bluetoothService.destroy();
+
         wifiDirectService.unRegisterReceiver();
         wifiDirectService.closeSocket();
 

@@ -64,21 +64,23 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
                 Log.d(TAG, "onReceive: " + remoteDevice.getAddress().trim());
 
                 User userAvailable = new User();
+                userAvailable.setName(remoteDevice.getName());
                 userAvailable.setMacAddress(remoteDevice.getAddress());
                 userAvailable.setEmail(remoteDevice.getName());
 
-                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback() {
-                    @Override
-                    public void onResponceSuccess(Call call, Response response) {
-                        BluetoothRemoteDevice device = new BluetoothRemoteDevice(remoteDevice, remoteDevice.getName());
+//                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+//                    @Override
+//                    public void onResponceSuccess(Call<User> call, Response<User> response) {
+//                        User user = response.body();
+                        BluetoothRemoteDevice device = new BluetoothRemoteDevice(remoteDevice, userAvailable.getName());
                         bluetoothService.setRemoteBluetoothDevice(device);
-                    }
-
-                    @Override
-                    public void onResponseFailure(Call call) {
-
-                    }
-                });
+//                    }
+//
+//                    @Override
+//                    public void onResponseFailure(Call call) {
+//
+//                    }
+//                });
 
                 if (remoteDevice.getName() != null) {
                     Log.d(TAG, "onReceive Remote device name: " + remoteDevice.getName().trim());
@@ -93,30 +95,31 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
 
     public void findAlreadyBondedDevice() {
         Set<BluetoothDevice> listdevice = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-        if (Utils.isConnected(mContext)) {
-            for (final BluetoothDevice deviceSet : listdevice) {
+//        if (Utils.isConnected(mContext)) {
+            for (final BluetoothDevice device : listdevice) {
                 User userAvailable = new User();
-                userAvailable.setMacAddress(deviceSet.getAddress());
-                userAvailable.setEmail(deviceSet.getName());
+                userAvailable.setName(device.getName());
+                userAvailable.setMacAddress(device.getAddress());
+                userAvailable.setEmail(device.getName());
 
-                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
-                    @Override
-                    public void onResponceSuccess(Call<User> call, Response<User> response) {
-                        User user = response.body();
-                        BluetoothRemoteDevice device = new BluetoothRemoteDevice(deviceSet, user.getName());
-                        bluetoothService.setRemoteBluetoothDevice(device);
-                    }
-
-                    @Override
-                    public void onResponseFailure(Call call) {
-                        Toast.makeText(mContext, "No users are found.", Toast.LENGTH_SHORT);
-                    }
-                });
+//                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+//                    @Override
+//                    public void onResponceSuccess(Call<User> call, Response<User> response) {
+//                        User user = response.body();
+                        BluetoothRemoteDevice remoteDevice = new BluetoothRemoteDevice(device, userAvailable.getName());
+                        bluetoothService.setRemoteBluetoothDevice(remoteDevice);
+//                    }
+//
+//                    @Override
+//                    public void onResponseFailure(Call call) {
+//                        Toast.makeText(mContext, "No users are found.", Toast.LENGTH_SHORT);
+//                    }
+//                });
 
             }
-        } else {
-            Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-        }
+//        } else {
+//            Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
+//        }
     }
 
     public void setUserId(String remoteUserName) {

@@ -269,31 +269,28 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     public WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
-            boolean isDeviceFound = false;
-            Collection<WifiP2pDevice> p2pDeviceList = peerList.getDeviceList();
+        Collection<WifiP2pDevice> p2pDeviceList = peerList.getDeviceList();
 
-            wifiP2PDeviceList.clear();
+        wifiP2PDeviceList.clear();
 
-            if( nearByDeviceCallback != null ) {
-                nearByDeviceCallback.onDevicesAvailable(p2pDeviceList);
-            }
-
-            for(WifiP2pDevice device : p2pDeviceList) {
-                WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
-                wifiP2PDeviceList.add(remoteDevice);
-
-                if( device.deviceName.equalsIgnoreCase(wifiDirectDeviceName) ) {
-                    connectWithWifiAddress(device.deviceAddress, null);
-                    isDeviceFound = true;
-                }
-            }
-            setWifiDirectDeviceName(null);
-
-            if( !isDeviceFound ) {
-                UtilsHandler.dismissProgressDialog();
-            }
+        for(WifiP2pDevice device : p2pDeviceList) {
+            WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
+            wifiP2PDeviceList.add(remoteDevice);
+        }
+        if( nearByDeviceCallback != null ) {
+            nearByDeviceCallback.onDevicesAvailable(wifiP2PDeviceList);
+        }
         }
     };
+
+    public void a(WifiP2pDevice device) {
+        for( WifiP2PRemoteDevice remoteDevice : wifiP2PDeviceList ) {
+            if (remoteDevice.getDevice().deviceName.equalsIgnoreCase(wifiDirectDeviceName)) {
+                connectWithWifiAddress(device.deviceAddress, null);
+            }
+        }
+        setWifiDirectDeviceName(null);
+    }
 
     public void setNearByDeviceFoundCallback(NearByDeviceFound nearByDeviceCallback) {
         this.nearByDeviceCallback = nearByDeviceCallback;

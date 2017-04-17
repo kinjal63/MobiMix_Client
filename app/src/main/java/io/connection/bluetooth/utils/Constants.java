@@ -43,6 +43,7 @@ public class Constants {
     public static final int THREAD_POOL_EXECUTOR_KEEP_ALIVE_TIME = 10;
 
     public static final String PREF_WIFIDIRECT_CONNECTED = "WifiDirect_Connected";
+    public static final String PREF_CHAT_ACTIVITY_OPEN = "Chat_Screen_Open_";
 }
 //  Query
 

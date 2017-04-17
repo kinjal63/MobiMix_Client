@@ -319,18 +319,12 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
-
 
     static class ChatAdapter extends BaseAdapter {
         private static LayoutInflater inflater = null;
-
-
         List<String> listMessages = new ArrayList<>();
         Context context;
-
 
         public ChatAdapter(Context context, List<String> listMessages) {
             this.listMessages = listMessages;

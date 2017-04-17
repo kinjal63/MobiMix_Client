@@ -43,4 +43,8 @@ public class WifiP2PRemoteDevice implements Parcelable {
     public String getName() {
         return this.name;
     }
+
+    public WifiP2pDevice getDevice() {
+        return this.device;
+    }
 }
