@@ -13,17 +13,22 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.QueueManager;
+import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.Home_Master;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.SocketHeartBeat;
 import io.connection.bluetooth.socketmanager.SocketManager;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -71,7 +76,9 @@ public class MessageHandler implements Handler.Callback {
                         Constants.FILESHARING_MODULE : (this.wifiP2PService.getModule() == Modules.BUSINESS_CARD ?
                         Constants.BUSINESSCARD_MODULE : (this.wifiP2PService.getModule() == Modules.CHAT ? Constants.CHAT_MODULE : "None"));
 
-                socketManager.writeMessage(moduleName.getBytes());
+                String message = moduleName + "_" + LocalP2PDevice.getInstance().getLocalDevice().deviceAddress + "_" +
+                        LocalP2PDevice.getInstance().getLocalDevice().deviceName;
+                socketManager.writeMessage(message.getBytes());
 
                 heartbeat = new SocketHeartBeat(socketManager);
                 heartbeat.start();
@@ -96,14 +103,17 @@ public class MessageHandler implements Handler.Callback {
 
         }
         else if(message.startsWith(Constants.FILESHARING_MODULE)) {
+            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
             wifiP2PService.setModule(Modules.FILE_SHARING);
             readFiles();
         }
         else if(message.startsWith(Constants.CHAT_MODULE)) {
+            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
             wifiP2PService.setModule(Modules.CHAT);
             readChatData();
         }
         else if(message.startsWith(Constants.BUSINESSCARD_MODULE)) {
+            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
             wifiP2PService.setModule(Modules.BUSINESS_CARD);
 
             System.out.println("Socket is connected 2");
@@ -126,20 +136,28 @@ public class MessageHandler implements Handler.Callback {
                     Log.d(TAG, "run: Accept thread Receive Message Count -> "+ChatDataConversation.getChatConversation(socketManager.getRemoteDeviceAddress()).size());
                     WifiP2PChatActivity.readMessagae(socketManager.getRemoteDeviceAddress());
 
-                    UtilsHandler.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            WifiP2pDevice device = new WifiP2pDevice();
-                            device.deviceName = socketManager.getRemoteDeviceAddress();
+                    WifiP2PRemoteDevice remoteDevice = socketManager.getRemoteDevice();
 
-                            Intent intent = new Intent(context, WifiP2PChatActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            intent.putExtra("device", device);
-                            intent.putExtra("remoteDeviceAddress", socketManager.getRemoteDeviceAddress());
-                            context.startActivity(intent);
+                    Intent intent = new Intent(MobileMeasurementApplication.getInstance().getActivity(), DeviceChatActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("device", remoteDevice);
 
-                        }
-                    });
+                    NotificationUtil.sendChatNotification(intent, message, remoteDevice.getName());
+
+//                    UtilsHandler.runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            WifiP2pDevice device = new WifiP2pDevice();
+//                            device.deviceName = socketManager.getRemoteDeviceAddress();
+//
+//                            Intent intent = new Intent(context, WifiP2PChatActivity.class);
+//                            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                            intent.putExtra("device", device);
+//                            intent.putExtra("remoteDeviceAddress", socketManager.getRemoteDeviceAddress());
+//                            context.startActivity(intent);
+//
+//                        }
+//                    });
                     break;
                 case 2:
                     String businessCardInfo = message;

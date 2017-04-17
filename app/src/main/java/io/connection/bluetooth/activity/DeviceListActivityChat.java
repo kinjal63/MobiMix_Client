@@ -235,7 +235,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        closeWifiP2PSocketsIfAny();
+//        closeWifiP2PSocketsIfAny();
     }
 
     private void closeWifiP2PSocketsIfAny() {

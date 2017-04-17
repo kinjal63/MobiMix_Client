@@ -4,9 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.NetworkInfo;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
+import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
@@ -61,6 +63,10 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     WifiDirectService.getInstance(context).initiateDiscovery();
                 }
             } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
+
+                WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
+                LocalP2PDevice.getInstance().setLocalDevice(device);
+
 //            if (mManager != null) {
 //                mManager.requestPeers(mChannel, WifiDirectService.getInstance(context).peerListListener);
 //            }

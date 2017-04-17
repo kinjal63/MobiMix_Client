@@ -30,6 +30,9 @@ import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
@@ -47,7 +50,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
     static ChatAdapter chatAdapter;
     private static TextView chatUserName;
     private static TextView connectionStatus;
-    private static WifiP2pDevice device;
+    private static WifiP2PRemoteDevice device;
     private MessageHandler handler;
 
 
@@ -88,31 +91,29 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         device = intent.getParcelableExtra("device");
         remoteDeviceAddress = intent.getStringExtra("remoteDeviceAddress");
 
-        chatUserName.setText(ChatDataConversation.getUserName(device.deviceName));
+        chatUserName.setText(ChatDataConversation.getUserName(device.getDevice().deviceName));
         connectionStatus.setText("Connecting...");
 
         handler = WifiDirectService.getInstance(this).getMessageHandler();
 
         setupChat();
 
-        if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.deviceName) ) {
-            WifiDirectService.getInstance(this).connectWithWifiAddress(device.deviceAddress, new DeviceConnectionListener() {
+        if (!WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.getDevice().deviceName)) {
+            WifiDirectService.getInstance(this).connectWithWifiAddress(device.getDevice().deviceAddress, new DeviceConnectionListener() {
                 @Override
                 public void onDeviceConnected(boolean isConnected) {
-                    if(isConnected) {
+                    if (isConnected) {
                         setSocketListeners();
 
                         mSendButton.setEnabled(true);
                         connectionStatus.setText("Connected");
-                    }
-                    else {
+                    } else {
                         mSendButton.setEnabled(false);
                         connectionStatus.setText("Not Connected");
                     }
                 }
             });
-        }
-        else {
+        } else {
             remoteDeviceAddress = WifiDirectService.getInstance(this).getRemoteDeviceAddress();
             setSocketListeners();
 
@@ -124,6 +125,13 @@ public class WifiP2PChatActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        ApplicationSharedPreferences.getInstance(this).addBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN, true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        ApplicationSharedPreferences.getInstance(this).addBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN, false);
     }
 
     @Override
@@ -170,7 +178,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
 
             @Override
             public void socketClosed() {
-                if(!WifiP2PChatActivity.this.isFinishing() || !WifiP2PChatActivity.this.isDestroyed()) {
+                if (!WifiP2PChatActivity.this.isFinishing() || !WifiP2PChatActivity.this.isDestroyed()) {
                     UtilsHandler.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -285,7 +293,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
 
                 }
 
-                Toast.makeText(context,"Go To device list and try again",Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Go To device list and try again", Toast.LENGTH_LONG).show();
 
             }
         });

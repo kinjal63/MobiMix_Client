@@ -65,6 +65,8 @@ public class Login_Register extends AppCompatActivity {
         }
         sharedPref = this.getSharedPreferences("myPref", Context.MODE_PRIVATE);
 
+        ApplicationSharedPreferences.getInstance(this).addValue("email", Build.MODEL);
+
 //        if(sharedPref.getBoolean("is_login", false)) {
             startActivity(new Intent(this, Home_Master.class));
             finish();

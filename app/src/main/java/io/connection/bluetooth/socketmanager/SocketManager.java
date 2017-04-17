@@ -22,6 +22,7 @@ import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.SocketOperationType;
 import io.connection.bluetooth.socketmanager.modules.ReadBusinessCard;
@@ -41,6 +42,8 @@ public class SocketManager implements Runnable {
     private InputStream is;
     private OutputStream os;
     private boolean disable = false;
+
+    private WifiP2PRemoteDevice remoteDevice;
     private String remoteHostAddress;
     private String obj = "ThreadSync";
 
@@ -220,6 +223,17 @@ public class SocketManager implements Runnable {
         synchronized (this.obj) {
             this.obj.notify();
         }
+    }
+
+    public void setRemoteDevice(String remoteDeviceAddress, String deviceName) {
+        WifiP2pDevice device = new WifiP2pDevice();
+        device.deviceAddress = remoteDeviceAddress;
+        device.deviceName = deviceName;
+        this.remoteDevice = new WifiP2PRemoteDevice(device, deviceName);
+    }
+
+    public WifiP2PRemoteDevice getRemoteDevice() {
+        return this.remoteDevice;
     }
 
     public String setRemoteDeviceHostAddress(String hostAddress) {
