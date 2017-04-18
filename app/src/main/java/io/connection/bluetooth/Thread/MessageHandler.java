@@ -100,7 +100,7 @@ public class MessageHandler implements Handler.Callback {
     private void handleObject(String message) {
         System.out.println("Actual message received::" + message);
         if(message.startsWith(Constants.NO_MODULE)) {
-
+            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
         }
         else if(message.startsWith(Constants.FILESHARING_MODULE)) {
             socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
@@ -138,7 +138,7 @@ public class MessageHandler implements Handler.Callback {
 
                     WifiP2PRemoteDevice remoteDevice = socketManager.getRemoteDevice();
 
-                    Intent intent = new Intent(MobileMeasurementApplication.getInstance().getActivity(), DeviceChatActivity.class);
+                    Intent intent = new Intent(MobileMeasurementApplication.getInstance().getActivity(), WifiP2PChatActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("device", remoteDevice);
 

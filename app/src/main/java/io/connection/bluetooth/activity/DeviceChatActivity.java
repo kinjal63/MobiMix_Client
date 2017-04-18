@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ import java.util.List;
 
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.BluetoothService;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
@@ -124,6 +126,11 @@ public class DeviceChatActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         ApplicationSharedPreferences.getInstance(this).addBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN, true);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return true;
     }
 
     @Override
@@ -300,10 +307,11 @@ public class DeviceChatActivity extends BaseActivity {
                 }
             }
         });
-
-
     }
 
+    private void endChat(){
+        bluetoothService.endChat();
+    }
 
     static class ChatAdapter extends BaseAdapter {
         private static LayoutInflater inflater = null;

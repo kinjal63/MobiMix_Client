@@ -45,14 +45,13 @@ public class WifiP2PServerHandler extends Thread {
                 // there is a new connection
                 if(mSocket!=null && !mSocket.isClosed()) {
                     clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
-
-                    this.mHandler.socketConnected();
                     ipAddress = clientSocket.getInetAddress();
 
                     SocketManager socketManager = new SocketManager(clientSocket, mHandler);
 
                     socketManager.setRemoteDeviceHostAddress(ipAddress.getHostName());
                     pool.execute(socketManager);
+
                     System.out.println("Hostname by server side :" + clientSocket.getInetAddress().getHostName()
                     + ",Host Address by server side :" + clientSocket.getInetAddress().getHostAddress());
                 }

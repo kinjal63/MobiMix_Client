@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -98,7 +99,8 @@ public class WifiP2PChatActivity extends AppCompatActivity {
 
         setupChat();
 
-        if (!WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.getDevice().deviceName)) {
+        if (device.getDevice().status != WifiP2pDevice.CONNECTED &&
+                !WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.getDevice().deviceName)) {
             WifiDirectService.getInstance(this).connectWithWifiAddress(device.getDevice().deviceAddress, new DeviceConnectionListener() {
                 @Override
                 public void onDeviceConnected(boolean isConnected) {
@@ -117,8 +119,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             remoteDeviceAddress = WifiDirectService.getInstance(this).getRemoteDeviceAddress();
             setSocketListeners();
 
-            mSendButton.setEnabled(true);
-            connectionStatus.setText("Connnected");
+            enableChat();
         }
     }
 
@@ -135,10 +136,19 @@ public class WifiP2PChatActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
+                break;
+            case R.id.menu_end_chat:
+                endChat();
                 break;
         }
         return true;
@@ -168,10 +178,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                 UtilsHandler.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mSendButton.setEnabled(true);
-                        connectionStatus.setText("Connected");
-
-                        WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readChatData();
+                        enableChat();
                     }
                 });
             }
@@ -191,6 +198,13 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void enableChat() {
+        mSendButton.setEnabled(true);
+        connectionStatus.setText("Connected");
+
+        WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readChatData();
     }
 
     /**
@@ -327,6 +341,10 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void endChat() {
+        WifiDirectService.getInstance(this).closeSocket();
     }
 
     static class ChatAdapter extends BaseAdapter {

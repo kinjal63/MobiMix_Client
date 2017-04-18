@@ -119,14 +119,19 @@ public class BluetoothService {
 
     public void setSocketConnectionListener(SocketConnectionListener socketConnectionListener) {
         this.socketConnectionListener = socketConnectionListener;
+
     }
 
     public void notifyConnectEventToUser(String remoteDeviceAddress) {
-        this.socketConnectionListener.socketConnected(true, remoteDeviceAddress);
+        if( this.socketConnectionListener != null ) {
+            this.socketConnectionListener.socketConnected(true, remoteDeviceAddress);
+        }
     }
 
     public void notifyDisconnectEventToUser() {
-        this.socketConnectionListener.socketClosed();
+        if( this.socketConnectionListener != null ) {
+            this.socketConnectionListener.socketClosed();
+        }
     }
 
     public void setRemoteBluetoothDevice(BluetoothRemoteDevice device) {
@@ -140,10 +145,12 @@ public class BluetoothService {
 
     public void addSocketConnectionForAddress(String deviceAddress) {
         connectedSocketAddresses.addElement(deviceAddress);
+        notifyConnectEventToUser(deviceAddress);
     }
 
     public void removeSocketConnection() {
         connectedSocketAddresses.clear();
+        notifyDisconnectEventToUser();
     }
 
     public boolean isSocketConnectedForAddress(String deviceAddress) {
@@ -164,6 +171,14 @@ public class BluetoothService {
     public void sendChatMessage(byte[] message) {
         if( connectedThread != null ) {
             connectedThread.sendMessage(message);
+        }
+    }
+
+    public void endChat() {
+        if( connectedThread != null ) {
+            String message = "NOWweArECloSing";
+            sendChatMessage(message.getBytes());
+            connectedThread.cancel();
         }
     }
 

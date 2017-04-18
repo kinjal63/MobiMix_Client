@@ -204,7 +204,8 @@
             android:screenOrientation="portrait">
         </activity>
 
-        <service android:name=".Services.MobiMixService">
+        <service android:name=".Services.MobiMixService"
+                 android:stopWithTask="false">
         </service>
 
         <service android:name=".Services.InstanceIdService">

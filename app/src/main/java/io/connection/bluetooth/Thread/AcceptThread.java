@@ -65,10 +65,10 @@ public class AcceptThread extends Thread {
 
                 BluetoothDevice remoteDevice = socket.getRemoteDevice();
 
-                BluetoothService.getInstance().addSocketConnectionForAddress(remoteDevice.getAddress());
                 if(!BluetoothService.getInstance().isSocketConnectedForAddress(remoteDevice.getAddress())) {
                     BluetoothService.getInstance().startChatThread(remoteDevice);
                 }
+                BluetoothService.getInstance().addSocketConnectionForAddress(remoteDevice.getAddress());
 
                 if (socket.isConnected()) {
                     Log.d(TAG, "run:  connection successfull");
@@ -125,7 +125,6 @@ class readFile extends Thread {
                 try {
                     socket.close();
                     BluetoothService.getInstance().removeSocketConnection();
-                    BluetoothService.getInstance().notifyDisconnectEventToUser();
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }

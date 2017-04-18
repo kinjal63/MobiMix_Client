@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
@@ -88,6 +90,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
         setUp();
         setDeviceName();
+        new Timer().schedule(new DiscoveryTask(), 500, 30000);
 
         messageHandler = new MessageHandler(mContext, this);
     }
@@ -397,4 +400,11 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             e.printStackTrace();
         }
     }
+    private class DiscoveryTask extends TimerTask {
+        @Override
+        public void run() {
+            initiateDiscovery();
+        }
+    }
+
 }

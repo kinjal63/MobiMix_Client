@@ -2,6 +2,7 @@ package io.connection.bluetooth.activity;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -80,7 +81,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     private Handler mHandler;
     private String toUserId;
     private String toEmail;
-    private Intent mService;
+    private MobiMixService mService;
 
 //    private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
 //    private WifiDirectService wifiDirectService;
@@ -177,10 +178,22 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     }
 
     private void startMobiMixService() {
-        mService = new Intent(this, MobiMixService.class);
-        startService(mService);
-
+        Intent serviceIntent = new Intent(this, MobiMixService.class);
+        bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
+
+    ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mService = ((MobiMixService.LocalBinder)service).getService();
+            mService.init();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mService.destroy();
+        }
+    };
 
     @Override
     protected void onResume() {
@@ -234,7 +247,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
     @Override
     public void onBackPressed() {
-        stopService(mService);
         finish();
         //super.finish();
     }
@@ -490,7 +502,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     protected void onDestroy() {
 //        unregisterReceiver(mBluetoothDeviceFoundReceiver);
 //        wifiDirectService.unRegisterReceiver();
-        stopService(mService);
         super.onDestroy();
     }
 }

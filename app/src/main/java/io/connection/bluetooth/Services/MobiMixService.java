@@ -20,24 +20,33 @@ import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 public class MobiMixService extends Service {
     private BluetoothService bluetoothService;
     private WifiDirectService wifiDirectService;
+    private final IBinder mBinder = new LocalBinder();
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
+    public class LocalBinder extends Binder {
+        public MobiMixService getService() {
+            return MobiMixService.this;
+        }
+    }
 
+    public void init() {
         initBluetooth();
         initWifiDirect();
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
+        return START_NOT_STICKY;
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
     }
 
     private void initBluetooth() {
@@ -48,24 +57,24 @@ public class MobiMixService extends Service {
     private void initWifiDirect() {
         wifiDirectService = WifiDirectService.getInstance(this);
         wifiDirectService.registerReceiver();
-        new Timer().schedule(new DiscoveryTask(), 500, 30000);
-        wifiDirectService.initiateDiscovery();
     }
 
     @Override
     public void onDestroy() {
+        destroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        System.out.println("MobiMix task removed-stopping service");
+        stopSelf();
+    }
+
+    public void destroy() {
         bluetoothService.destroy();
 
         wifiDirectService.unRegisterReceiver();
         wifiDirectService.closeSocket();
-
-        super.onDestroy();
-    }
-
-    private class DiscoveryTask extends TimerTask {
-        @Override
-        public void run() {
-            wifiDirectService.initiateDiscovery();
-        }
     }
 }

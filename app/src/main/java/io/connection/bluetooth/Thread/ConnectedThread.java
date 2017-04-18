@@ -57,11 +57,8 @@ public class ConnectedThread extends Thread implements Serializable {
         try {
             Log.d(TAG, "run: connected  " + mmSocket.isConnected());
             mmSocket.connect();
-            BluetoothService.getInstance().notifyConnectEventToUser(mmSocket.getRemoteDevice().getAddress());
-//            DeviceChatActivity.enableSendButton();
+            BluetoothService.getInstance().addSocketConnectionForAddress(device.getAddress());
         } catch (IOException connectException) {
-//            DeviceChatActivity.setConnectionStatus();
-            BluetoothService.getInstance().notifyDisconnectEventToUser();
             BluetoothService.getInstance().removeSocketConnection();
             this.interrupt();
             connectException.printStackTrace();
