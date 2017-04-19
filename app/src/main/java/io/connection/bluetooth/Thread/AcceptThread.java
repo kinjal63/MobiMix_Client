@@ -114,6 +114,7 @@ class readFile extends Thread {
                 buffer=new byte[1024];
                 if(readMessage.startsWith("NOWweArECloSing")){
                     socket.close();
+                    BluetoothService.getInstance().removeSocketConnection();
                     break;
                 }
                 Log.d(TAG, "run:  Accept Thread Receive Message"+readMessage);

@@ -179,7 +179,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
     private void startMobiMixService() {
         Intent serviceIntent = new Intent(this, MobiMixService.class);
-        bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        startService(serviceIntent);
+//        bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     ServiceConnection mServiceConnection = new ServiceConnection() {

@@ -86,7 +86,6 @@ public class ConnectedThread extends Thread implements Serializable {
 //            DeviceChatActivity.disconnectedChat(device.getAddress());
             try {
                 mmSocket.close();
-                this.interrupt();
                 BluetoothService.getInstance().removeSocketConnection();
                 Log.d(TAG, "cancel: Socket Close ");
             } catch (Exception e1) {

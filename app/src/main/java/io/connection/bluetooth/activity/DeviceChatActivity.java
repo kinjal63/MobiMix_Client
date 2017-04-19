@@ -3,8 +3,10 @@ package io.connection.bluetooth.activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -130,6 +132,7 @@ public class DeviceChatActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
         return true;
     }
 
@@ -137,7 +140,12 @@ public class DeviceChatActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                onBackPressed();
+                Intent intent = new Intent(context, Home_Master.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                break;
+            case R.id.menu_end_chat:
+                endChat();
                 break;
         }
         return true;
@@ -215,7 +223,7 @@ public class DeviceChatActivity extends BaseActivity {
         UtilsHandler.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mSendButton.setEnabled(true);
+                mSendButton.setEnabled(false);
                 connectionStatus.setText("Disconnected");
             }
         });
@@ -310,7 +318,23 @@ public class DeviceChatActivity extends BaseActivity {
     }
 
     private void endChat(){
-        bluetoothService.endChat();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("End Chat")
+                .setMessage("Do you want to end chat?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        bluetoothService.endChat();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     static class ChatAdapter extends BaseAdapter {

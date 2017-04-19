@@ -23,6 +23,7 @@ import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
+import io.connection.bluetooth.utils.Utils;
 
 /**
  * Created by KP49107 on 14-04-2017.
@@ -58,7 +59,7 @@ public class BluetoothService {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         bluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
-        context.registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        registerReceiver();
 
         if (!bluetoothAdapter.isEnabled()) {
             bluetoothAdapter.enable();
@@ -68,6 +69,10 @@ public class BluetoothService {
         } else {
             startBluetoothDiscoveryTimer();
         }
+    }
+
+    public void registerReceiver() {
+        context.registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
     }
 
     public void initiateDiscovery() {
@@ -101,13 +106,18 @@ public class BluetoothService {
 
     public void startChatThread(BluetoothDevice device) {
         closeAllRunningThreads();
+        startConnectionThread(device);
+    }
 
+    private synchronized void startConnectionThread(BluetoothDevice device) {
         connectedThread = new ConnectedThread(device);
         connectedThread.start();
     }
 
-    private void closeAllRunningThreads() {
+    private synchronized void closeAllRunningThreads() {
         if( connectedThread != null && !connectedThread.isInterrupted() ) {
+            connectedThread.cancel();
+
             connectedThread.interrupt();
             connectedThread = null;
         }
@@ -150,6 +160,7 @@ public class BluetoothService {
 
     public void removeSocketConnection() {
         connectedSocketAddresses.clear();
+        closeAllRunningThreads();
         notifyDisconnectEventToUser();
     }
 
@@ -178,11 +189,18 @@ public class BluetoothService {
         if( connectedThread != null ) {
             String message = "NOWweArECloSing";
             sendChatMessage(message.getBytes());
-            connectedThread.cancel();
+
+            try {
+                Thread.sleep(1000);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            removeSocketConnection();
         }
     }
 
-    public void destroy() {
+    public void unregisterReceiver() {
         context.unregisterReceiver(bluetoothDeviceFoundReceiver);
     }
 

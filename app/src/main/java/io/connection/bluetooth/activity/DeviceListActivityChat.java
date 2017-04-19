@@ -61,6 +61,7 @@ import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
+import io.connection.bluetooth.utils.UtilsHandler;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -183,7 +184,12 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
 
                 ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
 
-                bluetoothDeviceAdapter.notifyDataSetChanged();
+                UtilsHandler.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        bluetoothDeviceAdapter.notifyDataSetChanged();
+                    }
+                });
             }
         });
     }

@@ -73,7 +73,6 @@ public class SocketManager implements Runnable {
                     bytes = is.read(buffer);
 
                     System.out.println("Getting message" + new String(buffer));
-                    this.socketConnected();
                     handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
 
                     synchronized (this.obj) {

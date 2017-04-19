@@ -36,6 +36,7 @@ public class MobiMixService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        init();
     }
 
     @Override
@@ -61,6 +62,7 @@ public class MobiMixService extends Service {
 
     @Override
     public void onDestroy() {
+        System.out.println("Destroying service");
         destroy();
         super.onDestroy();
     }
@@ -72,9 +74,12 @@ public class MobiMixService extends Service {
     }
 
     public void destroy() {
-        bluetoothService.destroy();
-
+        bluetoothService.unregisterReceiver();
+        System.out.println("Destroying service2");
         wifiDirectService.unRegisterReceiver();
+        System.out.println("Destroying service3");
         wifiDirectService.closeSocket();
+
+        System.out.println("Destroying service4");
     }
 }
