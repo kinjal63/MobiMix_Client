@@ -205,7 +205,7 @@
         </activity>
 
         <service android:name=".Services.MobiMixService"
-                 android:stopWithTask="false">
+                 android:stopWithTask="true">
         </service>
 
         <service android:name=".Services.InstanceIdService">

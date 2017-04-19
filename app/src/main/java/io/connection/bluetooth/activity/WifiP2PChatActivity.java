@@ -3,9 +3,11 @@ package io.connection.bluetooth.activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -106,9 +108,6 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                 public void onDeviceConnected(boolean isConnected) {
                     if (isConnected) {
                         setSocketListeners();
-
-                        mSendButton.setEnabled(true);
-                        connectionStatus.setText("Connected");
                     } else {
                         mSendButton.setEnabled(false);
                         connectionStatus.setText("Not Connected");
@@ -344,7 +343,23 @@ public class WifiP2PChatActivity extends AppCompatActivity {
     }
 
     private void endChat() {
-        WifiDirectService.getInstance(this).closeSocket();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("End Chat")
+                .setMessage("Do you want to end chat?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        WifiDirectService.getInstance(WifiP2PChatActivity.this).closeSocket();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     static class ChatAdapter extends BaseAdapter {

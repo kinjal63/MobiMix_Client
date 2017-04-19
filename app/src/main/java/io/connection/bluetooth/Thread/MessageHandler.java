@@ -41,7 +41,6 @@ public class MessageHandler implements Handler.Callback {
 
     private Context context;
     private WifiDirectService wifiP2PService;
-    private SocketConnectionListener mSocketConnectionListener;
 
     private SocketHeartBeat heartbeat;
 
@@ -52,10 +51,6 @@ public class MessageHandler implements Handler.Callback {
     public MessageHandler(Context context, WifiDirectService service) {
         this.context = context;
         this.wifiP2PService = service;
-    }
-
-    public void setSocketConnectionListener(SocketConnectionListener socketConnectionListener) {
-        this.mSocketConnectionListener = socketConnectionListener;
     }
 
     public WifiDirectService getWifiP2PService() {
@@ -99,25 +94,24 @@ public class MessageHandler implements Handler.Callback {
 
     private void handleObject(String message) {
         System.out.println("Actual message received::" + message);
-        if(message.startsWith(Constants.NO_MODULE)) {
-            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
-        }
-        else if(message.startsWith(Constants.FILESHARING_MODULE)) {
-            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
-            wifiP2PService.setModule(Modules.FILE_SHARING);
-            readFiles();
-        }
-        else if(message.startsWith(Constants.CHAT_MODULE)) {
-            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
-            wifiP2PService.setModule(Modules.CHAT);
-            readChatData();
-        }
-        else if(message.startsWith(Constants.BUSINESSCARD_MODULE)) {
-            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
-            wifiP2PService.setModule(Modules.BUSINESS_CARD);
+        if(message.startsWith(Constants.NO_MODULE) ||
+                message.startsWith(Constants.CHAT_MODULE) ||
+                message.startsWith(Constants.FILESHARING_MODULE) ||
+                message.startsWith(Constants.BUSINESSCARD_MODULE)) {
 
-            System.out.println("Socket is connected 2");
-            readBusinessCard();
+            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
+            socketConnected();
+
+            if (message.startsWith(Constants.FILESHARING_MODULE)) {
+                wifiP2PService.setModule(Modules.FILE_SHARING);
+                readFiles();
+            } else if (message.startsWith(Constants.CHAT_MODULE)) {
+                wifiP2PService.setModule(Modules.CHAT);
+                readChatData();
+            } else if (message.startsWith(Constants.BUSINESSCARD_MODULE)) {
+                wifiP2PService.setModule(Modules.BUSINESS_CARD);
+                readBusinessCard();
+            }
         }
         else if(message.startsWith("NowClosing")) {
             closeSocket();
@@ -209,16 +203,12 @@ public class MessageHandler implements Handler.Callback {
 
     public void socketConnected() {
         isSocketConnected = true;
-        if( this.mSocketConnectionListener != null ) {
-            this.mSocketConnectionListener.socketConnected(true, socketManager.getRemoteDeviceAddress());
-        }
+        wifiP2PService.notifyUserForConnectedSocket(socketManager.getRemoteDeviceAddress());
     }
 
     public void socketClosed() {
         isSocketConnected = false;
-        if( this.mSocketConnectionListener != null ) {
-            mSocketConnectionListener.socketClosed();
-        }
+        wifiP2PService.notifyUserForClosedSocket();
         closeSocket();
     }
 
@@ -246,8 +236,12 @@ public class MessageHandler implements Handler.Callback {
             heartbeat.interrupt();
         }
 
+        System.out.println("Closing socket and removing group.");
+
         wifiP2PService.setModule(Modules.NONE);
         wifiP2PService.closeConnection();
         wifiP2PService.removeGroup();
+
+        System.out.println("Removing group for wifidirect");
     }
 }

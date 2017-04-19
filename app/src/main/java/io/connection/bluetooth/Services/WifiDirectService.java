@@ -245,7 +245,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 socketHandler = new WifiP2PClientHandler(messageHandler, p2pInfo.groupOwnerAddress);
                 socketHandler.start();
             }
-            messageHandler.setSocketConnectionListener(socketConnectionListener);
         }
     }
 
@@ -312,8 +311,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             manager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
                 @Override
                 public void onGroupInfoAvailable(WifiP2pGroup group) {
-                    if (group != null && manager != null && channel != null
-                            && group.isGroupOwner()) {
+//                    if (group != null && manager != null && channel != null
+//                            && group.isGroupOwner()) {
                         manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
 
                             @Override
@@ -328,7 +327,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                             }
                         });
                     }
-                }
+//                }
             });
         }
     }
@@ -337,23 +336,24 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         if(messageHandler != null) {
             messageHandler.sendMessage(new String("NowClosing").getBytes());
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1500);
             }catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        if(socketHandler != null) {
-            if (socketHandler instanceof WifiP2PClientHandler) {
-                ((WifiP2PClientHandler) socketHandler).closeSocketAndKillThisThread();
-            } else if (socketHandler instanceof WifiP2PServerHandler) {
-                ((WifiP2PServerHandler) socketHandler).closeSocketAndKillThisThread();
-            }
-        }
-        removeGroup();
+        messageHandler.closeSocket();
     }
 
     public void notifyUserForClosedSocket() {
+        if(socketConnectionListener != null) {
+            socketConnectionListener.socketClosed();
+        }
+    }
 
+    public void notifyUserForConnectedSocket(String remoteDeviceAddress) {
+        if(socketConnectionListener != null) {
+            socketConnectionListener.socketConnected(true, remoteDeviceAddress);
+        }
     }
 
     public MessageHandler getMessageHandler() {
