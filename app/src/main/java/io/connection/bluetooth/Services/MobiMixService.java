@@ -61,6 +61,7 @@ public class MobiMixService extends Service {
 
     @Override
     public void onDestroy() {
+        System.out.println("Service is destroying");
         destroy();
         super.onDestroy();
     }
