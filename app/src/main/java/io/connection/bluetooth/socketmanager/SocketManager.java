@@ -1,27 +1,15 @@
 package io.connection.bluetooth.socketmanager;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
-import io.connection.bluetooth.Domain.QueueManager;
-import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
-import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.SocketOperationType;
@@ -73,6 +61,7 @@ public class SocketManager implements Runnable {
                     bytes = is.read(buffer);
 
                     System.out.println("Getting message" + new String(buffer));
+
                     handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
 
                     synchronized (this.obj) {
