@@ -115,11 +115,11 @@ public class MessageHandler implements Handler.Callback {
         }
         else if(message.startsWith("NowClosing")) {
             closeSocket();
-            if(wifiP2PService.getModule().ordinal() == 1) {
-                Intent intent = new Intent(context, Home_Master.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
-            }
+//            if(wifiP2PService.getModule().ordinal() == 1) {
+//                Intent intent = new Intent(context, Home_Master.class);
+//                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+//                context.startActivity(intent);
+//            }
             wifiP2PService.setModule(Modules.NONE);
         }
         else {
@@ -207,9 +207,10 @@ public class MessageHandler implements Handler.Callback {
     }
 
     public void socketClosed() {
+        closeSocket();
+
         isSocketConnected = false;
         wifiP2PService.notifyUserForClosedSocket();
-        closeSocket();
     }
 
     public void setModule(Modules module) {
@@ -232,6 +233,13 @@ public class MessageHandler implements Handler.Callback {
     }
 
     public void closeSocket() {
+//        sendMessage(new String("NowClosing").getBytes());
+//        try {
+//            Thread.sleep(1500);
+//        }catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
         if( heartbeat!= null && !heartbeat.isInterrupted() ) {
             heartbeat.interrupt();
         }

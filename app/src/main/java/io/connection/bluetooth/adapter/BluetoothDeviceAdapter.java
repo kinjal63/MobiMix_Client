@@ -32,10 +32,15 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
     List<BluetoothRemoteDevice> devices = new ArrayList<>();
     FriendFilter friendFilter;
     private ConnectedThread connectedThread;
+    private View.OnClickListener clickListener;
 
     public BluetoothDeviceAdapter(Context mContext, List<BluetoothRemoteDevice> devices) {
         this.mContext = mContext;
         this.devices = devices;
+    }
+
+    public void setDeviceClickListener(View.OnClickListener clickListener) {
+        this.clickListener = clickListener;
     }
 
     @Override

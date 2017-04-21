@@ -57,10 +57,15 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
             device = (WifiP2PRemoteDevice) v.getTag();
             ImageCache.setContext(context);
 
+            WifiDirectService wifiP2PService = WifiDirectService.getInstance(context);
+
             Intent intent = new Intent();
 
-            if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(BusinessCardListActivityUser.class.getSimpleName())) {
-                WifiDirectService.getInstance(context).getMessageHandler().setModule(Modules.BUSINESS_CARD);
+            if(wifiP2PService.getClassName().equalsIgnoreCase(BusinessCardListActivityUser.class.getSimpleName())) {
+                if(wifiP2PService.getModule() != Modules.BUSINESS_CARD) {
+                    wifiP2PService.closeSocket();
+                    wifiP2PService.setModule(Modules.BUSINESS_CARD);
+                }
 
                 intent.setClass(mContext, BusinessCardListActivityUser.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -76,8 +81,12 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
                 intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
                 context.startActivity(intent);
             }
-            else if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(WifiDirectMainActivity.class.getSimpleName())) {
-                WifiDirectService.getInstance(context).getMessageHandler().setModule(Modules.FILE_SHARING);
+            else if(wifiP2PService.getClassName().equalsIgnoreCase(WifiDirectMainActivity.class.getSimpleName())) {
+                if(wifiP2PService.getModule() != Modules.FILE_SHARING) {
+                    wifiP2PService.closeSocket();
+                    wifiP2PService.setModule(Modules.FILE_SHARING);
+                }
+                wifiP2PService.getMessageHandler().setModule(Modules.FILE_SHARING);
                 clickListener.onClick(v);
             }
         }

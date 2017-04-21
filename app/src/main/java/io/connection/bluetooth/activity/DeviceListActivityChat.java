@@ -71,9 +71,6 @@ import retrofit2.Response;
  */
 public class DeviceListActivityChat extends BaseActivity implements SearchView.OnQueryTextListener {
     private static final String TAG = "MainActivity";
-    BluetoothAdapter bluetoothAdapter;
-    private Toolbar toolbar;
-    static ConnectedThread connectedThread;
 
     BluetoothDeviceAdapter bluetoothDeviceAdapter;
     WifiP2PDeviceAdapter wifiDeviceAdapter;
@@ -84,7 +81,6 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
 
     static Context mContext;
-    static BluetoothDevice device;
     private SearchView searchView;
 
     private NetworkType networkType;
@@ -105,13 +101,11 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
         if( getIntent().getStringExtra("networkType") != null &&
                 getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.BLUETOOTH.name()))
         {
-            networkType = NetworkType.BLUETOOTH;
             initBluetooth();
         }
         else if( getIntent().getStringExtra("networkType") != null &&
                 getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.WIFI_DIRECT.name()))
         {
-            networkType = NetworkType.WIFI_DIRECT;
             initWifiDirect();
         }
 
@@ -161,18 +155,13 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
         switch (requestCode) {
             case 1111:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    if (bluetoothAdapter.isDiscovering())
-                        bluetoothAdapter.cancelDiscovery();
-                    bluetoothAdapter.startDiscovery();
+                    bluetoothService.startDiscovery();
                 }
         }
     }
 
     private void initBluetooth() {
         networkType = NetworkType.BLUETOOTH;
-
-        bluetoothService = BluetoothService.getInstance();
 
         listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
         bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
@@ -195,8 +184,9 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     }
 
     private void initWifiDirect() {
-        WifiDirectService.getInstance(this).setModule(Modules.CHAT);
         networkType = NetworkType.WIFI_DIRECT;
+
+        WifiDirectService.getInstance(this).setModule(Modules.CHAT);
 
         listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
         wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);

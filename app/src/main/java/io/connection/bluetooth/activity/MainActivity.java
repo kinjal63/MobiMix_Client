@@ -59,29 +59,30 @@ import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
+import io.connection.bluetooth.adapter.BluetoothDeviceAdapter;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
+import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
+import io.connection.bluetooth.utils.UtilsHandler;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class MainActivity extends BaseActivity implements SearchView.OnQueryTextListener, View.OnClickListener {
     private static final String TAG = "MainActivity";
-    BluetoothAdapter bluetoothAdapter;
-    private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    DeviceAdapter deviceAdapter;
+    BluetoothDeviceAdapter deviceAdapter;
     RecyclerView deviceLayout;
-    private ArrayList<BluetoothDevice> tempbluetoothDevices = new ArrayList<>();
-    ApiCall apiCall;
     private SearchView searchView;
-    private ArrayList<BluetoothDevice> bluetoothDevices = new ArrayList<>();
+    private ArrayList<BluetoothRemoteDevice> listBluetoothDevices = new ArrayList<>();
     private static BottomSheetBehavior mBottomSheetBehavior;
     Context mContext;
     Activity activity;
-
+    private NetworkType networkType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,17 +97,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         ImageCache.setContext(mContext);
 
         deviceLayout = (RecyclerView) findViewById(R.id.footer);
-        deviceAdapter = new DeviceAdapter(this, bluetoothDevices);
+        initBluetooth();
         setDeviceLayout(deviceLayout);
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            bluetoothAdapter.enable();
-            Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBlueTooth, 1);
-        } else {
-            bluetoothEnabled();
-        }
         final View footerView = findViewById(R.id.footer_device);
 
 
@@ -119,18 +112,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
-        apiCall = ApiClient.getClient().create(ApiCall.class);
-
-        WifiDirectService.getInstance(this).setModule(Modules.FILE_SHARING);
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-
-        registerReceiver(bluetoothDeviceFoundReceiver, filter);
 
         Button buttonsend = (Button) findViewById(R.id.buttonsend);
         buttonsend.setOnClickListener(new View.OnClickListener() {
@@ -141,14 +125,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 View view = findViewById(R.id.footerSend);
                 mBottomSheetBehavior = BottomSheetBehavior.from(view);
                 mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                alreadyBondedDevice();
-                if (Build.VERSION.SDK_INT >= 21 && checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                    ActivityCompat.requestPermissions(activity, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1111);
-                else {
-                    if (bluetoothAdapter.isDiscovering())
-                        bluetoothAdapter.cancelDiscovery();
-                    bluetoothAdapter.startDiscovery();
-                }
             }
         });
 
@@ -311,15 +287,35 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
 
+    private void initBluetooth() {
+        networkType = NetworkType.BLUETOOTH;
+
+        listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
+        deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+
+        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
+            @Override
+            public void onBluetoothDeviceAvailable(BluetoothRemoteDevice device) {
+                listBluetoothDevices.add(device);
+
+                ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
+
+                UtilsHandler.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        deviceAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case 1111:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    if (bluetoothAdapter.isDiscovering())
-                        bluetoothAdapter.cancelDiscovery();
-                    bluetoothAdapter.startDiscovery();
+                    bluetoothService.startDiscovery();
                 }
                 break;
             case 1112:
@@ -438,269 +434,145 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     }
 
-    public static class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder> implements Filterable {
-        List<String> names = new ArrayList<>();
-        Context mContext;
-        List<BluetoothDevice> devices = new ArrayList<>();
-        FriendFilter friendFilter;
-        List<String> listName = new ArrayList<>();
-        List<BluetoothDevice> listDevice = new ArrayList<>();
+    @Override
+    public void onClick(View v) {
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.final_dialog_box);
+        dialog.setTitle("Transfer File ... ");
+        final BluetoothDevice device = ((BluetoothRemoteDevice) v.getTag()).getDevice();
 
-        public DeviceAdapter(Context mContext, List<BluetoothDevice> devices) {
-            this.mContext = mContext;
-            this.devices = devices;
+        TextView textViewName = (TextView) dialog.getWindow().findViewById(R.id.sendmessgae);
+        textViewName.setText("Are You Sure Want to Send Below Files to  " + device.getName() + " ?");
+
+        if (!ImageCache.canShowImage()) {
+            LinearLayout layout = (LinearLayout) dialog.getWindow().findViewById(R.id.layout_image_final_checkbox);
+            TextView textview = (TextView) dialog.getWindow().findViewById(R.id.imageText);
+            layout.setEnabled(false);
+            textview.setEnabled(false);
+            layout.setVisibility(View.GONE);
+            textview.setVisibility(View.GONE);
+        } else {
+            CheckBox checkBox = (CheckBox) dialog.getWindow().findViewById(R.id.image_final_checkbox);
+            checkBox.setChecked(true);
+        }
+        if (!ImageCache.canShowMusic()) {
+            LinearLayout layout = (LinearLayout) dialog.getWindow().findViewById(R.id.layout_audio_final_checkbox);
+            TextView textview = (TextView) dialog.getWindow().findViewById(R.id.audioText);
+            layout.setVisibility(View.GONE);
+            textview.setVisibility(View.GONE);
+            layout.setEnabled(false);
+            textview.setEnabled(false);
+
+        } else {
+            CheckBox checkBox = (CheckBox) dialog.getWindow().findViewById(R.id.audio_final_checkbox);
+            checkBox.setChecked(true);
+        }
+        if (!ImageCache.canShowVideo()) {
+            LinearLayout layout = (LinearLayout) dialog.getWindow().findViewById(R.id.layout_video_final_checkbox);
+            TextView textview = (TextView) dialog.getWindow().findViewById(R.id.videoText);
+            layout.setEnabled(false);
+            textview.setEnabled(false);
+            layout.setVisibility(View.GONE);
+            textview.setVisibility(View.GONE);
+        } else {
+            CheckBox checkBox = (CheckBox) dialog.getWindow().findViewById(R.id.video_final_checkbox);
+            checkBox.setChecked(true);
         }
 
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(mContext).inflate(viewType == 0 ? R.layout.device_layout : R.layout.searching_devices, parent, false), mContext, viewType);
-        }
-
-        public void add(String name, BluetoothDevice device) {
-            names.add(name);
-            devices.add(device);
-            listName.add(name);
-            listDevice.add(device);
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return position == 0 && names.isEmpty() ? 1 : 0;
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            if (holder.getItemViewType() == 0) {
-
-                holder.nameTV.setText(names.get(position));
-                holder.itemView.setTag(devices.get(position));
-
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return names.isEmpty() ? 1 : names.size();
-        }
-
-        @Override
-        public Filter getFilter() {
-            if (friendFilter == null) {
-                friendFilter = new FriendFilter();
-            }
-            return friendFilter;
-        }
-
-
-        private class FriendFilter extends Filter {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                FilterResults filterResults = new FilterResults();
-                Map<BluetoothDevice, String> map = new HashMap<>();
-                if (constraint != null && constraint.length() > 0 && constraint.toString().trim().length() > 0) {
-                    ArrayList<String> tempList = new ArrayList<String>();
-                    int i = 0;
-                    // search content in friend list
-                    for (String user : listName) {
-                        if (user.toLowerCase().contains(constraint.toString().toLowerCase())) {
-                            //tempList.add(user);
-                            map.put(listDevice.get(i), user);
-                            i++;
-                        } else {
-                            i++;
-                        }
-                    }
-                    filterResults.count = map.size();
-                    filterResults.values = map;
-                } else {
-                    int i = 0;
-                    for (String user : listName) {
-                        map.put(listDevice.get(i++), user);
-                    }
-                    filterResults.count = map.size();
-                    filterResults.values = map;
-                }
-                return filterResults;
-            }
-
-            /**
-             * Notify about filtered list to ui
-             *
-             * @param constraint text
-             * @param results    filtered result
-             */
-            @SuppressWarnings("unchecked")
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                Map<BluetoothDevice, String> objDeviceMap = (Map) results.values;
-                names.clear();
-                names.addAll(objDeviceMap.values());
-                devices.clear();
-                devices.addAll(objDeviceMap.keySet());
-                notifyDataSetChanged();
-
-            }
-        }
-
-        static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-            TextView nameTV;
-            ImageView imageView;
-            public Context context;
-
-
-            public ViewHolder(View itemView, Context context, int type) {
-                super(itemView);
-                if (type == 0) {
-                    nameTV = (TextView) itemView.findViewById(R.id.input_name);
-                    this.context = context;
-                    itemView.setOnClickListener(this);
-                }
-            }
-
+        Button imSure = (Button) dialog.getWindow().findViewById(R.id.imSure);
+        imSure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Dialog dialog = new Dialog(context);
-                dialog.setContentView(R.layout.final_dialog_box);
-                dialog.setTitle("Transfer File ... ");
-                final BluetoothDevice device = (BluetoothDevice) v.getTag();
 
-                TextView textViewName = (TextView) dialog.getWindow().findViewById(R.id.sendmessgae);
-                textViewName.setText("Are You Sure Want to Send Below Files to  " + nameTV.getText() + " ?");
+                CheckBox imageCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.image_final_checkbox);
+                CheckBox audioCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.audio_final_checkbox);
+                CheckBox videoCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.video_final_checkbox);
 
-                if (!ImageCache.canShowImage()) {
-                    LinearLayout layout = (LinearLayout) dialog.getWindow().findViewById(R.id.layout_image_final_checkbox);
-                    TextView textview = (TextView) dialog.getWindow().findViewById(R.id.imageText);
-                    layout.setEnabled(false);
-                    textview.setEnabled(false);
-                    layout.setVisibility(View.GONE);
-                    textview.setVisibility(View.GONE);
-                } else {
-                    CheckBox checkBox = (CheckBox) dialog.getWindow().findViewById(R.id.image_final_checkbox);
-                    checkBox.setChecked(true);
-                }
-                if (!ImageCache.canShowMusic()) {
-                    LinearLayout layout = (LinearLayout) dialog.getWindow().findViewById(R.id.layout_audio_final_checkbox);
-                    TextView textview = (TextView) dialog.getWindow().findViewById(R.id.audioText);
-                    layout.setVisibility(View.GONE);
-                    textview.setVisibility(View.GONE);
-                    layout.setEnabled(false);
-                    textview.setEnabled(false);
-
-                } else {
-                    CheckBox checkBox = (CheckBox) dialog.getWindow().findViewById(R.id.audio_final_checkbox);
-                    checkBox.setChecked(true);
-                }
-                if (!ImageCache.canShowVideo()) {
-                    LinearLayout layout = (LinearLayout) dialog.getWindow().findViewById(R.id.layout_video_final_checkbox);
-                    TextView textview = (TextView) dialog.getWindow().findViewById(R.id.videoText);
-                    layout.setEnabled(false);
-                    textview.setEnabled(false);
-                    layout.setVisibility(View.GONE);
-                    textview.setVisibility(View.GONE);
-                } else {
-                    CheckBox checkBox = (CheckBox) dialog.getWindow().findViewById(R.id.video_final_checkbox);
-                    checkBox.setChecked(true);
-                }
-
-                Button imSure = (Button) dialog.getWindow().findViewById(R.id.imSure);
-                imSure.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        CheckBox imageCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.image_final_checkbox);
-                        CheckBox audioCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.audio_final_checkbox);
-                        CheckBox videoCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.video_final_checkbox);
-
-                        if (imageCheckbox.isChecked()) {
-                            for (String check : ImageCache.getImageCheckBox().keySet()) {
-                                if (ImageCache.getImageCheckBox(check)) {
-                                    ImageCache.putUri(device.getAddress(), Uri.parse(check));
-                                    ImageCache.setImageCheckBoxValue(check, false);
-                                }
-                            }
-                        } else {
-                            for (String check : ImageCache.getImageCheckBox().keySet()) {
-                                ImageCache.setImageCheckBoxValue(check, false);
-                            }
+                if (imageCheckbox.isChecked()) {
+                    for (String check : ImageCache.getImageCheckBox().keySet()) {
+                        if (ImageCache.getImageCheckBox(check)) {
+                            ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                            ImageCache.setImageCheckBoxValue(check, false);
                         }
-                        ImagesFragment.updateChekBox();
-
-                        if (audioCheckbox.isChecked()) {
-                            for (String check : ImageCache.getAudioCheckBox().keySet()) {
-                                if (ImageCache.getAudioCheckBox(check)) {
-                                    ImageCache.putUri(device.getAddress(), Uri.parse(check));
-                                    ImageCache.setAudioCheckBoxValue(check, false);
-                                }
-                            }
-                        } else {
-                            for (String check : ImageCache.getAudioCheckBox().keySet()) {
-                                ImageCache.setAudioCheckBoxValue(check, false);
-                            }
-                        }
-
-                        AudioFragment.updateCheckbox();
-
-
-                        if (videoCheckbox.isChecked()) {
-                            for (String check : ImageCache.getVideoCheckBox().keySet()) {
-                                if (ImageCache.getVideoCheckBox(check)) {
-                                    ImageCache.putUri(device.getAddress(), Uri.parse(check));
-                                    ImageCache.setVideoCheckBoxValue(check, false);
-                                }
-                            }
-                        } else {
-                            for (String check : ImageCache.getVideoCheckBox().keySet()) {
-                                ImageCache.setVideoCheckBoxValue(check, false);
-                            }
-
-                        }
-                        VideosFragment.updateCheckbox();
-                        ImagesFragment.count = 0;
-                        ImagesFragment.countText.setText("");
-                        // ImagesFragment.mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                        //ImagesFragment.mBottomSheetBehaviorforFooter.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
-
-                        ImageCache.setContext(context);
-                        if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                            Log.d(TAG, "onClick:  size of file " + ImageCache.getUriList(device.getAddress()));
-                            List<Uri> listSendFiless = new ArrayList<Uri>();
-                            for (Uri uri : ImageCache.getUriList(device.getAddress())) {
-                                listSendFiless.add(uri);
-                            }
-                            ThreadConnection connection = new ThreadConnection(context);
-                            connection.connect(device, true, listSendFiless);
-                            // ConnectedThread connectedThread = new ConnectedThread(device, listSendFiless);
-                            Log.d(TAG, "onDrag: Started Without sending Request");
-                            // connectedThread.start();
-                            ImageCache.getUriList(device.getAddress()).clear();
-                        } else {
-                            System.out.println(" here pairing");
-                            createPairing(device);
-
-                        }
-
-                        NotificationManagerCompat.from(context).cancelAll();
-                        dialog.dismiss();
                     }
-                });
-
-                Button notSure = (Button) dialog.getWindow().findViewById(R.id.notSure);
-                notSure.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        dialog.dismiss();
-
+                } else {
+                    for (String check : ImageCache.getImageCheckBox().keySet()) {
+                        ImageCache.setImageCheckBoxValue(check, false);
                     }
-                });
+                }
+                ImagesFragment.updateChekBox();
 
-                dialog.show();
+                if (audioCheckbox.isChecked()) {
+                    for (String check : ImageCache.getAudioCheckBox().keySet()) {
+                        if (ImageCache.getAudioCheckBox(check)) {
+                            ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                            ImageCache.setAudioCheckBoxValue(check, false);
+                        }
+                    }
+                } else {
+                    for (String check : ImageCache.getAudioCheckBox().keySet()) {
+                        ImageCache.setAudioCheckBoxValue(check, false);
+                    }
+                }
+
+                AudioFragment.updateCheckbox();
+
+
+                if (videoCheckbox.isChecked()) {
+                    for (String check : ImageCache.getVideoCheckBox().keySet()) {
+                        if (ImageCache.getVideoCheckBox(check)) {
+                            ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                            ImageCache.setVideoCheckBoxValue(check, false);
+                        }
+                    }
+                } else {
+                    for (String check : ImageCache.getVideoCheckBox().keySet()) {
+                        ImageCache.setVideoCheckBoxValue(check, false);
+                    }
+
+                }
+                VideosFragment.updateCheckbox();
+                ImagesFragment.count = 0;
+                ImagesFragment.countText.setText("");
+                // ImagesFragment.mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                //ImagesFragment.mBottomSheetBehaviorforFooter.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+
+                ImageCache.setContext(MainActivity.this);
+                if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+                    Log.d(TAG, "onClick:  size of file " + ImageCache.getUriList(device.getAddress()));
+                    List<Uri> listSendFiless = new ArrayList<Uri>();
+                    for (Uri uri : ImageCache.getUriList(device.getAddress())) {
+                        listSendFiless.add(uri);
+                    }
+                    ThreadConnection connection = new ThreadConnection(MainActivity.this);
+                    connection.connect(device, true, listSendFiless);
+                    // ConnectedThread connectedThread = new ConnectedThread(device, listSendFiless);
+                    Log.d(TAG, "onDrag: Started Without sending Request");
+                    // connectedThread.start();
+                    ImageCache.getUriList(device.getAddress()).clear();
+                } else {
+                    System.out.println(" here pairing");
+                    createPairing(device);
+
+                }
+
+                NotificationManagerCompat.from(MainActivity.this).cancelAll();
+                dialog.dismiss();
+            }
+        });
+
+        Button notSure = (Button) dialog.getWindow().findViewById(R.id.notSure);
+        notSure.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
 
             }
+        });
 
-        }
+        dialog.show();
     }
 
     public void setDeviceLayout(RecyclerView deviceLayout) {
@@ -713,56 +585,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         device.setPairingConfirmation(true);
     }
 
-    public final BroadcastReceiver bluetoothDeviceFoundReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            String action = intent.getAction();
-            Log.d("bluetooth", action);
-            if (action.equals(BluetoothDevice.ACTION_FOUND) && Utils.isConnected(mContext)) {
-                final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (device != null) {
-                    String deviceMacAddress = device.getAddress().trim();
-                    Log.d(TAG, "onReceive: " + deviceMacAddress);
-                    if (!tempbluetoothDevices.contains(device)) {
-                        User userAvailable = new User();
-                        userAvailable.setMacAddress(deviceMacAddress);
-                        userAvailable.setEmail(device.getName());
-                        Call<User> name = apiCall.isAvailable(userAvailable);
-                        name.enqueue(new Callback<User>() {
-                            @Override
-                            public void onResponse(Call<User> call, Response<User> response) {
-                                User user = response.body();
-
-                                if (user != null) {
-                                    Log.d(TAG, "onResponse: " + user.getName());
-                                    tempbluetoothDevices.add(device);
-                                    deviceAdapter.add(user.getName(), device);
-                                }
-
-                            }
-
-                            @Override
-                            public void onFailure(Call<User> call, Throwable t) {
-                                Log.d(TAG, "onFailure: " + t.getMessage());
-                                Toast.makeText(context, Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-
-                            }
-                        });
-                    }
-
-                }
-            } else if (action.equals(BluetoothDevice.ACTION_FOUND)) {
-                Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-            }
-
-        }
-    };
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(bluetoothDeviceFoundReceiver);
     }
 
 
@@ -783,46 +608,4 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
 
     }
-
-    public void alreadyBondedDevice() {
-        Set<BluetoothDevice> listdevice = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-        if (Utils.isConnected(mContext)) {
-            for (final BluetoothDevice deviceSet : listdevice) {
-
-                if (!tempbluetoothDevices.contains(deviceSet)) {
-                    User userAvailable = new User();
-                    userAvailable.setMacAddress(deviceSet.getAddress());
-                    Call<User> name = apiCall.isAvailable(userAvailable);
-                    name.enqueue(new Callback<User>() {
-                        @Override
-                        public void onResponse(Call<User> call, Response<User> response) {
-
-                            User user = response.body();
-
-                            if (user != null) {
-                                Log.d(TAG, "onResponse: " + user.getName());
-                                tempbluetoothDevices.add(deviceSet);
-                                deviceAdapter.add(user.getName(), deviceSet);
-                            }
-
-                        }
-
-                        @Override
-                        public void onFailure(Call<User> call, Throwable t) {
-                            Log.d(TAG, "onFailure: " + t.getMessage());
-                            Toast.makeText(getApplicationContext(), Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-
-                        }
-                    });
-                }
-
-
-            }
-        } else {
-            Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-        }
-
-    }
-
-
 }

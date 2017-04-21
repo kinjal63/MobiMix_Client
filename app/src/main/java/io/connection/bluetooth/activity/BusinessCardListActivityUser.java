@@ -527,8 +527,6 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         if( intent != null && intent.getParcelableExtra("device") != null) {
             P2Pdevice = intent.getParcelableExtra("device");
 
-            WifiDirectService.getInstance(this).setModule(Modules.BUSINESS_CARD);
-
             if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(P2Pdevice.deviceName) ) {
                 Toast.makeText(this, "Connecting to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
 

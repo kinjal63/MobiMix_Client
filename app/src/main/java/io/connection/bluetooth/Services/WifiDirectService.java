@@ -334,20 +334,15 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
     public void closeSocket() {
         if(messageHandler != null) {
-            messageHandler.sendMessage(new String("NowClosing").getBytes());
-            try {
-                Thread.sleep(1500);
-            }catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            messageHandler.socketClosed();
         }
-        messageHandler.closeSocket();
     }
 
     public void notifyUserForClosedSocket() {
         if(socketConnectionListener != null) {
             socketConnectionListener.socketClosed();
         }
+        initiateDiscovery();
     }
 
     public void notifyUserForConnectedSocket(String remoteDeviceAddress) {

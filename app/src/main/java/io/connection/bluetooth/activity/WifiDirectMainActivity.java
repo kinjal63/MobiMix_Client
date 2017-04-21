@@ -106,8 +106,6 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         setupViewPager(viewPager);
         apiCall = ApiClient.getClient().create(ApiCall.class);
 
-        WifiDirectService.getInstance(this).setModule(Modules.FILE_SHARING);
-
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
@@ -359,7 +357,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         final Dialog dialog = new Dialog(WifiDirectMainActivity.this);
         dialog.setContentView(R.layout.final_dialog_box);
         dialog.setTitle("Transfer File ... ");
-        final WifiP2pDevice device = (WifiP2pDevice) v.getTag();
+        final WifiP2pDevice device = ((WifiP2PRemoteDevice) v.getTag()).getDevice();
 
         TextView textViewName = (TextView) dialog.getWindow().findViewById(R.id.sendmessgae);
         textViewName.setText("Are You Sure Want to Send Below Files to  " + device.deviceName + " ?");

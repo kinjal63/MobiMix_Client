@@ -145,7 +145,7 @@ public class SocketManager implements Runnable {
             }
 
             operationType = SocketOperationType.NONE;
-            handler.getWifiP2PService().setModule(Modules.NONE);
+//            handler.getWifiP2PService().setModule(Modules.NONE);
         }
     }
 
@@ -172,7 +172,7 @@ public class SocketManager implements Runnable {
             }
 
             operationType = SocketOperationType.NONE;
-            handler.getWifiP2PService().setModule(Modules.NONE);
+//            handler.getWifiP2PService().setModule(Modules.NONE);
         }
     }
 
