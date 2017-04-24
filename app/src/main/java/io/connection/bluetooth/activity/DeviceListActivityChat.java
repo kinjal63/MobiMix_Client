@@ -50,6 +50,7 @@ import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.adapter.BluetoothDeviceAdapter;
@@ -69,7 +70,7 @@ import retrofit2.Response;
 /**
  * Created by songline on 26/08/16.
  */
-public class DeviceListActivityChat extends BaseActivity implements SearchView.OnQueryTextListener {
+public class DeviceListActivityChat extends BaseActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
     private static final String TAG = "MainActivity";
 
     BluetoothDeviceAdapter bluetoothDeviceAdapter;
@@ -163,8 +164,11 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     private void initBluetooth() {
         networkType = NetworkType.BLUETOOTH;
 
+        bluetoothService.setClassName(DeviceListActivityChat.class.getSimpleName());
+
         listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
         bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+        bluetoothDeviceAdapter.setDeviceClickListener(this);
 
         bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
             @Override
@@ -190,6 +194,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
 
         listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
         wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
+        wifiDeviceAdapter.setDeviceClickListener(this);
 
         WifiDirectService.getInstance(this).setClassName(DeviceListActivityChat.class.getSimpleName());
         WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
@@ -226,6 +231,26 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
             deviceLayout.setAdapter(bluetoothDeviceAdapter);
         }
 
+    }
+
+    @Override
+    public void onWifiDeviceClick(WifiP2PRemoteDevice device) {
+        Intent intent = new Intent();
+
+        intent.setClass(mContext, WifiP2PChatActivity.class);
+        intent.putExtra("device", device);
+        intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
+        startActivity(intent);
+    }
+
+    @Override
+    public void onBluetoothDeviceClick(BluetoothRemoteDevice device) {
+        Intent intent = new Intent();
+
+        intent.setClass(mContext, DeviceChatActivity.class);
+        intent.putExtra("device", device);
+        intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
+        startActivity(intent);
     }
 
     @Override

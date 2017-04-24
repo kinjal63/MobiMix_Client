@@ -22,6 +22,7 @@ import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.Utils;
 
@@ -42,9 +43,27 @@ public class BluetoothService {
     private Vector<String> connectedSocketAddresses = new Vector<>();
 
     private String TAG = BluetoothService.class.getSimpleName();
+    private Modules module;
+    private String className;
 
     BluetoothService() {
 
+    }
+
+    public void setModule(Modules module) {
+        this.module = module;
+    }
+
+    public Modules getModule() {
+        return this.module;
+    }
+
+    public String getClassName() {
+        return this.className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public static BluetoothService getInstance() {
