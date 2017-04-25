@@ -35,6 +35,7 @@ import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.activity.UserNearByWithGames;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
@@ -222,7 +223,8 @@ public class GPSTracker extends Service implements LocationListener {
 
         // Code Here for Update Location;
         preferences = this.getSharedPreferences(Constants.LOGIN, Context.MODE_PRIVATE);
-        String userId = preferences.getString(Constants.LOGIN_KEY, "");
+        String userId = ApplicationSharedPreferences.getInstance(this).getValue("user_id");
+
         apiCall = ApiClient.getClient().create(ApiCall.class);
         if (Utils.isConnected(this)) {
             if (!userId.equals("")) {
@@ -322,7 +324,8 @@ public class GPSTracker extends Service implements LocationListener {
         mContext = this;
 
         preferences = this.getSharedPreferences(Constants.LOGIN, Context.MODE_PRIVATE);
-        String userId = preferences.getString(Constants.LOGIN_KEY, "");
+        String userId = ApplicationSharedPreferences.getInstance(this).getValue("user_id");
+
         apiCall = ApiClient.getClient().create(ApiCall.class);
         if (Utils.isConnected(this)) {
             if (!userId.equals("")) {
