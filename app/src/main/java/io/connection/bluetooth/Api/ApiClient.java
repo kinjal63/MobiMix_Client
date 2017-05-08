@@ -11,10 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by songline on 31/07/16.
  */
 public class ApiClient {
-
-
     private static Retrofit retrofit = null;
-
 
     public static Retrofit getClient() {
         if (retrofit==null) {
