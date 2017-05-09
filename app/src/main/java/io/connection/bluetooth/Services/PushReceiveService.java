@@ -15,11 +15,13 @@ import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.gson.Gson;
 
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 
+import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.activity.DialogActivity;
@@ -49,21 +51,35 @@ public class PushReceiveService extends FirebaseMessagingService {
         if (message != null) {
             try {
                 JSONObject jsonObject = new JSONObject(message);
-                int hasInvite = jsonObject.optInt("connection_invite");
-                final String toUserId = jsonObject.optString("remote_user_id");
-                final String toUserName = jsonObject.optString("remote_user_name");
-                final String gameId = jsonObject.optString("game_id");
-                final String gameName = jsonObject.optString("game_name");
 
-                if (hasInvite == 1) {
+//                int hasInvite = jsonObject.optInt("connection_invite");
+//                final String toUserId = jsonObject.optString("remote_user_id");
+//                final String toUserName = jsonObject.optString("remote_user_name");
+//                final String gameId = jsonObject.optString("game_id");
+//                final String gameName = jsonObject.optString("game_name");
+
+//                if (hasInvite == 1) {
+//                    String bluetoothName = jsonObject.optString("bluetooth_address");
+//                    generateBluetoothNotification(bluetoothName, toUserId);
+//                } else if (hasInvite == 2) {
+//                    String wifiDirectName = jsonObject.optString("wifi_address");
+//                    generateWifiNotification(wifiDirectName, toUserId);
+//                } else if (jsonObject.optInt("notification_message") == 1) {
+//                    generateNearByUserNotification("User " + toUserId + " is nearby", toUserId);
+//                }
+
+                GameRequest request = new Gson().fromJson(message, GameRequest.class);
+
+                if (request.getConnectionInvite() == 1) {
                     String bluetoothName = jsonObject.optString("bluetooth_address");
-                    generateBluetoothNotification(bluetoothName, toUserId);
-                } else if (hasInvite == 2) {
+                    generateBluetoothNotification(request);
+                } else if (request.getConnectionInvite() == 2) {
                     String wifiDirectName = jsonObject.optString("wifi_address");
-                    generateWifiNotification(wifiDirectName, toUserId);
+                    generateWifiNotification(request);
                 } else if (jsonObject.optInt("notification_message") == 1) {
-                    generateNearByUserNotification("User " + toUserId + " is nearby", toUserId);
+                    generateNearByUserNotification("User " + request.getRemoteUserName() + " is nearby", request.getRemoteUserId());
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -135,10 +151,11 @@ public class PushReceiveService extends FirebaseMessagingService {
         }
     }
 
-    private void generateWifiNotification(String wifiDirectName, String toUserId) {
+    private void generateWifiNotification(GameRequest gameRequest) {
         Intent intent = new Intent(this, DialogActivity.class);
-        intent.putExtra("wifi_address", wifiDirectName);
-        intent.putExtra("toUserId", toUserId);
+        intent.putExtra("game_request", gameRequest);
+//        intent.putExtra("wifi_address", wifiDirectName);
+//        intent.putExtra("toUserId", toUserId);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
@@ -147,7 +164,7 @@ public class PushReceiveService extends FirebaseMessagingService {
         notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_logo)
                 .setContentTitle("Wifi Direct connection")
-                .setContentText("Do you want to make wifi direct connection with " + toUserId)
+                .setContentText("Do you want to make wifi direct connection with " + gameRequest.getRemoteUserName())
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);
@@ -156,11 +173,10 @@ public class PushReceiveService extends FirebaseMessagingService {
         notificationManager.notify(1, notificationBuilder.build());
     }
 
-    private void generateBluetoothNotification(String bluetoothName, String toUserId) {
+    private void generateBluetoothNotification(GameRequest gameRequest) {
         if (!isNotificationVisible()) {
             Intent intent = new Intent(this, DialogActivity.class);
-            intent.putExtra("bluetooth_address", bluetoothName);
-            intent.putExtra("toUserId", toUserId);
+            intent.putExtra("game_request", gameRequest);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                     PendingIntent.FLAG_ONE_SHOT);
@@ -169,7 +185,7 @@ public class PushReceiveService extends FirebaseMessagingService {
             notificationBuilder = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.mipmap.ic_logo)
                     .setContentTitle("Bluetooth connection")
-                    .setContentText("Do you want to make bluetooth Connection with " + toUserId)
+                    .setContentText("Do you want to make bluetooth Connection with " + gameRequest.getRemoteUserName())
                     .setAutoCancel(true)
                     .setSound(defaultSoundUri)
                     .setContentIntent(pendingIntent);
