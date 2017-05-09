@@ -51,7 +51,10 @@ public interface ApiCall {
     Call<User> updateGamePlayingTime(@Body User userData);
 
     @POST("updateUserLocation")
-    Call<HashSet> updateUserLocation(@Body User userData);
+    Call<ResponseBody> updateUserLocation(@Body User userData);
+
+    @POST("updateUserLocation")
+    Call<ResponseBody> updateUserLocation(@Query("userId") String userId, @Query("latitude") double latitude, @Query("longitude") double longitude);
 
     @GET("updateGameProfiles")
     Call<User> updateGameProfiles(@Query("userId") String userId, @Query("installedPackageName") List<String> installedPackageName);

@@ -1,16 +1,11 @@
 package io.connection.bluetooth.activity;
 
 import android.Manifest;
-import android.app.AlertDialog;
-import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
@@ -51,19 +46,16 @@ import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.GPSTracker;
 import io.connection.bluetooth.Services.MobiMixService;
-import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.AcceptBusinessThread;
 import io.connection.bluetooth.Thread.AcceptThread;
 import io.connection.bluetooth.Thread.GameRequestAcceptThread;
 import io.connection.bluetooth.Thread.ThreadConnection;
 import io.connection.bluetooth.enums.Modules;
-import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GPSTrackerUtil;
 import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.Utils;
-import io.connection.bluetooth.utils.UtilsHandler;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -71,7 +63,7 @@ import retrofit2.Response;
 /**
  * Created by songline on 16/10/16.
  */
-public class Home_Master extends AppCompatActivity implements View.OnClickListener {
+public class Home_Master extends BaseActivity implements View.OnClickListener {
     private static final String TAG = "Home_Master";
     BluetoothAdapter bluetoothAdapter;
     static boolean checkThread = false;
@@ -79,12 +71,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     ApiCall apiCall;
     private GPSTrackerUtil gpsTrackerUtil;
     private Handler mHandler;
-    private String toUserId;
-    private String toEmail;
-    private MobiMixService mService;
-
-//    private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
-//    private WifiDirectService wifiDirectService;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -93,6 +79,8 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
         MobileMeasurementApplication.getInstance().registerActivity(this);
         NotificationUtil.initialize(this);
+
+        requestPermissions();
 
         getSupportActionBar().setIcon(R.mipmap.ic_logo);
         findViewById(R.id.file_card_id).setOnClickListener(this);
@@ -103,8 +91,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         findViewById(R.id.data_usage_card_id).setOnClickListener(this);
         ImageCache.setContext(this);
         Intent intent = new Intent(this, GPSTracker.class);
-//        mBluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
-//        wifiDirectService = WifiDirectService.getInstance(this);
 
         startMobiMixService();
 
@@ -119,16 +105,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         }
 
         SharedPreferences preferences = this.getSharedPreferences(Constants.LOGIN, Context.MODE_PRIVATE);
-        final SharedPreferences.Editor editor = preferences.edit();
-//        if (preferences.getString(Constants.LOGIN_KEY, "").equals("")) {
-//            Intent intent1 = new Intent(this, Login_Register.class);
-//            intent1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-//            startActivity(intent1);
-//            finish();
-//        }
-       /* editor.putString(Constants.LOGIN_KEY, "c2da8e95138a4bd596a683e201f2a49f");
-        editor.commit();
-*/
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -141,8 +117,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
             } else {
                 bluetoothEnabled();
             }
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1112);
 
             List<String> InstalledpackageName = Utils.getAllInstalledGames(this);
             if (Utils.isConnected(context)) {
@@ -172,29 +146,20 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         gpsTrackerUtil = new GPSTrackerUtil(this, this.mHandler);
 
         sendAllAppdetail();
+    }
 
-//        registerReceiver(mBluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-//        wifiDirectService.registerReceiver();
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1112);
+
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION}, 1113);
     }
 
     private void startMobiMixService() {
         Intent serviceIntent = new Intent(this, MobiMixService.class);
         startService(serviceIntent);
-//        bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
-
-    ServiceConnection mServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mService = ((MobiMixService.LocalBinder)service).getService();
-            mService.init();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mService.destroy();
-        }
-    };
 
     @Override
     protected void onResume() {
@@ -207,49 +172,22 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
         switch (requestCode) {
-
-            case 1111:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    // ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
-                }
-                return;
             case 1112:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                } else {
-                    // ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
                 }
-                return;
             case 1113:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    // ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
+                    gpsTrackerUtil.getLocation();
                 }
-                return;
-            case 1114:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    // ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
-                }
-                return;
-
         }
-
     }
-
 
     @Override
     public void onBackPressed() {
         finish();
-        //super.finish();
     }
 
     void bluetoothEnabled() {
@@ -268,10 +206,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
             gameRequestAcceptThread.start();
 
             checkThread = true;
-
         }
-
-
     }
 
 
@@ -281,9 +216,7 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
         if (requestCode == 1) {
             if (resultCode == RESULT_OK)
                 bluetoothEnabled();
-
         } else {
-
             Toast.makeText(getApplicationContext(), "Please Turn On Bluetooth ", Toast.LENGTH_LONG).show();
             finish();
         }
@@ -360,62 +293,12 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
             intent.putExtra("device", socket.getRemoteDevice());
             intent.putExtra("packageName", response[1].split("\\$\\#\\$")[1]);
             ImageCache.getContext().startActivity(intent);
-
-
-
-            /*final AlertDialog alertDialog;
-            final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ImageCache.getContext());
-            alertDialogBuilder.setMessage("Are You Want To Play " + response[1] + " With " + response[2] + " ? ");
-            alertDialogBuilder.setPositiveButton("yes",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface arg0, int arg1) {
-                            Toast.makeText(ImageCache.getContext(), "You clicked yes button", Toast.LENGTH_LONG).show();
-                            try {
-                                SharedPreferences prefs = ImageCache.getContext().getSharedPreferences(Constants.LOGIN, Context.MODE_PRIVATE);
-                                String name = prefs.getString(Constants.NAME_KEY, "");
-                                String msg = "Response:1" + ":" + name;
-                                gameRequestConnectThread = new GameRequestConnectThread(socket.getRemoteDevice(), 0);
-                                gameRequestConnectThread.setResponse(msg);
-                                gameRequestConnectThread.start();
-
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-
-            alertDialogBuilder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    try {
-                        SharedPreferences prefs = ImageCache.getContext().getSharedPreferences(Constants.LOGIN, Context.MODE_PRIVATE);
-                        String name = prefs.getString(Constants.NAME_KEY, "");
-                        String msg = "Response:0" + ":" + name;
-                        gameRequestConnectThread = new GameRequestConnectThread(socket.getRemoteDevice(), 0);
-                        gameRequestConnectThread.setResponse(msg);
-                        gameRequestConnectThread.start();
-                        //socket.getOutputStream().write(msg.getBytes());
-                        //socket.getOutputStream().flush();
-                        // alertDialog.dismiss();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            alertDialog = alertDialogBuilder.create();
-            alertDialog.show();*/
             try {
                 socket.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
-
-
     }
 
     private void sendAllAppdetail() {
@@ -501,8 +384,6 @@ public class Home_Master extends AppCompatActivity implements View.OnClickListen
 
     @Override
     protected void onDestroy() {
-//        unregisterReceiver(mBluetoothDeviceFoundReceiver);
-//        wifiDirectService.unRegisterReceiver();
         super.onDestroy();
     }
 }

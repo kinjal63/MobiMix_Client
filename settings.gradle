@@ -1,1 +1,1 @@
-include ':app', ':imagecrop'
+include ':app', ':imagecrop', ':mobimix'

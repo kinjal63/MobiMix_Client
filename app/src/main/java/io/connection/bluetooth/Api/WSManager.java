@@ -1,7 +1,10 @@
 package io.connection.bluetooth.Api;
 
+import java.io.IOException;
+
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -47,5 +50,28 @@ public class WSManager {
                 responseCall.onResponseFailure(call);
             }
         });
+    }
+
+    public void notifyConnectionEstablished() {
+        Call<ResponseBody> name = apiCall.notifyConnectionEstablished(user);
+
+        name.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    String resData = response.body().string();
+                    System.out.println("Remote user is notified");
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+
     }
 }

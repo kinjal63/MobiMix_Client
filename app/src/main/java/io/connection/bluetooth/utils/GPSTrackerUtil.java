@@ -27,6 +27,7 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -36,6 +37,11 @@ import java.util.TimerTask;
 
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.activity.MobileDataUsageActivity;
+import io.connection.bluetooth.request.ReqGameInvite;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class GPSTrackerUtil extends Service implements LocationListener {
 
@@ -83,7 +89,6 @@ public class GPSTrackerUtil extends Service implements LocationListener {
     public GPSTrackerUtil(Context context, Handler handler) {
         this.mContext = context;
         this.mHandler = handler;
-//        getLocation();
 //        getRssi();
 //        getDataUsage();
     }
@@ -92,13 +97,8 @@ public class GPSTrackerUtil extends Service implements LocationListener {
         mPhoneStatelistener1 = new MyPhoneStateListener1();
         mPhoneStatelistener2 = new MyPhoneStateListener2();
 
-//        getSubscriptionIdandCarriers();
-
         mTelephonyManager1 = (TelephonyManager) this.mContext.getSystemService(Context.TELEPHONY_SERVICE);
         mTelephonyManager1.listen(mPhoneStatelistener1, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-
-//        mTelephonyManager2 = mTelephonyManager1.createForSubscriptionId(subId2);
-//        mTelephonyManager2.listen(mPhoneStatelistener2, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
     }
 
     private void getDataUsage() {
@@ -252,7 +252,7 @@ public class GPSTrackerUtil extends Service implements LocationListener {
         }
     }
 
-    public Location getLocation() {
+    public void getLocation() {
         try {
             locationManager = (LocationManager) mContext
                     .getSystemService(LOCATION_SERVICE);
@@ -270,59 +270,47 @@ public class GPSTrackerUtil extends Service implements LocationListener {
             } else {
                 this.canGetLocation = true;
 
-                if (isNetworkEnabled) {
-                    locationManager.requestLocationUpdates(
-                            LocationManager.NETWORK_PROVIDER,
-                            MIN_TIME_BW_UPDATES,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                    Log.d("Network", "Network");
-                    if (locationManager != null) {
-                        location = locationManager
-                                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if (location != null) {
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
-
-                            Message msg = new Message();
-                            msg.what = 2;
-
-                            msg.obj = location.getLatitude() + "," + location.getLongitude();
-                            mHandler.sendMessage(msg);
-                        }
-                    }
-                }
-
                 // If GPS enabled, get latitude/longitude using GPS Services
-                if (isGPSEnabled) {
+                if (isGPSEnabled && locationManager != null) {
                     if (location == null) {
                         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            // TODO: Consider calling
-                            //    ActivityCompat#requestPermissions
-                            // here to request the missing permissions, and then overriding
-                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                            //                                          int[] grantResults)
-                            // to handle the case where the user grants the permission. See the documentation
-                            // for ActivityCompat#requestPermissions for more details.
-                            return location;
+                            return;
                         }
                         locationManager.requestLocationUpdates(
                                 LocationManager.GPS_PROVIDER,
                                 MIN_TIME_BW_UPDATES,
                                 MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
                         Log.d("GPS Enabled", "GPS Enabled");
-                        if (locationManager != null) {
-                            location = locationManager
-                                    .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
 
-                                Message msg = new Message();
-                                msg.what = 2;
+                        location = locationManager
+                                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        if (location != null) {
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
 
-                                msg.obj = location.getLatitude() + "," + location.getLongitude();
-                                mHandler.sendMessage(msg);
-                            }
+                            updateLocation();
+                        }
+                    }
+                }
+
+                // If Network provider is enabled, get latitude/longitude using GPS Services
+                else if (isNetworkEnabled && locationManager != null) {
+                    if (location == null) {
+                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            return;
+                        }
+                        locationManager.requestLocationUpdates(
+                                LocationManager.NETWORK_PROVIDER,
+                                MIN_TIME_BW_UPDATES,
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        Log.d("Network", "Network");
+                        location = locationManager
+                                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                        if (location != null) {
+                            latitude = location.getLatitude();
+                            longitude = location.getLongitude();
+
+                            updateLocation();
                         }
                     }
                 }
@@ -330,7 +318,6 @@ public class GPSTrackerUtil extends Service implements LocationListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return location;
     }
 
 
@@ -426,11 +413,7 @@ public class GPSTrackerUtil extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        Message msg = new Message();
-        msg.what = 2;
-
-        msg.obj = location.getLatitude() + "," + location.getLongitude();
-        mHandler.sendMessage(msg);
+        updateLocation();
     }
 
 
@@ -452,5 +435,28 @@ public class GPSTrackerUtil extends Service implements LocationListener {
     @Override
     public IBinder onBind(Intent arg0) {
         return null;
+    }
+
+    private void updateLocation() {
+        String userId = ApplicationSharedPreferences.getInstance(mContext).getValue("user_id");
+        retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().
+                                                    getService().updateUserLocation(userId, latitude, longitude);
+
+        req1.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    String data = response.body().string();
+                    System.out.println(data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
     }
 }

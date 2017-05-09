@@ -51,6 +51,9 @@ public class PushReceiveService extends FirebaseMessagingService {
                 JSONObject jsonObject = new JSONObject(message);
                 int hasInvite = jsonObject.optInt("connection_invite");
                 final String toUserId = jsonObject.optString("remote_user_id");
+                final String toUserName = jsonObject.optString("remote_user_name");
+                final String gameId = jsonObject.optString("game_id");
+                final String gameName = jsonObject.optString("game_name");
 
                 if (hasInvite == 1) {
                     String bluetoothName = jsonObject.optString("bluetooth_address");

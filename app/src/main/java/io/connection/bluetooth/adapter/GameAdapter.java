@@ -115,8 +115,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
 
     private void sendBluetoothConnectionInvite() {
         Utils.makeDeviceDiscoverable(context);
-//        String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
-//        String bluetoothDeviceAddress = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
+
         ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
                 remoteUserIds, 1);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
