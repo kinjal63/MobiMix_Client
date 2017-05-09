@@ -12,6 +12,7 @@ import java.util.List;
 
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.activity.BusinessCardListActivityUser;
 import io.connection.bluetooth.activity.DeviceListActivityChat;
 import io.connection.bluetooth.activity.ImageCache;
@@ -27,14 +28,14 @@ import io.connection.bluetooth.enums.NetworkType;
 public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdapter.ViewHolder>  {
     private Context mContext;
     private List<WifiP2PRemoteDevice> devices;
-    private View.OnClickListener clickListener;
+    private DeviceClickListener clickListener;
 
     public WifiP2PDeviceAdapter(Context mContext, List<WifiP2PRemoteDevice> devices) {
         this.mContext = mContext;
         this.devices = devices;
     }
 
-    public void setDeviceClickListener(View.OnClickListener clickListener) {
+    public void setDeviceClickListener(DeviceClickListener clickListener) {
         this.clickListener = clickListener;
     }
 
@@ -59,36 +60,27 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
 
             WifiDirectService wifiP2PService = WifiDirectService.getInstance(context);
 
-            Intent intent = new Intent();
+            Modules module = wifiP2PService.getModule();
 
             if(wifiP2PService.getClassName().equalsIgnoreCase(BusinessCardListActivityUser.class.getSimpleName())) {
-                if(wifiP2PService.getModule() != Modules.BUSINESS_CARD) {
+                if(module != Modules.BUSINESS_CARD) {
                     wifiP2PService.closeSocket();
                     wifiP2PService.setModule(Modules.BUSINESS_CARD);
                 }
-
-                intent.setClass(mContext, BusinessCardListActivityUser.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.putExtra("device", device);
-                intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
-                context.startActivity(intent);
             }
             else if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(DeviceListActivityChat.class.getSimpleName())) {
-                WifiDirectService.getInstance(context).getMessageHandler().setModule(Modules.CHAT);
-
-                intent.setClass(mContext, WifiP2PChatActivity.class);
-                intent.putExtra("device", device);
-                intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
-                context.startActivity(intent);
+                if(module != Modules.CHAT) {
+                    wifiP2PService.closeSocket();
+                    wifiP2PService.setModule(Modules.CHAT);
+                }
             }
             else if(wifiP2PService.getClassName().equalsIgnoreCase(WifiDirectMainActivity.class.getSimpleName())) {
-                if(wifiP2PService.getModule() != Modules.FILE_SHARING) {
+                if(module != Modules.FILE_SHARING) {
                     wifiP2PService.closeSocket();
                     wifiP2PService.setModule(Modules.FILE_SHARING);
                 }
-                wifiP2PService.getMessageHandler().setModule(Modules.FILE_SHARING);
-                clickListener.onClick(v);
             }
+            clickListener.onWifiDeviceClick(device);
         }
     }
 

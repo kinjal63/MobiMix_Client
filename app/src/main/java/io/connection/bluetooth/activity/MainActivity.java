@@ -59,9 +59,11 @@ import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.adapter.BluetoothDeviceAdapter;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.Constants;
@@ -71,7 +73,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends BaseActivity implements SearchView.OnQueryTextListener, View.OnClickListener {
+public class MainActivity extends BaseActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
     private static final String TAG = "MainActivity";
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -286,12 +288,19 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
     }
 
+    @Override
+    public void onWifiDeviceClick(WifiP2PRemoteDevice device) {
+
+    }
 
     private void initBluetooth() {
         networkType = NetworkType.BLUETOOTH;
 
+        bluetoothService.setClassName(MainActivity.class.getSimpleName());
+
         listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
         deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+        deviceAdapter.setDeviceClickListener(this);
 
         bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
             @Override
@@ -435,11 +444,11 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
     }
 
     @Override
-    public void onClick(View v) {
+    public void onBluetoothDeviceClick(BluetoothRemoteDevice remoteDevice) {
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.final_dialog_box);
         dialog.setTitle("Transfer File ... ");
-        final BluetoothDevice device = ((BluetoothRemoteDevice) v.getTag()).getDevice();
+        final BluetoothDevice device = remoteDevice.getDevice();
 
         TextView textViewName = (TextView) dialog.getWindow().findViewById(R.id.sendmessgae);
         textViewName.setText("Are You Sure Want to Send Below Files to  " + device.getName() + " ?");
@@ -516,7 +525,6 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
                 }
 
                 AudioFragment.updateCheckbox();
-
 
                 if (videoCheckbox.isChecked()) {
                     for (String check : ImageCache.getVideoCheckBox().keySet()) {

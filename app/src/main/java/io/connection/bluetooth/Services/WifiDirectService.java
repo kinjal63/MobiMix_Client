@@ -25,10 +25,14 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
+import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.WiFiDirectBroadcastReceiver;
@@ -37,6 +41,8 @@ import io.connection.bluetooth.socketmanager.WifiP2PServerHandler;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.UtilsHandler;
+import retrofit2.Call;
+import retrofit2.Response;
 
 /**
  * Created by KP49107 on 23-03-2017.
@@ -275,9 +281,25 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
         wifiP2PDeviceList.clear();
 
-        for(WifiP2pDevice device : p2pDeviceList) {
-            WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
-            wifiP2PDeviceList.add(remoteDevice);
+        for(final WifiP2pDevice device : p2pDeviceList) {
+            User userAvailable = new User();
+            userAvailable.setName(device.deviceName);
+            userAvailable.setEmail(device.deviceName);
+
+            WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+                @Override
+                public void onResponceSuccess(Call<User> call, Response<User> response) {
+                    User user = response.body();
+                    WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, user.getName());
+                    wifiP2PDeviceList.add(remoteDevice);
+                }
+
+                @Override
+                public void onResponseFailure(Call call) {
+
+                }
+            });
+
         }
         if( nearByDeviceCallback != null ) {
             nearByDeviceCallback.onDevicesAvailable(wifiP2PDeviceList);

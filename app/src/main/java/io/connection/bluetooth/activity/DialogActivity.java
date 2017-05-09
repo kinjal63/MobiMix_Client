@@ -7,9 +7,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
@@ -74,12 +78,14 @@ public class DialogActivity extends Activity {
                         if(Utils.getBluetoothAdapter() != null) {
                             mBluetoothDeviceFoundReceiver.setUserId(bluetoothName);
                             bluetoothAdapter.startDiscovery();
+                            finish();
                         }
                     }
                 })
                 .setNegativeButton("No",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         dialog.cancel();
+                        finish();
                     }
                 });
 
@@ -101,14 +107,23 @@ public class DialogActivity extends Activity {
                     public void onClick(DialogInterface dialog,int id) {
                         WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())
                                 .setWifiDirectDeviceName(wifiDirectName);
+                        List<WifiP2PRemoteDevice> devices = new ArrayList<WifiP2PRemoteDevice>();
+                        for(WifiP2PRemoteDevice remoteDevice : devices) {
+                            if( remoteDevice.getName().equalsIgnoreCase(wifiDirectName) ) {
+                                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).
+                                        connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, null);
+                            }
+                        }
                         WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())
                                 .initiateDiscovery();
-                        UtilsHandler.showProgressDialog("Connecting with " + wifiDirectName);
+//                        UtilsHandler.showProgressDialog("Connecting with " + wifiDirectName);
+                        finish();
                     }
                 })
                 .setNegativeButton("No",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         dialog.cancel();
+                        finish();
                     }
                 });
         AlertDialog alertDialog = alertDialogBuilder.create();

@@ -54,10 +54,14 @@ import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedBusinessThread;
+import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.adapter.BluetoothDeviceAdapter;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
@@ -71,32 +75,25 @@ import retrofit2.Response;
 /**
  * Created by songline on 07/09/16.
  */
-public class BusinessCardListActivityUser extends AppCompatActivity implements SearchView.OnQueryTextListener {
+public class BusinessCardListActivityUser extends BaseActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
     private static final String TAG = "BusinessCardListActivit";
     BluetoothAdapter bluetoothAdapter;
     private Toolbar toolbar;
     static ConnectedBusinessThread connectedThread;
 
-    static DeviceAdapter deviceAdapter;
-    WifiP2PDeviceAdapter wifiDeviceAdapter;
+    private BluetoothDeviceAdapter bluetoothDeviceAdapter;
+    private WifiP2PDeviceAdapter wifiDeviceAdapter;
 
-    private ArrayList<BluetoothDevice> listBluetoothDevices = new ArrayList<>();
-    private ArrayList<BluetoothDevice> listTempBluetoothDevices = new ArrayList<>();
+    private WifiP2pDevice p2pDevice;
 
     static RecyclerView deviceLayout;
     ApiCall apiCall;
-//    private ArrayList<BluetoothDevice> bluetoothDevices = new ArrayList<>();
-//    private ArrayList<BluetoothDevice> tempbluetoothDevices = new ArrayList<>();
-    static Context mContext;
-    static BluetoothDevice device;
-    static WifiP2pDevice P2Pdevice;
+    private Context mContext;
     private SearchView searchView;
 
     private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
+    private ArrayList<BluetoothRemoteDevice> listBluetoothDevices = new ArrayList<>();
     private NetworkType networkType;
-
-    private boolean isBluetoothReceiverRegistered;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,9 +126,6 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     @Override
     protected void onResume() {
         super.onResume();
-//        if( networkType == NetworkType.WIFI_DIRECT ) {
-//            closeWifiP2PSocketsIfAny();
-//        }
     }
 
     @Override
@@ -176,28 +170,11 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult: " + resultCode);
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK)
-                bluetoothEnabled();
-
-        } else {
-
-            Toast.makeText(getApplicationContext(), "Please Turn On Bluetooth ", Toast.LENGTH_LONG).show();
-            finish();
-        }
-    }
-
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case 1111:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    if (bluetoothAdapter.isDiscovering())
-                        bluetoothAdapter.cancelDiscovery();
-                    bluetoothAdapter.startDiscovery();
+                    bluetoothService.startDiscovery();
                 }
         }
     }
@@ -205,18 +182,27 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
     private void initBluetooth() {
         networkType = NetworkType.BLUETOOTH;
 
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            bluetoothAdapter.enable();
-            Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBlueTooth, 1);
-        } else {
-            bluetoothEnabled();
-        }
-        deviceAdapter = new DeviceAdapter(this, listBluetoothDevices);
+        bluetoothService.setClassName(BusinessCardListActivityUser.class.getSimpleName());
 
-        registerReceiver(bluetoothDeviceFoundReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-        isBluetoothReceiverRegistered = true;
+        listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
+        bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+        bluetoothDeviceAdapter.setDeviceClickListener(this);
+
+        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
+            @Override
+            public void onBluetoothDeviceAvailable(BluetoothRemoteDevice device) {
+                listBluetoothDevices.add(device);
+
+                ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
+
+                UtilsHandler.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        bluetoothDeviceAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
     }
 
     private void initWifiDirect() {
@@ -224,6 +210,7 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
 
         listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
         wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
+        wifiDeviceAdapter.setDeviceClickListener(this);
 
         WifiDirectService.getInstance(this).setClassName(BusinessCardListActivityUser.class.getSimpleName());
         WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
@@ -237,15 +224,13 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
         });
     }
 
-    void bluetoothEnabled() {
-        alreadyBondedDevice();
-
-        if (Build.VERSION.SDK_INT >= 21)
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1111);
+    public void setDeviceLayout(RecyclerView deviceLayout) {
+        deviceLayout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        if( networkType == NetworkType.WIFI_DIRECT ) {
+            deviceLayout.setAdapter(wifiDeviceAdapter);
+        }
         else {
-            if (bluetoothAdapter.isDiscovering())
-                bluetoothAdapter.cancelDiscovery();
-            bluetoothAdapter.startDiscovery();
+            deviceLayout.setAdapter(bluetoothDeviceAdapter);
         }
     }
 
@@ -256,303 +241,20 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        deviceAdapter.getFilter().filter(newText);
+        bluetoothDeviceAdapter.getFilter().filter(newText);
         return false;
     }
-
-    public static class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.ViewHolder> implements Filterable {
-        List<String> names = new ArrayList<>();
-        List<String> status = new ArrayList<>();
-        FriendFilter friendFilter;
-        static Context mContext;
-        List<BluetoothDevice> devices = new ArrayList<>();
-        List<String> listName = new ArrayList<>();
-        List<BluetoothDevice> listDevice = new ArrayList<>();
-
-        public DeviceAdapter(Context mContext, List<BluetoothDevice> devices) {
-            this.mContext = mContext;
-            this.devices = devices;
-            getFilter();
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new ViewHolder(LayoutInflater.from(mContext).inflate(viewType == 0 ? R.layout.business_layout_single_user : R.layout.searching_devices, parent, false), mContext, viewType);
-        }
-
-        public void add(String name, String Status, BluetoothDevice device) {
-            names.add(name);
-            status.add(Status);
-            devices.add(device);
-            listName.add(name);
-            listDevice.add(device);
-            notifyDataSetChanged();
-        }
-
-
-        @Override
-        public int getItemViewType(int position) {
-            return position == 0 && names.isEmpty() ? 1 : 0;
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            if (holder.getItemViewType() == 0) {
-                holder.nameTV.setText(names.get(position));
-                holder.itemView.setTag(devices.get(position));
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return names.isEmpty() ? 1 : names.size();
-        }
-
-        @Override
-        public Filter getFilter() {
-            if (friendFilter == null) {
-                friendFilter = new FriendFilter();
-            }
-            return friendFilter;
-        }
-
-
-        private class FriendFilter extends Filter {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                FilterResults filterResults = new FilterResults();
-                Map<BluetoothDevice, String> map = new HashMap<>();
-                if (constraint != null && constraint.length() > 0 && constraint.toString().trim().length() > 0) {
-                    ArrayList<String> tempList = new ArrayList<String>();
-                    int i = 0;
-                    // search content in friend list
-                    for (String user : listName) {
-                        if (user.toLowerCase().contains(constraint.toString().toLowerCase())) {
-                            //tempList.add(user);
-                            map.put(listDevice.get(i), user);
-                            i++;
-                        } else {
-                            i++;
-                        }
-                    }
-                    filterResults.count = map.size();
-                    filterResults.values = map;
-                } else {
-                    int i = 0;
-                    for (String user : listName) {
-                        map.put(listDevice.get(i++), user);
-                    }
-                    filterResults.count = map.size();
-                    filterResults.values = map;
-                }
-                return filterResults;
-            }
-
-            /**
-             * Notify about filtered list to ui
-             *
-             * @param constraint text
-             * @param results    filtered result
-             */
-            @SuppressWarnings("unchecked")
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                Map<BluetoothDevice, String> objDeviceMap = (Map) results.values;
-                names.clear();
-                names.addAll(objDeviceMap.values());
-                devices.clear();
-                devices.addAll(objDeviceMap.keySet());
-                notifyDataSetChanged();
-
-            }
-        }
-
-
-        static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-            TextView nameTV;
-            ImageView imageView;
-            public Context context;
-
-
-            public ViewHolder(View itemView, Context context, int type) {
-                super(itemView);
-                if (type == 0) {
-                    nameTV = (TextView) itemView.findViewById(R.id.business_user_name);
-                    this.context = context;
-                    itemView.setOnClickListener(this);
-                }
-            }
-
-            @Override
-            public void onClick(View v) {
-
-                device = (BluetoothDevice) v.getTag();
-                Log.d(TAG, "onClick: " + ((BluetoothDevice) v.getTag()).getAddress() + "    " + ((BluetoothDevice) v.getTag()).getName());
-                ImageCache.setContext(context);
-                connectedThread = new ConnectedBusinessThread(device);
-                connectedThread.start();
-                NotificationManagerCompat.from(context).cancelAll();
-            }
-
-
-        }
-
-    }
-
-
-    public void setDeviceLayout(RecyclerView deviceLayout) {
-
-        deviceLayout.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        //deviceLayout.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        if( networkType == NetworkType.WIFI_DIRECT ) {
-            deviceLayout.setAdapter(wifiDeviceAdapter);
-        }
-        else {
-            deviceLayout.setAdapter(deviceAdapter);
-        }
-
-    }
-
-    public static ConnectedBusinessThread getCurrentThread() {
-        return connectedThread;
-    }
-
-    public final BroadcastReceiver bluetoothDeviceFoundReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            String action = intent.getAction();
-            Log.d(TAG, "onReceive: bluetooth receiver here");
-            Log.d("bluetooth", action);
-            if (action.equals(BluetoothDevice.ACTION_FOUND)) {
-                final BluetoothDevice deviceSet = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-
-                /*if (!tempbluetoothDevices.contains(device)) {
-                    tempbluetoothDevices.add(device);
-                    deviceAdapter.add(device.getName(), "Not Connected", device);
-                    Log.d(TAG, "onReceive: " + device.getAddress() + "  " + device.getName() + "    ");
-                }*/
-                if (Utils.isConnected(context)) {
-                    if (device != null) {
-                        String deviceMacAddress = device.getAddress().trim();
-                        Log.d(TAG, "onReceive: " + deviceMacAddress);
-                        if (!listTempBluetoothDevices.contains(deviceSet)) {
-                            User userAvailable = new User();
-                            userAvailable.setMacAddress(deviceSet.getAddress());
-                            userAvailable.setEmail(deviceSet.getName());
-                            Call<User> name = apiCall.isAvailable(userAvailable);
-                            name.enqueue(new Callback<User>() {
-                                @Override
-                                public void onResponse(Call<User> call, Response<User> response) {
-                                    User user = response.body();
-                                    if (user != null) {
-                                        listTempBluetoothDevices.add(deviceSet);
-                                        deviceAdapter.add(user.getName(), "Not Connected", deviceSet);
-                                    }
-
-                                }
-
-                                @Override
-                                public void onFailure(Call<User> call, Throwable t) {
-                                    Log.d(TAG, "onFailure: " + t.getMessage());
-                                    Toast.makeText(getApplicationContext(), Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-
-                                }
-                            });
-                        }
-
-                    }
-                } else {
-                    Toast.makeText(context, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-                }
-            }
-
-        }
-    };
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if( isBluetoothReceiverRegistered ) {
-            unregisterReceiver(bluetoothDeviceFoundReceiver);
-        }
-        closeWifiP2PSocketsIfAny();
-    }
-
-
-    public void alreadyBondedDevice() {
-        Set<BluetoothDevice> listdevice = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
-        if (Utils.isConnected(mContext)) {
-            for (final BluetoothDevice deviceSet : listdevice) {
-
-                if (!listTempBluetoothDevices.contains(deviceSet)) {
-                    User userAvailable = new User();
-                    userAvailable.setMacAddress(deviceSet.getAddress());
-                    userAvailable.setEmail(deviceSet.getName());
-                    Call<User> name = apiCall.isAvailable(userAvailable);
-                    name.enqueue(new Callback<User>() {
-                        @Override
-                        public void onResponse(Call<User> call, Response<User> response) {
-                            User user = response.body();
-
-                            if (user != null) {
-                                Log.d(TAG, "onResponse: " + user.getName());
-                                listTempBluetoothDevices.add(deviceSet);
-                                deviceAdapter.add(user.getName(), "Paired", deviceSet);
-                            }
-
-                        }
-
-                        @Override
-                        public void onFailure(Call<User> call, Throwable t) {
-                            Log.d(TAG, "onFailure: " + t.getMessage());
-                            Toast.makeText(getApplicationContext(), Constants.ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-
-                        }
-                    });
-                }
-
-
-            }
-        } else {
-            Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-        }
-
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if( intent != null && intent.getParcelableExtra("device") != null) {
-            P2Pdevice = intent.getParcelableExtra("device");
-
-            if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(P2Pdevice.deviceName) ) {
-                Toast.makeText(this, "Connecting to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
-
-                WifiDirectService.getInstance(this).connectWithWifiAddress(P2Pdevice.deviceAddress, new DeviceConnectionListener() {
-                    @Override
-                    public void onDeviceConnected(boolean isConnected) {
-
-                        if (isConnected) {
-                            setSocketListeners();
-                        } else {
-                            Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + P2Pdevice.deviceName, Toast.LENGTH_SHORT);
-                        }
-                    }
-                });
-            }
-            else {
-                sendBusinessCard();
-            }
-        }
     }
 
     private void sendBusinessCard() {
         UtilsHandler.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + P2Pdevice.deviceName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + p2pDevice.deviceName, Toast.LENGTH_SHORT).show();
             }
         });
         WifiDirectService.getInstance(this).getMessageHandler().sendBusinessCard();
@@ -571,6 +273,38 @@ public class BusinessCardListActivityUser extends AppCompatActivity implements S
 
             }
         });
+    }
+
+    @Override
+    public void onWifiDeviceClick(WifiP2PRemoteDevice device) {
+        p2pDevice = device.getDevice();
+
+        if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(p2pDevice.deviceName) ) {
+            Toast.makeText(this, "Connecting to " + p2pDevice.deviceName, Toast.LENGTH_SHORT).show();
+
+            WifiDirectService.getInstance(this).connectWithWifiAddress(p2pDevice.deviceAddress, new DeviceConnectionListener() {
+                @Override
+                public void onDeviceConnected(boolean isConnected) {
+
+                    if (isConnected) {
+                        setSocketListeners();
+                    } else {
+                        Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + p2pDevice.deviceName, Toast.LENGTH_SHORT);
+                    }
+                }
+            });
+        }
+        else {
+            Toast.makeText(this, "Connected to " + p2pDevice.deviceName, Toast.LENGTH_SHORT).show();
+            sendBusinessCard();
+        }
+    }
+
+    @Override
+    public void onBluetoothDeviceClick(BluetoothRemoteDevice device) {
+        connectedThread = new ConnectedBusinessThread(device.getDevice());
+        connectedThread.start();
+        NotificationManagerCompat.from(this).cancelAll();
     }
 
     private void closeWifiP2PSocketsIfAny() {

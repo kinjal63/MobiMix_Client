@@ -38,8 +38,6 @@ public class Login_Register extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        printWifiAddress();
-
         setContentView(R.layout.login_register_layout);
         if (bluetoothAdapter == null) {
             new AlertDialog.Builder(this)
@@ -65,42 +63,14 @@ public class Login_Register extends AppCompatActivity {
         }
         sharedPref = this.getSharedPreferences("myPref", Context.MODE_PRIVATE);
 
-        ApplicationSharedPreferences.getInstance(this).addValue("email", Build.MODEL);
-
-//        if(sharedPref.getBoolean("is_login", false)) {
+        if(sharedPref.getBoolean("is_login", false)) {
             startActivity(new Intent(this, Home_Master.class));
             finish();
-//        }
+        }
         viewPager = (ViewPager) findViewById(R.id.pager_login_register);
         setupViewPager(viewPager);
         tabLayout = (TabLayout) findViewById(R.id.tabs_login_register);
         tabLayout.setupWithViewPager(viewPager);
-    }
-
-    private void printWifiAddress() {
-        try {
-            List<NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
-            for (NetworkInterface nif : all) {
-                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
-
-                byte[] macBytes = nif.getHardwareAddress();
-//                if (macBytes == null) {
-//                    return;
-//                }
-
-                StringBuilder res1 = new StringBuilder();
-                for (byte b : macBytes) {
-                    res1.append(Integer.toHexString(b & 0xFF) + ":");
-                }
-
-                if (res1.length() > 0) {
-                    res1.deleteCharAt(res1.length() - 1);
-                }
-                System.out.println("Wifi MAC Addess->" + res1.toString());
-            }
-        } catch (Exception ex) {
-            //handle exception
-        }
     }
 
     @Override

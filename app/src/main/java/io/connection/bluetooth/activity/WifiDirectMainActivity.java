@@ -45,14 +45,16 @@ import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 
-public class WifiDirectMainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, View.OnClickListener {
+public class WifiDirectMainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
     private static final String TAG = "MainActivity";
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -353,11 +355,16 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
     }
 
     @Override
-    public void onClick(View v) {
+    public void onBluetoothDeviceClick(BluetoothRemoteDevice device) {
+
+    }
+
+    @Override
+    public void onWifiDeviceClick(WifiP2PRemoteDevice remoteDevice) {
         final Dialog dialog = new Dialog(WifiDirectMainActivity.this);
         dialog.setContentView(R.layout.final_dialog_box);
         dialog.setTitle("Transfer File ... ");
-        final WifiP2pDevice device = ((WifiP2PRemoteDevice) v.getTag()).getDevice();
+        final WifiP2pDevice device = remoteDevice.getDevice();
 
         TextView textViewName = (TextView) dialog.getWindow().findViewById(R.id.sendmessgae);
         textViewName.setText("Are You Sure Want to Send Below Files to  " + device.deviceName + " ?");
@@ -539,7 +546,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        closeWifiP2PSocketsIfAny();
+//        closeWifiP2PSocketsIfAny();
     }
 
     private void closeWifiP2PSocketsIfAny() {

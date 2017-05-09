@@ -68,19 +68,19 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
                 userAvailable.setMacAddress(remoteDevice.getAddress());
                 userAvailable.setEmail(remoteDevice.getName());
 
-//                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
-//                    @Override
-//                    public void onResponceSuccess(Call<User> call, Response<User> response) {
-//                        User user = response.body();
-                        BluetoothRemoteDevice device = new BluetoothRemoteDevice(remoteDevice, userAvailable.getName());
+                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+                    @Override
+                    public void onResponceSuccess(Call<User> call, Response<User> response) {
+                        User user = response.body();
+                        BluetoothRemoteDevice device = new BluetoothRemoteDevice(remoteDevice, user.getName());
                         bluetoothService.setRemoteBluetoothDevice(device);
-//                    }
-//
-//                    @Override
-//                    public void onResponseFailure(Call call) {
-//
-//                    }
-//                });
+                    }
+
+                    @Override
+                    public void onResponseFailure(Call call) {
+
+                    }
+                });
 
                 if (remoteDevice.getName() != null) {
                     Log.d(TAG, "onReceive Remote device name: " + remoteDevice.getName().trim());
@@ -102,19 +102,19 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
                 userAvailable.setMacAddress(device.getAddress());
                 userAvailable.setEmail(device.getName());
 
-//                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
-//                    @Override
-//                    public void onResponceSuccess(Call<User> call, Response<User> response) {
-//                        User user = response.body();
-                        BluetoothRemoteDevice remoteDevice = new BluetoothRemoteDevice(device, userAvailable.getName());
+                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+                    @Override
+                    public void onResponceSuccess(Call<User> call, Response<User> response) {
+                        User user = response.body();
+                        BluetoothRemoteDevice remoteDevice = new BluetoothRemoteDevice(device, user.getName());
                         bluetoothService.setRemoteBluetoothDevice(remoteDevice);
-//                    }
-//
-//                    @Override
-//                    public void onResponseFailure(Call call) {
-//                        Toast.makeText(mContext, "No users are found.", Toast.LENGTH_SHORT);
-//                    }
-//                });
+                    }
+
+                    @Override
+                    public void onResponseFailure(Call call) {
+                        Toast.makeText(mContext, "No users are found.", Toast.LENGTH_SHORT);
+                    }
+                });
 
             }
 //        } else {

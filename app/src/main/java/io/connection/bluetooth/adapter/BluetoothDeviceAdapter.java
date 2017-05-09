@@ -19,10 +19,20 @@ import java.util.List;
 import java.util.Map;
 
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.BluetoothService;
+import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.actionlisteners.DeviceClickListener;
+import io.connection.bluetooth.activity.BusinessCardListActivityUser;
 import io.connection.bluetooth.activity.DeviceChatActivity;
+import io.connection.bluetooth.activity.DeviceListActivityChat;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.activity.MainActivity;
+import io.connection.bluetooth.activity.WifiDirectMainActivity;
+import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.enums.Modules;
+import io.connection.bluetooth.enums.NetworkType;
 
 /**
  * Created by KP49107 on 17-04-2017.
@@ -32,14 +42,14 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
     List<BluetoothRemoteDevice> devices = new ArrayList<>();
     FriendFilter friendFilter;
     private ConnectedThread connectedThread;
-    private View.OnClickListener clickListener;
+    private DeviceClickListener clickListener;
 
     public BluetoothDeviceAdapter(Context mContext, List<BluetoothRemoteDevice> devices) {
         this.mContext = mContext;
         this.devices = devices;
     }
 
-    public void setDeviceClickListener(View.OnClickListener clickListener) {
+    public void setDeviceClickListener(DeviceClickListener clickListener) {
         this.clickListener = clickListener;
     }
 
@@ -144,11 +154,21 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
             device = (BluetoothRemoteDevice) v.getTag();
             ImageCache.setContext(context);
 
-            Intent intent = new Intent(mContext, DeviceChatActivity.class);
-            //intent.putExtra("connectThread", connectedThread);
-            intent.putExtra("device", device);
-            mContext.startActivity(intent);
+            BluetoothService bluetoothService = BluetoothService.getInstance();
 
+            if(bluetoothService.getClassName().equalsIgnoreCase(BusinessCardListActivityUser.class.getSimpleName())) {
+                bluetoothService.setModule(Modules.BUSINESS_CARD);
+            }
+            else if(bluetoothService.getClassName().equalsIgnoreCase(DeviceListActivityChat.class.getSimpleName())) {
+                bluetoothService.setModule(Modules.CHAT);
+            }
+            else if(bluetoothService.getClassName().equalsIgnoreCase(MainActivity.class.getSimpleName())) {
+                bluetoothService.setModule(Modules.FILE_SHARING);
+            }
+
+            if(BluetoothDeviceAdapter.this.clickListener != null) {
+                BluetoothDeviceAdapter.this.clickListener.onBluetoothDeviceClick(device);
+            }
             NotificationManagerCompat.from(context).cancelAll();
 
         }
