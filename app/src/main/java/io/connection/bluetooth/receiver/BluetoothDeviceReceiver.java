@@ -16,6 +16,7 @@ import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Services.BluetoothService;
+import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
@@ -81,14 +82,6 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
 
                     }
                 });
-
-                if (remoteDevice.getName() != null) {
-                    Log.d(TAG, "onReceive Remote device name: " + remoteDevice.getName().trim());
-                    if (remoteDevice.getName().trim().equalsIgnoreCase(remoteUserName)) {
-                        String deviceMacAddressToPair = remoteDevice.getAddress().trim();
-                        Utils.pairWithBluetooth(deviceMacAddressToPair);
-                    }
-                }
             }
         }
     }
@@ -122,8 +115,13 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
 //        }
     }
 
-    public void setUserId(String remoteUserName) {
-        this.remoteUserName = remoteUserName;
+    public void pairWithDevice(String remoteUserName, BluetoothPairCallback bluetoothPairResult) {
+        List<BluetoothRemoteDevice> bluetoothDevices = bluetoothService.getBluetoothDevices();
+        for(BluetoothRemoteDevice device : bluetoothDevices) {
+            if( device.getDevice().getName().equalsIgnoreCase(remoteUserName) ) {
+                Utils.pairWithBluetooth(device.getDevice().getAddress(), bluetoothPairResult);
+            }
+        }
     }
 
 }

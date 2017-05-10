@@ -2,6 +2,7 @@ package io.connection.bluetooth.utils;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -39,6 +40,13 @@ public class UtilsHandler {
             progressDialog.dismiss();
         }
     }
+
+    public static void launchGame(String gamePackageName) {
+        Intent launchIntent = MobileMeasurementApplication.getInstance().getContext().getPackageManager().
+                getLaunchIntentForPackage(gamePackageName);
+        MobileMeasurementApplication.getInstance().getContext().startActivity(launchIntent);
+    }
+
 
 }
 

@@ -10,8 +10,11 @@ import com.google.gson.annotations.SerializedName;
  * Created by KP49107 on 09-05-2017.
  */
 public class GameRequest implements Parcelable {
-    @SerializedName("connection_invite")
-    private int connectionInvite;
+    @SerializedName("connection_type")
+    private int connectionType;
+
+    @SerializedName("notification_type")
+    private int notificationType;
 
     @SerializedName("remote_user_id")
     private String remoteUserId;
@@ -25,12 +28,14 @@ public class GameRequest implements Parcelable {
     @SerializedName("game_name")
     private String gameName;
 
+    @SerializedName("game_package_name")
+    private String gamePackageName;
+
     @SerializedName("bluetooth_address")
     private String bluetoothAddress;
 
     @SerializedName("wifi_address")
     private String wifiAddress;
-
 
     public String getBluetoothAddress() {
         return bluetoothAddress;
@@ -40,12 +45,12 @@ public class GameRequest implements Parcelable {
         this.bluetoothAddress = bluetoothAddress;
     }
 
-    public int getConnectionInvite() {
-        return connectionInvite;
+    public int getConnectionType() {
+        return connectionType;
     }
 
-    public void setConnectionInvite(int connectionInvite) {
-        this.connectionInvite = connectionInvite;
+    public void setConnectionType(int connectionType) {
+        this.connectionType = connectionType;
     }
 
     public String getRemoteUserId() {
@@ -88,6 +93,22 @@ public class GameRequest implements Parcelable {
         this.wifiAddress = wifiAddress;
     }
 
+    public int getNotificationType() {
+        return notificationType;
+    }
+
+    public void setNotificationType(int notificationType) {
+        this.notificationType = notificationType;
+    }
+
+    public String getGamePackageName() {
+        return gamePackageName;
+    }
+
+    public void setGamePackageName(String gamePackageName) {
+        this.gamePackageName = gamePackageName;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -98,21 +119,22 @@ public class GameRequest implements Parcelable {
         Bundle bundle = new Bundle();
         bundle.putLong("game_id", this.gameId);
         bundle.putString("game_name", this.gameName);
+        bundle.putString("game_package_name", this.gamePackageName);
         bundle.putString("remote_user_id", this.remoteUserId);
         bundle.putString("remote_user_name", this.remoteUserName);
         bundle.putString("bluetooth_address", this.bluetoothAddress);
         bundle.putString("wifi_address", this.wifiAddress);
         dest.writeBundle(bundle);
-        dest.writeString("");
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
         public GameRequest createFromParcel(Parcel in) {
             Bundle bundle = new Bundle();
             GameRequest gameRequest = new GameRequest();
-            gameRequest.setConnectionInvite(bundle.getInt("connection_invite"));
+            gameRequest.setConnectionType(bundle.getInt("connection_type"));
             gameRequest.setGameId(bundle.getLong("game_id"));
             gameRequest.setGameName(bundle.getString("game_name"));
+            gameRequest.setGamePackageName(bundle.getString("game_package_name"));
             gameRequest.setRemoteUserId(bundle.getString("remote_user_id"));
             gameRequest.setRemoteUserName(bundle.getString("remote_user_name"));
             gameRequest.setBluetoothAddress(bundle.getString("bluetooth_address"));

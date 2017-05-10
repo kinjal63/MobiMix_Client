@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.connection.bluetooth.Domain.DeviceDetails;
 import io.connection.bluetooth.Domain.GameProfile;
+import io.connection.bluetooth.Domain.GameRequestConnection;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.request.ReqGameInvite;
 import okhttp3.ResponseBody;
@@ -76,5 +77,8 @@ public interface ApiCall {
     @POST("addUserTime")
     Call<ResponseBody> addUserTime(@Query("userId") String userId, @Query("fromTime") String fromTime,
                                    @Query("toTime") String toTime);
+
+    @POST("updateConnectionInfo")
+    Call<ResponseBody> updateConnectionInfo(@Body GameRequestConnection requestConnection);
 }
 

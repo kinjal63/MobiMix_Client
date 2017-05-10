@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.adapter.GameAdapter;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
@@ -107,41 +108,19 @@ public class Utils {
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
-    public static void pairWithBluetooth(String bluetoothAddress) {
+    public static void pairWithBluetooth(String bluetoothAddress, BluetoothPairCallback bluetoothPairCallback) {
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(bluetoothAddress);
-        pairDevice(device);
-    }
 
-    private static void pairDevice(BluetoothDevice device) {
         try {
             Log.d("pairDevice()", "Start Pairing...");
             Method m = device.getClass().getMethod("createBond", (Class[]) null);
             m.invoke(device, (Object[]) null);
             Log.d("pairDevice()", "Pairing finished.");
 
-            MobileMeasurementApplication.getInstance().getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    AlertDialog alertbox = new AlertDialog.Builder(MobileMeasurementApplication.getInstance().getContext())
-                            //.setIcon(R.drawable.no)
-                            .setTitle("Open Game")
-                            .setMessage("Bluetooth connection is established. Do you want to open the game " + GameAdapter.gameName)
-                            .setPositiveButton("ok", new DialogInterface.OnClickListener() {
-
-                                // do something when the button is clicked
-                                public void onClick(DialogInterface arg0, int arg1) {
-
-                                    Intent LaunchIntent = MobileMeasurementApplication.getInstance().getContext().getPackageManager().
-                                            getLaunchIntentForPackage(GameAdapter.gamePackageName);
-                                    MobileMeasurementApplication.getInstance().getContext().startActivity(LaunchIntent);
-                                }
-                            })
-                            .show();
-
-                }
-            });
+            bluetoothPairCallback.devicePaired(true);
         } catch (Exception e) {
             Log.e("pairDevice()", e.getMessage());
+            bluetoothPairCallback.devicePaired(false);
         }
     }
 

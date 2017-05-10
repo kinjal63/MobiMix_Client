@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 
+import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
@@ -28,6 +29,7 @@ import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.Home_Master;
 import io.connection.bluetooth.activity.UserList;
 import io.connection.bluetooth.adapter.GameAdapter;
+import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by songline on 03/10/16.
@@ -70,12 +72,15 @@ public class PushReceiveService extends FirebaseMessagingService {
 
                 GameRequest request = new Gson().fromJson(message, GameRequest.class);
 
-                if (request.getConnectionInvite() == 1) {
-                    String bluetoothName = jsonObject.optString("bluetooth_address");
+                if (request.getNotificationType() == 1) {
+//                    String bluetoothName = jsonObject.optString("bluetooth_address");
                     generateBluetoothNotification(request);
-                } else if (request.getConnectionInvite() == 2) {
-                    String wifiDirectName = jsonObject.optString("wifi_address");
+                } else if (request.getNotificationType() == 2) {
+//                    String wifiDirectName = jsonObject.optString("wifi_address");
                     generateWifiNotification(request);
+                } else if (request.getNotificationType() == 3) {
+//                    String wifiDirectName = jsonObject.optString("wifi_address");
+                    launchGameAndUpdateConnectionInfo(request);
                 } else if (jsonObject.optInt("notification_message") == 1) {
                     generateNearByUserNotification("User " + request.getRemoteUserName() + " is nearby", request.getRemoteUserId());
                 }
@@ -203,6 +208,11 @@ public class PushReceiveService extends FirebaseMessagingService {
         Intent notificationIntent = new Intent(this, Home_Master.class);
         PendingIntent test = PendingIntent.getActivity(this, 1, notificationIntent, PendingIntent.FLAG_NO_CREATE);
         return test != null;
+    }
+
+    private void launchGameAndUpdateConnectionInfo(GameRequest request) {
+        UtilsHandler.launchGame(request.getGamePackageName());
+        WSManager.getInstance().notifyConnectionEstablished(request.getGameId(), request.getRemoteUserId(), request.getConnectionType());
     }
 }
 

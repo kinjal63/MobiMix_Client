@@ -10,9 +10,13 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
+import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
@@ -24,7 +28,6 @@ import io.connection.bluetooth.utils.UtilsHandler;
  * Created by Kinjal on 27-03-2017.
  */
 public class DialogActivity extends Activity {
-    private String toUserId;
     private Modules module;
     private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
     BluetoothAdapter bluetoothAdapter;
@@ -52,23 +55,35 @@ public class DialogActivity extends Activity {
             module = Modules.FILE_SHARING;
             showSendViaDialog("Send file(s) via");
         }
-        else if( intent1 != null && intent1.getStringExtra("wifi_address") != null) {
-            this.toUserId = intent1.getStringExtra("toUserId");
-            showWifiDialog(intent1.getStringExtra("wifi_address"), toUserId);
+        else if( intent1 != null && intent1.getParcelableExtra("game_request") != null) {
+            GameRequest request = intent1.getParcelableExtra("game_request");
+            if( request != null && request.getConnectionInvite() == 1 ) {
+                showWifiDialog(request);
+            }
+            else if( request != null && request.getConnectionInvite() == 2 ) {
+                showBluetoothDialog(request);
+            }
         }
-        else if( intent1 != null && intent1.getStringExtra("bluetooth_address") != null) {
-            this.toUserId = intent1.getStringExtra("toUserId");
-            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId);
-        }
+
+//        else if( intent1 != null && intent1.getParcelableExtra("game_request") != null) {
+//            this.toUserId = intent1.getStringExtra("toUserId");
+//            showWifiDialog(intent1.getStringExtra("wifi_address"), toUserId);
+//        }
+//        else if( intent1 != null && intent1.getStringExtra("bluetooth_address") != null) {
+//            this.toUserId = intent1.getStringExtra("toUserId");
+//            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId);
+//        }
     }
 
-    private void showBluetoothDialog(final String bluetoothName, final String toUserId) {
+    private void showBluetoothDialog(final GameRequest gameRequest) {
+        final String bluetoothName = gameRequest.getBluetoothAddress();
+        final String gameName = gameRequest.getGameName();
+        final String gamePackageName = gameRequest.getGamePackageName();
+        final long gameId = gameRequest.getGameId();
+        final String toUserId = gameRequest.getRemoteUserId();
+
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        // set title
         alertDialogBuilder.setTitle("Bluetooth Connection Invite");
-
-        // set dialog message
         alertDialogBuilder
                 .setMessage("Do you want to make bluetooth connection with " + bluetoothName)
                 .setCancelable(false)
@@ -76,7 +91,15 @@ public class DialogActivity extends Activity {
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         if(Utils.getBluetoothAdapter() != null) {
-                            mBluetoothDeviceFoundReceiver.setUserId(bluetoothName);
+                            mBluetoothDeviceFoundReceiver.pairWithDevice(bluetoothName, new BluetoothPairCallback() {
+                                @Override
+                                public void devicePaired(boolean isPaired) {
+                                    if(isPaired) {
+                                        UtilsHandler.launchGame(gamePackageName);
+                                        notifyRequester(gameId, toUserId, NetworkType.BLUETOOTH.ordinal());
+                                    }
+                                }
+                            });
                             bluetoothAdapter.startDiscovery();
                             finish();
                         }
@@ -94,7 +117,10 @@ public class DialogActivity extends Activity {
         alertDialog.show();
     }
 
-    private void showWifiDialog(final String wifiDirectName, final String toUserId) {
+    private void showWifiDialog(GameRequest gameRequest) {
+        final String wifiDirectName = gameRequest.getBluetoothAddress();
+        final String gameName = gameRequest.getGameName();
+
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         alertDialogBuilder.setTitle("Wifi Direct Connection Invite");
@@ -160,5 +186,9 @@ public class DialogActivity extends Activity {
                     }
                 });
         builder.create().show();
+    }
+
+    private void notifyRequester(long gameId, String remoteUserId, int connectionType) {
+        WSManager.getInstance().notifyConnectionEstablished(gameId, remoteUserId, connectionType);
     }
 }
