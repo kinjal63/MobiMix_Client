@@ -26,12 +26,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Domain.GameConnectionInfo;
+import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
@@ -360,6 +363,30 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
     }
 
+    public void updateConnectionInfo(final GameRequest gameRequest) {
+        manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
+                public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
+                    if(p2pInfo.groupFormed) {
+                        GameConnectionInfo connectionInfo = new GameConnectionInfo();
+
+                        if (p2pInfo.isGroupOwner) {
+                            Log.d(TAG, "Connected as group owner");
+                            connectionInfo.setIsGroupOwner(1);
+                        } else {
+                            Log.d(TAG, "Connected as peer");
+                            connectionInfo.setIsGroupOwner(0);
+                        }
+
+                        connectionInfo.setGameId(gameRequest.getGameId());
+                        connectionInfo.setUserId(ApplicationSharedPreferences.getInstance(mContext).
+                                getValue("user_id"));
+                        connectionInfo.setConnectedUserId(gameRequest.getRemoteUserId());
+
+                        WSManager.getInstance().updateConnectionInfo(connectionInfo);
+                    }
+                }
+        });
+    }
     public void notifyUserForClosedSocket() {
         if(socketConnectionListener != null) {
             socketConnectionListener.socketClosed();
@@ -371,6 +398,14 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         if(socketConnectionListener != null) {
             socketConnectionListener.socketConnected(true, remoteDeviceAddress);
         }
+    }
+
+    public WifiP2pManager getWifiP2PManager() {
+        return this.manager;
+    }
+
+    public WifiP2pManager.Channel getWifiP2PChannel() {
+        return this.channel;
     }
 
     public MessageHandler getMessageHandler() {

@@ -84,25 +84,19 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         holder.imgBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendBluetoothConnectionInvite();
                 gameName = gameList.get((int)view.getTag()).getGamneName();
                 gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
 
-                Intent LaunchIntent = MobileMeasurementApplication.getInstance().getContext().getPackageManager().
-                        getLaunchIntentForPackage(GameAdapter.gamePackageName);
-                MobileMeasurementApplication.getInstance().getContext().startActivity(LaunchIntent);
+                sendBluetoothConnectionInvite(gamePackageName);
             }
         });
         holder.imgWifi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendWifiConnectionInvite();
                 gameName = gameList.get((int)view.getTag()).getGamneName();
                 gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
 
-//                Intent LaunchIntent = MobileMeasurementApplication.getInstance().getContext().getPackageManager().
-//                        getLaunchIntentForPackage(GameAdapter.gamePackageName);
-//                MobileMeasurementApplication.getInstance().getContext().startActivity(LaunchIntent);
+                sendWifiConnectionInvite(gamePackageName);
             }
         });
         imageLoader.displayImage(userInfo.getGameImagePath(), holder.imageView);
@@ -113,11 +107,12 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         return gameList.size();
     }
 
-    private void sendBluetoothConnectionInvite() {
+    private void sendBluetoothConnectionInvite(String gamePackageName) {
         Utils.makeDeviceDiscoverable(context);
 
         ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
                 remoteUserIds, 1);
+        gameInvite.setGamePackageName(gamePackageName);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {
@@ -138,12 +133,12 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         });
     }
 
-    private void sendWifiConnectionInvite() {
+    private void sendWifiConnectionInvite(String gamePackageName) {
         WifiDirectService.getInstance(context).initiateDiscovery();
-//        String wifiAddress = ApplicationSharedPreferences.getInstance(context).getValue("wifi_p2p_address");
-//        String bluetoothDeviceAddress = android.provider.Settings.Secure.getString(context.getContentResolver(), "bluetooth_address");
+//
         ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
                 remoteUserIds, 2);
+        gameInvite.setGamePackageName(gamePackageName);
         retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {

@@ -5,37 +5,49 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.util.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
+import java.util.Vector;
 
 import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
+import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
+import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
+import io.connection.bluetooth.socketmanager.WifiP2PServerHandler;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by Kinjal on 27-03-2017.
  */
-public class DialogActivity extends Activity {
+public class DialogActivity extends Activity{
     private Modules module;
     private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
     BluetoothAdapter bluetoothAdapter;
-    private WifiDirectService wifiDirectService;
+    private String TAG = DialogActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         mBluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -57,10 +69,10 @@ public class DialogActivity extends Activity {
         }
         else if( intent1 != null && intent1.getParcelableExtra("game_request") != null) {
             GameRequest request = intent1.getParcelableExtra("game_request");
-            if( request != null && request.getConnectionInvite() == 1 ) {
+            if( request != null && request.getNotificationType() == 2 ) {
                 showWifiDialog(request);
             }
-            else if( request != null && request.getConnectionInvite() == 2 ) {
+            else if( request != null && request.getNotificationType() == 1 ) {
                 showBluetoothDialog(request);
             }
         }
@@ -96,7 +108,7 @@ public class DialogActivity extends Activity {
                                 public void devicePaired(boolean isPaired) {
                                     if(isPaired) {
                                         UtilsHandler.launchGame(gamePackageName);
-                                        notifyRequester(gameId, toUserId, NetworkType.BLUETOOTH.ordinal());
+//                                        notifyRequester(gameId, toUserId, NetworkType.BLUETOOTH.ordinal());
                                     }
                                 }
                             });
@@ -117,32 +129,38 @@ public class DialogActivity extends Activity {
         alertDialog.show();
     }
 
-    private void showWifiDialog(GameRequest gameRequest) {
-        final String wifiDirectName = gameRequest.getBluetoothAddress();
+    private void showWifiDialog(final GameRequest gameRequest) {
+        final String userName = gameRequest.getRemoteUserName();
+        final String wifiDirectName = gameRequest.getWifiAddress();
         final String gameName = gameRequest.getGameName();
 
+        final WifiDirectService wifiDirectService = WifiDirectService.getInstance(DialogActivity.this);
+
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
         alertDialogBuilder.setTitle("Wifi Direct Connection Invite");
-
         alertDialogBuilder
-                .setMessage("Do you want to make wifi direct connection with " + wifiDirectName)
+                .setMessage("Do you want to make wifi direct connection with " + userName +
+                            " to play game " + gameName)
                 .setCancelable(false)
                 .setIcon(R.drawable.wifidirect)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
-                        WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())
-                                .setWifiDirectDeviceName(wifiDirectName);
-                        List<WifiP2PRemoteDevice> devices = new ArrayList<WifiP2PRemoteDevice>();
+
+                        wifiDirectService.setWifiDirectDeviceName(wifiDirectName);
+                        List<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
                         for(WifiP2PRemoteDevice remoteDevice : devices) {
-                            if( remoteDevice.getName().equalsIgnoreCase(wifiDirectName) ) {
-                                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).
-                                        connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, null);
+                            if( remoteDevice.getDevice().deviceName.equalsIgnoreCase(wifiDirectName) ) {
+                                wifiDirectService
+                                        .connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
+                                            @Override
+                                            public void onDeviceConnected(boolean isConnected) {
+                                                updateConnectionInfo(gameRequest);
+                                            }
+                                        });
                             }
                         }
                         WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())
                                 .initiateDiscovery();
-//                        UtilsHandler.showProgressDialog("Connecting with " + wifiDirectName);
                         finish();
                     }
                 })
@@ -188,7 +206,7 @@ public class DialogActivity extends Activity {
         builder.create().show();
     }
 
-    private void notifyRequester(long gameId, String remoteUserId, int connectionType) {
-        WSManager.getInstance().notifyConnectionEstablished(gameId, remoteUserId, connectionType);
+    private void updateConnectionInfo(GameRequest gameRequest) {
+        WifiDirectService.getInstance(this).updateConnectionInfo(gameRequest);
     }
 }

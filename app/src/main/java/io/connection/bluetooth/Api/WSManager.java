@@ -4,11 +4,10 @@ import android.content.Context;
 
 import java.io.IOException;
 
-import io.connection.bluetooth.Domain.GameRequestConnection;
+import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
-import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -59,16 +58,8 @@ public class WSManager {
         });
     }
 
-    public void notifyConnectionEstablished(long gameId, String remoteUserId, int connectionType) {
-        String userId = ApplicationSharedPreferences.getInstance(mContext).getValue("user_id");
-
-        GameRequestConnection requestConnectionObj = new GameRequestConnection();
-        requestConnectionObj.setGameId(gameId);
-        requestConnectionObj.setRemoteUserId(remoteUserId);
-        requestConnectionObj.setUserId(userId);
-        requestConnectionObj.setConnectionType(connectionType);
-
-        Call<ResponseBody> name = apiCall.updateConnectionInfo(requestConnectionObj);
+    public void updateConnectionInfo(GameConnectionInfo connectionInfo) {
+        Call<ResponseBody> name = apiCall.updateConnectionInfo(connectionInfo);
         name.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import io.connection.bluetooth.Domain.DeviceDetails;
+import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameProfile;
-import io.connection.bluetooth.Domain.GameRequestConnection;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.request.ReqGameInvite;
 import okhttp3.ResponseBody;
@@ -52,7 +52,7 @@ public interface ApiCall {
     Call<User> updateGamePlayingTime(@Body User userData);
 
     @POST("updateUserLocation")
-    Call<ResponseBody> updateUserLocation(@Body User userData);
+    Call<HashSet> updateUserLocation(@Body User userData);
 
     @POST("updateUserLocation")
     Call<ResponseBody> updateUserLocation(@Query("userId") String userId, @Query("latitude") double latitude, @Query("longitude") double longitude);
@@ -78,7 +78,7 @@ public interface ApiCall {
     Call<ResponseBody> addUserTime(@Query("userId") String userId, @Query("fromTime") String fromTime,
                                    @Query("toTime") String toTime);
 
-    @POST("updateConnectionInfo")
-    Call<ResponseBody> updateConnectionInfo(@Body GameRequestConnection requestConnection);
+    @POST("updateGameConnectionInfo")
+    Call<ResponseBody> updateConnectionInfo(@Body GameConnectionInfo connectionInfo);
 }
 
