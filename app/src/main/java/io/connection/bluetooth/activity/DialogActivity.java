@@ -108,6 +108,7 @@ public class DialogActivity extends Activity{
                                 public void devicePaired(boolean isPaired) {
                                     if(isPaired) {
                                         UtilsHandler.launchGame(gamePackageName);
+                                        updateConnectionInfo(gameRequest);
 //                                        notifyRequester(gameId, toUserId, NetworkType.BLUETOOTH.ordinal());
                                     }
                                 }
@@ -133,6 +134,7 @@ public class DialogActivity extends Activity{
         final String userName = gameRequest.getRemoteUserName();
         final String wifiDirectName = gameRequest.getWifiAddress();
         final String gameName = gameRequest.getGameName();
+        final String gamePackageName = gameRequest.getGamePackageName();
 
         final WifiDirectService wifiDirectService = WifiDirectService.getInstance(DialogActivity.this);
 
@@ -154,6 +156,7 @@ public class DialogActivity extends Activity{
                                         .connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
                                             @Override
                                             public void onDeviceConnected(boolean isConnected) {
+                                                UtilsHandler.launchGame(gamePackageName);
                                                 updateConnectionInfo(gameRequest);
                                             }
                                         });
@@ -207,6 +210,6 @@ public class DialogActivity extends Activity{
     }
 
     private void updateConnectionInfo(GameRequest gameRequest) {
-        WifiDirectService.getInstance(this).updateConnectionInfo(gameRequest);
+        WifiDirectService.getInstance(this).updateConnectionInfo(gameRequest, true);
     }
 }

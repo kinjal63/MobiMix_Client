@@ -211,7 +211,7 @@ public class PushReceiveService extends FirebaseMessagingService {
     }
 
     private void launchGameAndUpdateConnectionInfo(GameRequest request) {
-        WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getContext()).updateConnectionInfo(request);
+        WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getContext()).updateConnectionInfo(request, false);
         UtilsHandler.launchGame(request.getGamePackageName());
     }
 }

@@ -21,6 +21,9 @@ public class GameConnectionInfo {
     @SerializedName("is_need_to_notify")
     private boolean isNeedToNotify;
 
+    @SerializedName("connection_type")
+    private int connectionType;
+
     public String getUserId() {
         return userId;
     }
@@ -59,5 +62,13 @@ public class GameConnectionInfo {
 
     public void setIsNeedToNotify(boolean isNeedToNotify) {
         this.isNeedToNotify = isNeedToNotify;
+    }
+
+    public int isConnectionType() {
+        return connectionType;
+    }
+
+    public void setConnectionType(int connectionType) {
+        this.connectionType = connectionType;
     }
 }

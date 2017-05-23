@@ -363,7 +363,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
     }
 
-    public void updateConnectionInfo(final GameRequest gameRequest) {
+    public void updateConnectionInfo(final GameRequest gameRequest, final boolean isNeedToNotify) {
         manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
                 public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
                     if(p2pInfo.groupFormed) {
@@ -381,6 +381,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                         connectionInfo.setUserId(ApplicationSharedPreferences.getInstance(mContext).
                                 getValue("user_id"));
                         connectionInfo.setConnectedUserId(gameRequest.getRemoteUserId());
+                        connectionInfo.setIsNeedToNotify(isNeedToNotify);
+                        connectionInfo.setConnectionType(gameRequest.getConnectionType());
 
                         WSManager.getInstance().updateConnectionInfo(connectionInfo);
                     }
