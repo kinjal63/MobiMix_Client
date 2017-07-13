@@ -25,6 +25,7 @@ import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.Home_Master;
 import io.connection.bluetooth.activity.UserList;
@@ -89,11 +90,6 @@ public class PushReceiveService extends FirebaseMessagingService {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void pairWithBluetooth(String bluetoothAddress) {
-        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(bluetoothAddress);
-        pairDevice(device);
     }
 
     private void pairDevice(BluetoothDevice device) {
@@ -210,9 +206,23 @@ public class PushReceiveService extends FirebaseMessagingService {
         return test != null;
     }
 
-    private void launchGameAndUpdateConnectionInfo(GameRequest request) {
-        WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getContext()).updateConnectionInfo(request, false);
-        UtilsHandler.launchGame(request.getGamePackageName());
+    private void launchGameAndUpdateConnectionInfo(final GameRequest request) {
+        if(request.getConnectionType() == 1) {
+            BluetoothService.getInstance().updateConnectionInfo(request, false, 0, new IUpdateListener() {
+                @Override
+                public void onUpdated() {
+                    UtilsHandler.launchGame(request.getGamePackageName());
+                }
+            });
+        }
+        else {
+            WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getContext()).updateConnectionInfo(request, false, new IUpdateListener() {
+                @Override
+                public void onUpdated() {
+                    UtilsHandler.launchGame(request.getGamePackageName());
+                }
+            });
+        }
     }
 }
 

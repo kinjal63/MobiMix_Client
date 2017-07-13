@@ -7,6 +7,7 @@ import java.io.IOException;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -58,13 +59,16 @@ public class WSManager {
         });
     }
 
-    public void updateConnectionInfo(GameConnectionInfo connectionInfo) {
+    public void updateConnectionInfo(GameConnectionInfo connectionInfo, final IUpdateListener updateListener) {
         Call<ResponseBody> name = apiCall.updateConnectionInfo(connectionInfo);
         name.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
                     String resData = response.body().string();
+                    if(updateListener != null) {
+                        updateListener.onUpdated();
+                    }
                     System.out.println("Remote user is notified");
                 }
                 catch (IOException e) {

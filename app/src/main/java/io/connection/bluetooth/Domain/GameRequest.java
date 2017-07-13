@@ -125,7 +125,7 @@ public class GameRequest implements Parcelable {
         bundle.putString("bluetooth_address", this.bluetoothAddress);
         bundle.putString("wifi_address", this.wifiAddress);
         bundle.putInt("notification_type", this.notificationType);
-
+        bundle.putInt("connection_type", this.connectionType);
         dest.writeBundle(bundle);
     }
 

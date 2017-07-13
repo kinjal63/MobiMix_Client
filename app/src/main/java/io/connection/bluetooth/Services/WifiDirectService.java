@@ -31,6 +31,7 @@ import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
@@ -285,6 +286,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         wifiP2PDeviceList.clear();
 
         for(final WifiP2pDevice device : p2pDeviceList) {
+            WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
+            wifiP2PDeviceList.add(remoteDevice);
             User userAvailable = new User();
             userAvailable.setName(device.deviceName);
             userAvailable.setEmail(device.deviceName);
@@ -293,8 +296,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 @Override
                 public void onResponceSuccess(Call<User> call, Response<User> response) {
                     User user = response.body();
-                    WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, user.getName());
-                    wifiP2PDeviceList.add(remoteDevice);
+//                    WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, user.getName());
+//                    wifiP2PDeviceList.add(remoteDevice);
                 }
 
                 @Override
@@ -363,7 +366,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
     }
 
-    public void updateConnectionInfo(final GameRequest gameRequest, final boolean isNeedToNotify) {
+    public void updateConnectionInfo(final GameRequest gameRequest, final boolean isNeedToNotify, final IUpdateListener iUpdateListener) {
         manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
                 public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
                     if(p2pInfo.groupFormed) {
@@ -384,7 +387,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                         connectionInfo.setIsNeedToNotify(isNeedToNotify);
                         connectionInfo.setConnectionType(gameRequest.getConnectionType());
 
-                        WSManager.getInstance().updateConnectionInfo(connectionInfo);
+                        WSManager.getInstance().updateConnectionInfo(connectionInfo, iUpdateListener);
                     }
                 }
         });

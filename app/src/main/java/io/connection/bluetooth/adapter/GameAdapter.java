@@ -1,7 +1,9 @@
 package io.connection.bluetooth.adapter;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -24,6 +26,7 @@ import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.request.ReqGameInvite;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
+import io.connection.bluetooth.utils.UtilsHandler;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -87,7 +90,21 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
                 gameName = gameList.get((int)view.getTag()).getGamneName();
                 gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
 
-                sendBluetoothConnectionInvite(gamePackageName);
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage("Do you want to send Bluetooth connection for game " + gameName);
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        sendBluetoothConnectionInvite(gamePackageName);
+                        dialogInterface.dismiss();
+                    }
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.create().show();
             }
         });
         holder.imgWifi.setOnClickListener(new View.OnClickListener() {
@@ -96,7 +113,21 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
                 gameName = gameList.get((int)view.getTag()).getGamneName();
                 gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
 
-                sendWifiConnectionInvite(gamePackageName);
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage("Do you want to send WifiDirect connection for game " + gameName);
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        sendWifiConnectionInvite(gamePackageName);
+                        dialogInterface.dismiss();
+                    }
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+                builder.create().show();
             }
         });
         imageLoader.displayImage(userInfo.getGameImagePath(), holder.imageView);

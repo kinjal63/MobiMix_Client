@@ -5,8 +5,11 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 
 import java.sql.Time;
 import java.util.ArrayList;
@@ -17,13 +20,18 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Domain.GameConnectionInfo;
+import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
 
 /**
@@ -219,8 +227,29 @@ public class BluetoothService {
         }
     }
 
+    public void updateConnectionInfo(final GameRequest gameRequest, final boolean isNeedToNotify, final int isGroupOwner, final IUpdateListener iUpdateListener) {
+        GameConnectionInfo connectionInfo = new GameConnectionInfo();
+
+//        if (isGroupOwner) {
+//            Log.d(TAG, "Connected as group owner");
+//            connectionInfo.setIsGroupOwner(1);
+//        } else {
+//            Log.d(TAG, "Connected as peer");
+//            connectionInfo.setIsGroupOwner(0);
+//        }
+
+        connectionInfo.setGameId(gameRequest.getGameId());
+        connectionInfo.setUserId(ApplicationSharedPreferences.getInstance(MobileMeasurementApplication.getInstance().getContext()).
+                getValue("user_id"));
+        connectionInfo.setConnectedUserId(gameRequest.getRemoteUserId());
+        connectionInfo.setIsNeedToNotify(isNeedToNotify);
+        connectionInfo.setIsGroupOwner(isGroupOwner);
+        connectionInfo.setConnectionType(gameRequest.getConnectionType());
+
+        WSManager.getInstance().updateConnectionInfo(connectionInfo, iUpdateListener);
+    }
+
     public void unregisterReceiver() {
         context.unregisterReceiver(bluetoothDeviceFoundReceiver);
     }
-
 }

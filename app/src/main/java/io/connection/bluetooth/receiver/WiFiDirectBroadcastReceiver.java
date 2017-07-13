@@ -42,7 +42,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             if (mManager != null) {
                 WifiDirectService wifiService = WifiDirectService.getInstance(context);
 //                if(wifiService.getWifiDirectDeviceName() != null && wifiService.getWifiDirectDeviceName().length() > 0) {
-                    mManager.requestPeers(mChannel, WifiDirectService.getInstance(context).peerListListener);
+                    mManager.requestPeers(mChannel, wifiService.peerListListener);
 //                }
             }
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
