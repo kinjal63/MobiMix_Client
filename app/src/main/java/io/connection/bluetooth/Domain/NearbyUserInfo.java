@@ -10,6 +10,8 @@ public class NearbyUserInfo {
     private String userImagePath;
     private String userFirstName;
     private String userLastName;
+    private int isEngaged;
+    private long activeGameId;
 
     public String getUserLastName() {
         return userLastName;
@@ -51,5 +53,21 @@ public class NearbyUserInfo {
 
     public void setGameInfoList(List<GameInfo> gameInfoList) {
         this.gameInfoList = gameInfoList;
+    }
+
+    public int isEngaged() {
+        return isEngaged;
+    }
+
+    public void setEngaged(int engaged) {
+        isEngaged = engaged;
+    }
+
+    public long getActiveGameId() {
+        return activeGameId;
+    }
+
+    public void setActiveGameId(long activeGameId) {
+        this.activeGameId = activeGameId;
     }
 }

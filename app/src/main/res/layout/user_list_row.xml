@@ -18,10 +18,17 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
-        android:layout_weight="0.6"
+        android:layout_weight="0.5"
         android:text="Test2"
         android:textSize="18sp"
         android:textStyle="bold" />
+
+    <View
+        android:id="@+id/view_is_engaged"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.15"
+        android:background="@drawable/action_search"/>
 
     <CheckBox
         android:id="@+id/chkBox"
@@ -30,6 +37,6 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_weight="0.2" />
+        android:layout_weight="0.15" />
 
 </LinearLayout>

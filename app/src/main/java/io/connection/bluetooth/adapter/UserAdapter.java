@@ -1,6 +1,7 @@
 package io.connection.bluetooth.adapter;
 
 import android.app.Activity;
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +25,7 @@ import io.connection.bluetooth.R;
  */
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> {
 
+    private Context context;
     private List<NearbyUserInfo> userList;
     private ImageLoader imageLoader;
     private ArrayList<String> toUserIds = new ArrayList<>();
@@ -32,17 +34,19 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         public TextView name;
         public ImageView imageView;
         private CheckBox checkBox;
+        private View viewIsEngaged;
 
         public MyViewHolder(View view) {
             super(view);
             name = (TextView) view.findViewById(R.id.txtName);
             imageView = (ImageView) view.findViewById(R.id.imgView);
             checkBox = (CheckBox) view.findViewById(R.id.chkBox);
+            viewIsEngaged = (View) view.findViewById(R.id.view_is_engaged);
         }
     }
 
-
-    public UserAdapter(List<NearbyUserInfo> userList, Activity activity) {
+    public UserAdapter(Context context, List<NearbyUserInfo> userList, Activity activity) {
+        this.context = context;
         this.userList = userList;
         imageLoader = ImageLoader.getInstance();
         imageLoader.init(ImageLoaderConfiguration.createDefault(activity));
@@ -60,6 +64,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
     public void onBindViewHolder(MyViewHolder holder, int position) {
         NearbyUserInfo userInfo = userList.get(position);
 
+        if(userInfo.isEngaged() == 1) {
+            holder.viewIsEngaged.setBackground(context.getResources().getDrawable(R.drawable.view_active_background));
+        }
+        else {
+            holder.viewIsEngaged.setBackground(context.getResources().getDrawable(R.drawable.view_deactive_background));
+        }
         holder.name.setText(userInfo.getUserFirstName());
         imageLoader.displayImage(userInfo.getUserImagePath(), holder.imageView);
 

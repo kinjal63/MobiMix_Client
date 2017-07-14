@@ -100,7 +100,7 @@ public class UserList extends Activity {
 
     private void addOnItemTouchListener() {
         isGame = false;
-        adapter = new UserAdapter(userList, this);
+        adapter = new UserAdapter(UserList.this, userList, this);
         recyclerView.setAdapter((UserAdapter) adapter);
 
         btnSubmit.setVisibility(View.VISIBLE);
@@ -129,6 +129,8 @@ public class UserList extends Activity {
                         userInfo.setUserImagePath(jsonObject.getString("userImagePath"));
                         userInfo.setUserFirstName(jsonObject.getString("userFirstName"));
                         userInfo.setUserLastName(jsonObject.getString("userLastName"));
+                        userInfo.setEngaged(jsonObject.getInt("isEngaged"));
+                        userInfo.setActiveGameId(jsonObject.getLong("activeGameId"));
 
                         JSONArray jsonGameIdArray = jsonObject.getJSONArray("gameId");
                         JSONArray jsonGameNameArray = jsonObject.getJSONArray("gameName");
