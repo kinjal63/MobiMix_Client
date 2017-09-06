@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
+import io.connection.bluetooth.actionlisteners.DialogActionListener;
 import io.connection.bluetooth.adapter.GameAdapter;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
@@ -124,6 +125,26 @@ public class Utils {
         }
     }
 
+    public static void showAlertMessage(Context context, String title, String message, final DialogActionListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(message);
+        builder.setTitle(title);
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                listener.dialogPositiveButtonPerformed();
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                listener.dialogNegativeButtonPerformed();
+                dialogInterface.dismiss();
+            }
+        });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
     public static void makeDeviceDiscoverable(Context context) {
         if (mBluetoothAdapter.getScanMode() !=
                 BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {

@@ -11,7 +11,10 @@ public class NearbyUserInfo {
     private String userFirstName;
     private String userLastName;
     private int isEngaged;
-    private long activeGameId;
+    private String activeGameName;
+    private int allowedPlayersCount;
+    private int isGroupOwner;
+    private String groupOwnerUserId;
 
     public String getUserLastName() {
         return userLastName;
@@ -63,11 +66,43 @@ public class NearbyUserInfo {
         isEngaged = engaged;
     }
 
-    public long getActiveGameId() {
-        return activeGameId;
+    public String getActiveGameId() {
+        return activeGameName;
     }
 
-    public void setActiveGameId(long activeGameId) {
-        this.activeGameId = activeGameId;
+    public void setActiveGameId(String activeGameName) {
+        this.activeGameName = activeGameName;
+    }
+
+    public String getActiveGameName() {
+        return activeGameName;
+    }
+
+    public void setActiveGameName(String activeGameName) {
+        this.activeGameName = activeGameName;
+    }
+
+    public int getAllowedPlayersCount() {
+        return allowedPlayersCount;
+    }
+
+    public void setAllowedPlayersCount(int allowedPlayersCount) {
+        this.allowedPlayersCount = allowedPlayersCount;
+    }
+
+    public int getIsGroupOwner() {
+        return isGroupOwner;
+    }
+
+    public void setIsGroupOwner(int isGroupOwner) {
+        this.isGroupOwner = isGroupOwner;
+    }
+
+    public String getGroupOwnerUserId() {
+        return groupOwnerUserId;
+    }
+
+    public void setGroupOwnerUserId(String groupOwnerUserId) {
+        this.groupOwnerUserId = groupOwnerUserId;
     }
 }

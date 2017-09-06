@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.util.Stack;
+
+import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 
 /**
@@ -13,6 +16,7 @@ import io.connection.bluetooth.MobileMeasurementApplication;
  */
 public class UtilsHandler {
     private static ProgressDialog progressDialog = null;
+    private static Stack<GameRequest> stackGameRequest = new Stack<>();
 
     public static void runOnUiThread(Runnable runnable){
 
@@ -47,6 +51,17 @@ public class UtilsHandler {
         MobileMeasurementApplication.getInstance().getContext().startActivity(launchIntent);
     }
 
+    public static void addGameInStack(GameRequest gameRequest) {
+        stackGameRequest.push(gameRequest);
+    }
+
+    public static Stack getGamesFromStack() {
+        return stackGameRequest;
+    }
+
+    public static void removeGameFromStack() {
+        stackGameRequest.pop();
+    }
 
 }
 

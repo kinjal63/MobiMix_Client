@@ -11,6 +11,7 @@ import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -159,40 +160,63 @@ public class DialogActivity extends Activity{
                         for(WifiP2PRemoteDevice remoteDevice : devices) {
                             if( remoteDevice.getDevice().deviceName.equalsIgnoreCase(wifiDirectName) ) {
                                 isDeviceFound = true;
+
+                                UtilsHandler.addGameInStack(gameRequest);
+
                                 wifiDirectService
                                         .connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
                                             @Override
                                             public void onDeviceConnected(boolean isConnected) {
-                                                updateConnectionInfo(gameRequest);
+                                                Toast.makeText(DialogActivity.this, "Wait a moment, Game is launching...", Toast.LENGTH_LONG).show();
+//                                                updateConnectionInfo(gameRequest);
+                                                System.out.println("Updating connection info + before");
+                                                WifiDirectService.getInstance(DialogActivity.this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
+                                                    @Override
+                                                    public void onUpdated() {
+                                                        System.out.println("Updating connection info + Updated");
+                                                        UtilsHandler.removeGameFromStack();
+                                                        finish();
+                                                    }
+                                                });
                                             }
                                         });
                             }
                         }
 
                         if(!isDeviceFound) {
-                            wifiDirectService.getWifiP2PManager().requestGroupInfo(wifiDirectService.getWifiP2PChannel(),
-                                    new WifiP2pManager.GroupInfoListener() {
-                                        @Override
-                                        public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
-                                            if (wifiP2pGroup != null) {
-                                                if(wifiP2pGroup.getOwner().deviceName.equalsIgnoreCase(wifiDirectName)) {
-                                                    connectWithDevice(wifiP2pGroup.getOwner().deviceAddress, gameRequest);
-                                                }
-                                                else {
-                                                    Collection<WifiP2pDevice> devices = wifiP2pGroup.getClientList();
-                                                    for (WifiP2pDevice device : devices) {
-                                                        if (device.deviceName.equalsIgnoreCase(wifiDirectName)) {
-                                                            connectWithDevice(device.deviceAddress, gameRequest);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    });
+                            Toast.makeText(DialogActivity.this, "Device " + wifiDirectName + " is not found", Toast.LENGTH_LONG).show();
+                            finish();
+//                            wifiDirectService.getWifiP2PManager().requestConnectionInfo(wifiDirectService.getWifiP2PChannel(),
+//                                    new WifiP2pManager.ConnectionInfoListener() {
+//                                        @Override
+//                                        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+//                                            if(wifiP2pInfo != null) {
+//                                                updateConnectionInfo(gameRequest);
+//                                            }
+//                                        }
+//                                    });
+//                            wifiDirectService.getWifiP2PManager().requestGroupInfo(wifiDirectService.getWifiP2PChannel(),
+//                                    new WifiP2pManager.GroupInfoListener() {
+//                                        @Override
+//                                        public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
+//                                            if (wifiP2pGroup != null) {
+//                                                if(wifiP2pGroup.getOwner().deviceName.equalsIgnoreCase(wifiDirectName)) {
+//                                                    connectWithDevice(wifiP2pGroup.getOwner().deviceAddress, gameRequest);
+//                                                }
+//                                                else {
+//                                                    Collection<WifiP2pDevice> devices = wifiP2pGroup.getClientList();
+//                                                    for (WifiP2pDevice device : devices) {
+//                                                        if (device.deviceName.equalsIgnoreCase(wifiDirectName)) {
+//                                                            connectWithDevice(device.deviceAddress, gameRequest);
+//                                                        }
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//                                    });
                         }
                         WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())
                                 .initiateDiscovery();
-                        finish();
                     }
                 })
                 .setNegativeButton("No",new DialogInterface.OnClickListener() {
@@ -248,16 +272,12 @@ public class DialogActivity extends Activity{
     }
 
     private void updateConnectionInfo(final GameRequest gameRequest) {
-        try {
-            Thread.sleep(2000);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        System.out.println("Updating connection info + before");
         WifiDirectService.getInstance(this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
             @Override
             public void onUpdated() {
-                UtilsHandler.launchGame(gameRequest.getGamePackageName());
+                System.out.println("Updating connection info + Updated");
+//                UtilsHandler.launchGame(gameRequest.getGamePackageName());
             }
         });
     }

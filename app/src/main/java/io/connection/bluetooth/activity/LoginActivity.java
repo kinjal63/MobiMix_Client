@@ -31,7 +31,9 @@ import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Domain.DeviceDetails;
 import io.connection.bluetooth.Domain.GameProfileTimeDetails;
 import io.connection.bluetooth.Domain.User;
+import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
@@ -111,38 +113,49 @@ public class LoginActivity extends Fragment {
                                 editor.putString(Constants.EMAIL_KEY, userObject.getEmail());
                                 editor.putLong(Constants.DOB_KEY, userObject.getDob());
                                 bluetoothAdapter.setName(userObject.getName());
+
                                 editor.commit();
                                 editor.apply();
                                 preferences = getActivity().getSharedPreferences(Constants.GAME, Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editorGameTime = preferences.edit();
-                                for (GameProfileTimeDetails gameProfileTimeDetails : userObject.getGameProfileTime()) {
-
-                                    long startTime = gameProfileTimeDetails.getGameProfileStartTime();
-                                    Date date = new Date();
-                                    date.setTime(startTime);
-                                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                                    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-                                    Date gmt = new Date(sdf.format(date));
-                                    System.out.println(" db  start time " + startTime);
-                                    startTime += Math.abs(gmt.getTime() - startTime);
-                                    System.out.println(" device  start time " + startTime);
-                                    long startHour = TimeUnit.MILLISECONDS.toHours(startTime) % 24;
-                                    long startMinute = TimeUnit.MILLISECONDS.toMinutes(startTime) % 60;
-                                    long endTime = gameProfileTimeDetails.getGameProfileEndTime();
-                                    date.setTime(endTime);
-                                    gmt = new Date(sdf.format(date));
-                                    System.out.println(" db  end time " + endTime);
-                                    endTime += Math.abs(gmt.getTime() - endTime);
-                                    System.out.println(" device  end time " + endTime);
-                                    long endHour = TimeUnit.MILLISECONDS.toHours(endTime) % 24;
-                                    long endMinute = TimeUnit.MILLISECONDS.toMinutes(endTime) % 60;
-                                    String gameTime = startHour + ":" + startMinute + " - " + endHour + ":" + endMinute;
-                                    editorGameTime.putString("game_time_" + gameProfileTimeDetails.getGameProfileTimeSchedule().toLowerCase(), gameTime);
-                                }
-
+//                                for (GameProfileTimeDetails gameProfileTimeDetails : userObject.getGameProfileTime()) {
+//
+//                                    long startTime = gameProfileTimeDetails.getGameProfileStartTime();
+//                                    Date date = new Date();
+//                                    date.setTime(startTime);
+//                                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+//                                    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+//                                    Date gmt = new Date(sdf.format(date));
+//                                    System.out.println(" db  start time " + startTime);
+//                                    startTime += Math.abs(gmt.getTime() - startTime);
+//                                    System.out.println(" device  start time " + startTime);
+//                                    long startHour = TimeUnit.MILLISECONDS.toHours(startTime) % 24;
+//                                    long startMinute = TimeUnit.MILLISECONDS.toMinutes(startTime) % 60;
+//                                    long endTime = gameProfileTimeDetails.getGameProfileEndTime();
+//                                    date.setTime(endTime);
+//                                    gmt = new Date(sdf.format(date));
+//                                    System.out.println(" db  end time " + endTime);
+//                                    endTime += Math.abs(gmt.getTime() - endTime);
+//                                    System.out.println(" device  end time " + endTime);
+//                                    long endHour = TimeUnit.MILLISECONDS.toHours(endTime) % 24;
+//                                    long endMinute = TimeUnit.MILLISECONDS.toMinutes(endTime) % 60;
+//                                    String gameTime = startHour + ":" + startMinute + " - " + endHour + ":" + endMinute;
+//                                    editorGameTime.putString("game_time_" + gameProfileTimeDetails.getGameProfileTimeSchedule().toLowerCase(), gameTime);
+//                                }
+//
                                 editorGameTime.commit();
                                 editorGameTime.apply();
                                 getActivity().finish();
+
+                                ApplicationSharedPreferences.getInstance(MobileMeasurementApplication.getInstance().getContext()).
+                                        addValue("user_id", userObject.getId());
+                                ApplicationSharedPreferences.getInstance(getActivity()).addValue("email", userObject.getEmail());
+                                ApplicationSharedPreferences.getInstance(getActivity()).addBooleanValue("is_login", true);
+
+                                preferences = context.getSharedPreferences("myPref", Context.MODE_PRIVATE);
+                                preferences.edit().putBoolean("is_login", true).commit();
+
+
                                 Intent intent = new Intent(getActivity(), Home_Master.class);
                                 startActivity(intent);
                             } else if (response.code() == 204) {

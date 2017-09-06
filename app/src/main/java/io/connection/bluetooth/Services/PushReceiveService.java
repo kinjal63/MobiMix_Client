@@ -85,6 +85,9 @@ public class PushReceiveService extends FirebaseMessagingService {
                 } else if (request.getNotificationType() == 4) {
                     generateNearByUserNotification("User " + request.getRemoteUserName() + " is nearby");
                 }
+                else if (request.getNotificationType() == 5) {
+                    launchGame(request);
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -157,7 +160,7 @@ public class PushReceiveService extends FirebaseMessagingService {
         intent.putExtra("game_request", gameRequest);
 //        intent.putExtra("wifi_address", wifiDirectName);
 //        intent.putExtra("toUserId", toUserId);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
@@ -204,6 +207,10 @@ public class PushReceiveService extends FirebaseMessagingService {
         Intent notificationIntent = new Intent(this, Home_Master.class);
         PendingIntent test = PendingIntent.getActivity(this, 1, notificationIntent, PendingIntent.FLAG_NO_CREATE);
         return test != null;
+    }
+
+    private void launchGame(final GameRequest request) {
+        UtilsHandler.launchGame(request.getGamePackageName());
     }
 
     private void launchGameAndUpdateConnectionInfo(final GameRequest request) {

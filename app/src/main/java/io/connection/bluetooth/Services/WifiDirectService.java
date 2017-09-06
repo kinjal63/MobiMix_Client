@@ -100,7 +100,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
         setUp();
         setDeviceName();
-        new Timer().schedule(new DiscoveryTask(), 500, 30000);
+
+        initiateDiscovery();
+        new Timer().schedule(new DiscoveryTask(), 500, 45000);
 
         messageHandler = new MessageHandler(mContext, this);
     }
@@ -201,9 +203,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         final WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = wifiDirectAddress;
         config.wps.setup = WpsInfo.PBC;
-        config.groupOwnerIntent = 0;
+        config.groupOwnerIntent = 15;
 
-        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
+        manager.createGroup(channel, new WifiP2pManager.ActionListener() {
 
             @Override
             public void onSuccess() {
@@ -286,6 +288,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         wifiP2PDeviceList.clear();
 
         for(final WifiP2pDevice device : p2pDeviceList) {
+            System.out.println("Peers list->" + device.deviceName);
             WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
             wifiP2PDeviceList.add(remoteDevice);
             User userAvailable = new User();
@@ -367,14 +370,17 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void updateConnectionInfo(final GameRequest gameRequest, final boolean isNeedToNotify, final IUpdateListener iUpdateListener) {
+        System.out.println("Updating connection info");
         manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
                 public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
                     if(p2pInfo.groupFormed) {
+                        System.out.println("Updating connection info + group formed");
                         GameConnectionInfo connectionInfo = new GameConnectionInfo();
 
                         if (p2pInfo.isGroupOwner) {
                             Log.d(TAG, "Connected as group owner");
                             connectionInfo.setIsGroupOwner(1);
+//                            UtilsHandler.launchGame(gameRequest.getGamePackageName());
                         } else {
                             Log.d(TAG, "Connected as peer");
                             connectionInfo.setIsGroupOwner(0);

@@ -60,7 +60,7 @@ public interface ApiCall {
     @GET("updateGameProfiles")
     Call<User> updateGameProfiles(@Query("userId") String userId, @Query("installedPackageName") List<String> installedPackageName);
 
-    @POST("getNearByGameList")
+    @POST("getNearByUsers")
     Call<ResponseBody> getNearByGameList(@Query("user_id") String userId);
 
     @POST("getMutualGames")

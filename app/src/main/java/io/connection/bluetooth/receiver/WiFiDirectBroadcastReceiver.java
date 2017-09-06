@@ -49,6 +49,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                 if (mManager == null) {
                     return;
                 }
+
                 NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
                 if (networkInfo.isConnected()) {
                     // we are connected with the other device, request connection
@@ -66,6 +67,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
                 WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
                 LocalP2PDevice.getInstance().setLocalDevice(device);
+
+                System.out.println("Device status->" + device.status);
+
+                if(device.status == WifiP2pDevice.UNAVAILABLE) {
+                    WifiDirectService wifiDirectService = WifiDirectService.getInstance(context);
+                    wifiDirectService.initiateDiscovery();
+                }
 
 //            if (mManager != null) {
 //                mManager.requestPeers(mChannel, WifiDirectService.getInstance(context).peerListListener);
