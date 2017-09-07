@@ -10,9 +10,17 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/imagecrop" />
+            <option value="$PROJECT_DIR$/mobimix" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
+        <option name="myModules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/imagecrop" />
+            <option value="$PROJECT_DIR$/mobimix" />
+          </set>
+        </option>
       </GradleProjectSettings>
     </option>
   </component>
