@@ -25,6 +25,7 @@ import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.Home_Master;
 import io.connection.bluetooth.activity.UserList;
@@ -81,19 +82,17 @@ public class PushReceiveService extends FirebaseMessagingService {
                 } else if (request.getNotificationType() == 3) {
 //                    String wifiDirectName = jsonObject.optString("wifi_address");
                     launchGameAndUpdateConnectionInfo(request);
-                } else if (jsonObject.optInt("notification_message") == 1) {
-                    generateNearByUserNotification("User " + request.getRemoteUserName() + " is nearby", request.getRemoteUserId());
+                } else if (request.getNotificationType() == 4) {
+                    generateNearByUserNotification("User " + request.getRemoteUserName() + " is nearby");
+                }
+                else if (request.getNotificationType() == 5) {
+                    launchGame(request);
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void pairWithBluetooth(String bluetoothAddress) {
-        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(bluetoothAddress);
-        pairDevice(device);
     }
 
     private void pairDevice(BluetoothDevice device) {
@@ -129,7 +128,7 @@ public class PushReceiveService extends FirebaseMessagingService {
         }
     }
 
-    private void generateNearByUserNotification(String messageBody, String toUserId) {
+    private void generateNearByUserNotification(String messageBody) {
         if (!isNotificationVisible()) {
             Intent intent = new Intent(this, UserList.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -161,7 +160,7 @@ public class PushReceiveService extends FirebaseMessagingService {
         intent.putExtra("game_request", gameRequest);
 //        intent.putExtra("wifi_address", wifiDirectName);
 //        intent.putExtra("toUserId", toUserId);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
@@ -210,9 +209,27 @@ public class PushReceiveService extends FirebaseMessagingService {
         return test != null;
     }
 
-    private void launchGameAndUpdateConnectionInfo(GameRequest request) {
+    private void launchGame(final GameRequest request) {
         UtilsHandler.launchGame(request.getGamePackageName());
-        WSManager.getInstance().notifyConnectionEstablished(request.getGameId(), request.getRemoteUserId(), request.getConnectionType());
+    }
+
+    private void launchGameAndUpdateConnectionInfo(final GameRequest request) {
+        if(request.getConnectionType() == 1) {
+            BluetoothService.getInstance().updateConnectionInfo(request, false, 0, new IUpdateListener() {
+                @Override
+                public void onUpdated() {
+                    UtilsHandler.launchGame(request.getGamePackageName());
+                }
+            });
+        }
+        else {
+            WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getContext()).updateConnectionInfo(request, false, new IUpdateListener() {
+                @Override
+                public void onUpdated() {
+                    UtilsHandler.launchGame(request.getGamePackageName());
+                }
+            });
+        }
     }
 }
 

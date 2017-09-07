@@ -18,9 +18,20 @@ public class ReqGameInvite {
     @SerializedName("connectionInvite")
     public int connectionInvite;
 
+    @SerializedName("gamePackageName")
+    public String gamePackageName;
+
     public ReqGameInvite(String userId, ArrayList<String> remoteUserIds, int connectionInvite) {
         this.userId = userId;
         this.remoteUserIds = remoteUserIds;
         this.connectionInvite = connectionInvite;
+    }
+
+    public void setGamePackageName(String gamePackageName) {
+        this.gamePackageName = gamePackageName;
+    }
+
+    public String getGamePackageName() {
+        return this.gamePackageName;
     }
 }

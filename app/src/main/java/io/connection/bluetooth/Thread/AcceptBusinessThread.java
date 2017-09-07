@@ -51,8 +51,6 @@ public class AcceptBusinessThread extends Thread {
     }
 
     public void run() {
-
-
         while (true) {
             try {
                 socket = serverSocket.accept();

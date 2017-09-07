@@ -444,14 +444,13 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
     }
 
     @Override
-    public void onBluetoothDeviceClick(BluetoothRemoteDevice remoteDevice) {
+    public void onBluetoothDeviceClick(final BluetoothRemoteDevice... remoteDevices) {
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.final_dialog_box);
         dialog.setTitle("Transfer File ... ");
-        final BluetoothDevice device = remoteDevice.getDevice();
 
         TextView textViewName = (TextView) dialog.getWindow().findViewById(R.id.sendmessgae);
-        textViewName.setText("Are You Sure Want to Send Below Files to  " + device.getName() + " ?");
+        textViewName.setText("Are You Sure Want to Send Below Files?");
 
         if (!ImageCache.canShowImage()) {
             LinearLayout layout = (LinearLayout) dialog.getWindow().findViewById(R.id.layout_image_final_checkbox);
@@ -497,72 +496,75 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
                 CheckBox audioCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.audio_final_checkbox);
                 CheckBox videoCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.video_final_checkbox);
 
-                if (imageCheckbox.isChecked()) {
-                    for (String check : ImageCache.getImageCheckBox().keySet()) {
-                        if (ImageCache.getImageCheckBox(check)) {
-                            ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                for(BluetoothRemoteDevice remoteDevice : remoteDevices) {
+                    BluetoothDevice device = remoteDevice.getDevice();
+                    if (imageCheckbox.isChecked()) {
+                        for (String check : ImageCache.getImageCheckBox().keySet()) {
+                            if (ImageCache.getImageCheckBox(check)) {
+                                ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                                ImageCache.setImageCheckBoxValue(check, false);
+                            }
+                        }
+                    } else {
+                        for (String check : ImageCache.getImageCheckBox().keySet()) {
                             ImageCache.setImageCheckBoxValue(check, false);
                         }
                     }
-                } else {
-                    for (String check : ImageCache.getImageCheckBox().keySet()) {
-                        ImageCache.setImageCheckBoxValue(check, false);
-                    }
-                }
-                ImagesFragment.updateChekBox();
+                    ImagesFragment.updateChekBox();
 
-                if (audioCheckbox.isChecked()) {
-                    for (String check : ImageCache.getAudioCheckBox().keySet()) {
-                        if (ImageCache.getAudioCheckBox(check)) {
-                            ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                    if (audioCheckbox.isChecked()) {
+                        for (String check : ImageCache.getAudioCheckBox().keySet()) {
+                            if (ImageCache.getAudioCheckBox(check)) {
+                                ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                                ImageCache.setAudioCheckBoxValue(check, false);
+                            }
+                        }
+                    } else {
+                        for (String check : ImageCache.getAudioCheckBox().keySet()) {
                             ImageCache.setAudioCheckBoxValue(check, false);
                         }
                     }
-                } else {
-                    for (String check : ImageCache.getAudioCheckBox().keySet()) {
-                        ImageCache.setAudioCheckBoxValue(check, false);
-                    }
-                }
 
-                AudioFragment.updateCheckbox();
+                    AudioFragment.updateCheckbox();
 
-                if (videoCheckbox.isChecked()) {
-                    for (String check : ImageCache.getVideoCheckBox().keySet()) {
-                        if (ImageCache.getVideoCheckBox(check)) {
-                            ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                    if (videoCheckbox.isChecked()) {
+                        for (String check : ImageCache.getVideoCheckBox().keySet()) {
+                            if (ImageCache.getVideoCheckBox(check)) {
+                                ImageCache.putUri(device.getAddress(), Uri.parse(check));
+                                ImageCache.setVideoCheckBoxValue(check, false);
+                            }
+                        }
+                    } else {
+                        for (String check : ImageCache.getVideoCheckBox().keySet()) {
                             ImageCache.setVideoCheckBoxValue(check, false);
                         }
+
                     }
-                } else {
-                    for (String check : ImageCache.getVideoCheckBox().keySet()) {
-                        ImageCache.setVideoCheckBoxValue(check, false);
+                    VideosFragment.updateCheckbox();
+                    ImagesFragment.count = 0;
+                    ImagesFragment.countText.setText("");
+                    // ImagesFragment.mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                    //ImagesFragment.mBottomSheetBehaviorforFooter.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+
+                    ImageCache.setContext(MainActivity.this);
+                    if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+                        Log.d(TAG, "onClick:  size of file " + ImageCache.getUriList(device.getAddress()));
+                        List<Uri> listSendFiless = new ArrayList<Uri>();
+                        for (Uri uri : ImageCache.getUriList(device.getAddress())) {
+                            listSendFiless.add(uri);
+                        }
+                        ThreadConnection connection = new ThreadConnection(MainActivity.this);
+                        connection.connect(device, true, listSendFiless);
+                        // ConnectedThread connectedThread = new ConnectedThread(device, listSendFiless);
+                        Log.d(TAG, "onDrag: Started Without sending Request");
+                        // connectedThread.start();
+                        ImageCache.getUriList(device.getAddress()).clear();
+                    } else {
+                        System.out.println(" here pairing");
+                        createPairing(device);
+
                     }
-
-                }
-                VideosFragment.updateCheckbox();
-                ImagesFragment.count = 0;
-                ImagesFragment.countText.setText("");
-                // ImagesFragment.mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                //ImagesFragment.mBottomSheetBehaviorforFooter.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
-
-                ImageCache.setContext(MainActivity.this);
-                if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                    Log.d(TAG, "onClick:  size of file " + ImageCache.getUriList(device.getAddress()));
-                    List<Uri> listSendFiless = new ArrayList<Uri>();
-                    for (Uri uri : ImageCache.getUriList(device.getAddress())) {
-                        listSendFiless.add(uri);
-                    }
-                    ThreadConnection connection = new ThreadConnection(MainActivity.this);
-                    connection.connect(device, true, listSendFiless);
-                    // ConnectedThread connectedThread = new ConnectedThread(device, listSendFiless);
-                    Log.d(TAG, "onDrag: Started Without sending Request");
-                    // connectedThread.start();
-                    ImageCache.getUriList(device.getAddress()).clear();
-                } else {
-                    System.out.println(" here pairing");
-                    createPairing(device);
-
                 }
 
                 NotificationManagerCompat.from(MainActivity.this).cancelAll();
@@ -574,9 +576,7 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
         notSure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 dialog.dismiss();
-
             }
         });
 

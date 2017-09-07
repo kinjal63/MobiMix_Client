@@ -1,13 +1,12 @@
 package io.connection.bluetooth.adapter;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.Intent;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
@@ -20,19 +19,14 @@ import java.util.Map;
 
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.BluetoothService;
-import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.activity.BusinessCardListActivityUser;
-import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.DeviceListActivityChat;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.activity.MainActivity;
-import io.connection.bluetooth.activity.WifiDirectMainActivity;
-import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
-import io.connection.bluetooth.enums.NetworkType;
 
 /**
  * Created by KP49107 on 17-04-2017.
@@ -40,6 +34,7 @@ import io.connection.bluetooth.enums.NetworkType;
 public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDeviceAdapter.ViewHolder> implements Filterable {
     private Context mContext;
     List<BluetoothRemoteDevice> devices = new ArrayList<>();
+    List<BluetoothRemoteDevice> selectedDevices = new ArrayList<>();
     FriendFilter friendFilter;
     private ConnectedThread connectedThread;
     private DeviceClickListener clickListener;
@@ -67,7 +62,7 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (holder.getItemViewType() == 0) {
             holder.nameTV.setText(devices.get(position).getName());
-            holder.itemView.setTag(devices.get(position));
+            holder.chkSelectUser.setTag(devices.get(position));
         }
     }
 
@@ -82,6 +77,10 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
             friendFilter = new FriendFilter();
         }
         return friendFilter;
+    }
+
+    public List<BluetoothRemoteDevice> getBluetoothDevices() {
+        return selectedDevices;
     }
 
 
@@ -137,6 +136,7 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView nameTV;
         ImageView imageView;
+        CheckBox chkSelectUser;
         private Context context;
         private BluetoothRemoteDevice device;
 
@@ -144,8 +144,9 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
             super(itemView);
             if (type == 0) {
                 nameTV = (TextView) itemView.findViewById(R.id.chat_user_name);
+                chkSelectUser = (CheckBox) itemView.findViewById(R.id.chk_select_user);
                 this.context = context;
-                itemView.setOnClickListener(this);
+                chkSelectUser.setOnClickListener(this);
             }
         }
 
@@ -166,9 +167,12 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
                 bluetoothService.setModule(Modules.FILE_SHARING);
             }
 
-            if(BluetoothDeviceAdapter.this.clickListener != null) {
-                BluetoothDeviceAdapter.this.clickListener.onBluetoothDeviceClick(device);
-            }
+            selectedDevices.add(device);
+
+//            if(BluetoothDeviceAdapter.this.clickListener != null) {
+//                BluetoothDeviceAdapter.this.clickListener.onBluetoothDeviceClick(device);
+//            }
+
             NotificationManagerCompat.from(context).cancelAll();
 
         }

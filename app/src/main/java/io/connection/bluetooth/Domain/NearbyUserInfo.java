@@ -10,6 +10,11 @@ public class NearbyUserInfo {
     private String userImagePath;
     private String userFirstName;
     private String userLastName;
+    private int isEngaged;
+    private String activeGameName;
+    private int allowedPlayersCount;
+    private int isGroupOwner;
+    private String groupOwnerUserId;
 
     public String getUserLastName() {
         return userLastName;
@@ -51,5 +56,53 @@ public class NearbyUserInfo {
 
     public void setGameInfoList(List<GameInfo> gameInfoList) {
         this.gameInfoList = gameInfoList;
+    }
+
+    public int isEngaged() {
+        return isEngaged;
+    }
+
+    public void setEngaged(int engaged) {
+        isEngaged = engaged;
+    }
+
+    public String getActiveGameId() {
+        return activeGameName;
+    }
+
+    public void setActiveGameId(String activeGameName) {
+        this.activeGameName = activeGameName;
+    }
+
+    public String getActiveGameName() {
+        return activeGameName;
+    }
+
+    public void setActiveGameName(String activeGameName) {
+        this.activeGameName = activeGameName;
+    }
+
+    public int getAllowedPlayersCount() {
+        return allowedPlayersCount;
+    }
+
+    public void setAllowedPlayersCount(int allowedPlayersCount) {
+        this.allowedPlayersCount = allowedPlayersCount;
+    }
+
+    public int getIsGroupOwner() {
+        return isGroupOwner;
+    }
+
+    public void setIsGroupOwner(int isGroupOwner) {
+        this.isGroupOwner = isGroupOwner;
+    }
+
+    public String getGroupOwnerUserId() {
+        return groupOwnerUserId;
+    }
+
+    public void setGroupOwnerUserId(String groupOwnerUserId) {
+        this.groupOwnerUserId = groupOwnerUserId;
     }
 }

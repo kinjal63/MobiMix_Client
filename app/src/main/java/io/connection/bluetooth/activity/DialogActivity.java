@@ -5,37 +5,55 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pInfo;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Stack;
+import java.util.Vector;
 
 import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
+import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
+import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
+import io.connection.bluetooth.socketmanager.WifiP2PServerHandler;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by Kinjal on 27-03-2017.
  */
-public class DialogActivity extends Activity {
+public class DialogActivity extends Activity{
     private Modules module;
     private BluetoothDeviceReceiver mBluetoothDeviceFoundReceiver;
     BluetoothAdapter bluetoothAdapter;
-    private WifiDirectService wifiDirectService;
+    private String TAG = DialogActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         mBluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -57,10 +75,10 @@ public class DialogActivity extends Activity {
         }
         else if( intent1 != null && intent1.getParcelableExtra("game_request") != null) {
             GameRequest request = intent1.getParcelableExtra("game_request");
-            if( request != null && request.getConnectionInvite() == 1 ) {
+            if( request != null && request.getNotificationType() == 2 ) {
                 showWifiDialog(request);
             }
-            else if( request != null && request.getConnectionInvite() == 2 ) {
+            else if( request != null && request.getNotificationType() == 1 ) {
                 showBluetoothDialog(request);
             }
         }
@@ -77,10 +95,7 @@ public class DialogActivity extends Activity {
 
     private void showBluetoothDialog(final GameRequest gameRequest) {
         final String bluetoothName = gameRequest.getBluetoothAddress();
-        final String gameName = gameRequest.getGameName();
         final String gamePackageName = gameRequest.getGamePackageName();
-        final long gameId = gameRequest.getGameId();
-        final String toUserId = gameRequest.getRemoteUserId();
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Bluetooth Connection Invite");
@@ -91,12 +106,21 @@ public class DialogActivity extends Activity {
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         if(Utils.getBluetoothAdapter() != null) {
+                            Toast.makeText(DialogActivity.this, "Wait a moment, pairing with " + gameRequest.getRemoteUserName(), Toast.LENGTH_SHORT).show();
                             mBluetoothDeviceFoundReceiver.pairWithDevice(bluetoothName, new BluetoothPairCallback() {
                                 @Override
                                 public void devicePaired(boolean isPaired) {
                                     if(isPaired) {
-                                        UtilsHandler.launchGame(gamePackageName);
-                                        notifyRequester(gameId, toUserId, NetworkType.BLUETOOTH.ordinal());
+                                        Toast.makeText(DialogActivity.this, "Launching " + gameRequest.getGameName(), Toast.LENGTH_SHORT).show();
+                                        UtilsHandler.launchGame(gameRequest.getGamePackageName());
+                                        BluetoothService.getInstance().updateConnectionInfo(gameRequest, true, 1, new IUpdateListener() {
+                                            @Override
+                                            public void onUpdated() {
+                                            }
+                                        });
+                                    }
+                                    else {
+
                                     }
                                 }
                             });
@@ -117,33 +141,87 @@ public class DialogActivity extends Activity {
         alertDialog.show();
     }
 
-    private void showWifiDialog(GameRequest gameRequest) {
-        final String wifiDirectName = gameRequest.getBluetoothAddress();
+    private void showWifiDialog(final GameRequest gameRequest) {
+        final String userName = gameRequest.getRemoteUserName();
+        final String wifiDirectName = gameRequest.getWifiAddress();
         final String gameName = gameRequest.getGameName();
+        final String gamePackageName = gameRequest.getGamePackageName();
+
+        final WifiDirectService wifiDirectService = WifiDirectService.getInstance(DialogActivity.this);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
         alertDialogBuilder.setTitle("Wifi Direct Connection Invite");
-
         alertDialogBuilder
-                .setMessage("Do you want to make wifi direct connection with " + wifiDirectName)
+                .setMessage("Do you want to make wifi direct connection with " + userName +
+                            " to play game " + gameName)
                 .setCancelable(false)
                 .setIcon(R.drawable.wifidirect)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
-                        WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())
-                                .setWifiDirectDeviceName(wifiDirectName);
-                        List<WifiP2PRemoteDevice> devices = new ArrayList<WifiP2PRemoteDevice>();
+                        boolean isDeviceFound = false;
+
+                        wifiDirectService.setWifiDirectDeviceName(wifiDirectName);
+                        List<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
                         for(WifiP2PRemoteDevice remoteDevice : devices) {
-                            if( remoteDevice.getName().equalsIgnoreCase(wifiDirectName) ) {
-                                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).
-                                        connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, null);
+                            if( remoteDevice.getDevice().deviceName.equalsIgnoreCase(wifiDirectName) ) {
+                                isDeviceFound = true;
+
+                                UtilsHandler.addGameInStack(gameRequest);
+
+                                wifiDirectService
+                                        .connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
+                                            @Override
+                                            public void onDeviceConnected(boolean isConnected) {
+                                                Toast.makeText(DialogActivity.this, "Wait a moment, Game is launching...", Toast.LENGTH_LONG).show();
+//                                                updateConnectionInfo(gameRequest);
+                                                System.out.println("Updating connection info + before");
+                                                WifiDirectService.getInstance(DialogActivity.this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
+                                                    @Override
+                                                    public void onUpdated() {
+                                                        System.out.println("Updating connection info + Updated");
+                                                        UtilsHandler.removeGameFromStack();
+                                                        finish();
+                                                    }
+                                                });
+                                            }
+                                        });
                             }
+                        }
+
+                        if(!isDeviceFound) {
+                            Toast.makeText(DialogActivity.this, "Device " + wifiDirectName + " is not found", Toast.LENGTH_LONG).show();
+                            finish();
+//                            wifiDirectService.getWifiP2PManager().requestConnectionInfo(wifiDirectService.getWifiP2PChannel(),
+//                                    new WifiP2pManager.ConnectionInfoListener() {
+//                                        @Override
+//                                        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+//                                            if(wifiP2pInfo != null) {
+//                                                updateConnectionInfo(gameRequest);
+//                                            }
+//                                        }
+//                                    });
+//                            wifiDirectService.getWifiP2PManager().requestGroupInfo(wifiDirectService.getWifiP2PChannel(),
+//                                    new WifiP2pManager.GroupInfoListener() {
+//                                        @Override
+//                                        public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
+//                                            if (wifiP2pGroup != null) {
+//                                                if(wifiP2pGroup.getOwner().deviceName.equalsIgnoreCase(wifiDirectName)) {
+//                                                    connectWithDevice(wifiP2pGroup.getOwner().deviceAddress, gameRequest);
+//                                                }
+//                                                else {
+//                                                    Collection<WifiP2pDevice> devices = wifiP2pGroup.getClientList();
+//                                                    for (WifiP2pDevice device : devices) {
+//                                                        if (device.deviceName.equalsIgnoreCase(wifiDirectName)) {
+//                                                            connectWithDevice(device.deviceAddress, gameRequest);
+//                                                        }
+//                                                    }
+//                                                }
+//                                            }
+//                                        }
+//                                    });
                         }
                         WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())
                                 .initiateDiscovery();
-//                        UtilsHandler.showProgressDialog("Connecting with " + wifiDirectName);
-                        finish();
                     }
                 })
                 .setNegativeButton("No",new DialogInterface.OnClickListener() {
@@ -155,6 +233,16 @@ public class DialogActivity extends Activity {
         AlertDialog alertDialog = alertDialogBuilder.create();
 
         alertDialog.show();
+    }
+
+    private void connectWithDevice(String deviceAddress, final GameRequest gameRequest) {
+        WifiDirectService.getInstance(getApplicationContext())
+                .connectWithWifiAddress(deviceAddress, new DeviceConnectionListener() {
+                    @Override
+                    public void onDeviceConnected(boolean isConnected) {
+                        updateConnectionInfo(gameRequest);
+                    }
+                });
     }
 
     public void showSendViaDialog(String message) {
@@ -188,7 +276,14 @@ public class DialogActivity extends Activity {
         builder.create().show();
     }
 
-    private void notifyRequester(long gameId, String remoteUserId, int connectionType) {
-        WSManager.getInstance().notifyConnectionEstablished(gameId, remoteUserId, connectionType);
+    private void updateConnectionInfo(final GameRequest gameRequest) {
+        System.out.println("Updating connection info + before");
+        WifiDirectService.getInstance(this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
+            @Override
+            public void onUpdated() {
+                System.out.println("Updating connection info + Updated");
+//                UtilsHandler.launchGame(gameRequest.getGamePackageName());
+            }
+        });
     }
 }

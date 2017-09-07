@@ -7,6 +7,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,11 +23,15 @@ import io.connection.bluetooth.Domain.GameInfo;
 import io.connection.bluetooth.Domain.NearbyUserInfo;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.actionlisteners.DialogActionListener;
+import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.RecyclerItemClickListener;
 import io.connection.bluetooth.adapter.UserAdapter;
+import io.connection.bluetooth.adapter.model.MyGameInfo;
 import io.connection.bluetooth.request.ReqGameInvite;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Utils;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -41,8 +47,11 @@ public class UserList extends Activity {
 
     private Object adapter;
     private boolean isGame = false;
+    private LinearLayout llCurrentGame;
+    private TextView txtCurrentGame;
 
     RecyclerItemClickListener itemClickListener;
+    MyGameInfo gameInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +60,9 @@ public class UserList extends Activity {
         setContentView(R.layout.activity_user_info);
         recyclerView = (RecyclerView) this.findViewById(R.id.recycler_view1);
         btnSubmit = (Button) this.findViewById(R.id.btnSubmit);
+
+        llCurrentGame = (LinearLayout)this.findViewById(R.id.ll_my_current_game);
+        txtCurrentGame = (TextView)this.findViewById(R.id.txt_current_game);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -100,7 +112,8 @@ public class UserList extends Activity {
 
     private void addOnItemTouchListener() {
         isGame = false;
-        adapter = new UserAdapter(userList, this);
+        adapter = new UserAdapter(UserList.this, userList, this);
+        ((UserAdapter)adapter).setMyInfo(gameInfo);
         recyclerView.setAdapter((UserAdapter) adapter);
 
         btnSubmit.setVisibility(View.VISIBLE);
@@ -123,12 +136,34 @@ public class UserList extends Activity {
                     for (int ii = 0; ii < usrArray.length(); ii++) {
 
                         JSONObject jsonObject = (JSONObject) usrArray.get(ii);
+
+                        if (jsonObject.getString("userId").equalsIgnoreCase(
+                                ApplicationSharedPreferences.getInstance(UserList.this).getValue("user_id"))) {
+                            gameInfo = new MyGameInfo();
+                            gameInfo.setUserId(jsonObject.getString("userId"));
+                            gameInfo.setGroupOwnerId(jsonObject.getString("groupOwnerUserId"));
+                            gameInfo.setIsEngaged(jsonObject.getInt("isEngaged"));
+                            gameInfo.setAllowedPlayersCount(jsonObject.getInt("allowedPlayersCount"));
+                            gameInfo.setCurrentActiveGame(jsonObject.getString("activeGame"));
+
+                            ((UserAdapter) adapter).setMyInfo(gameInfo);
+
+                            updateView(gameInfo);
+                            continue;
+                        }
+
                         NearbyUserInfo userInfo = new NearbyUserInfo();
 
                         userInfo.setUserId(jsonObject.getString("userId"));
                         userInfo.setUserImagePath(jsonObject.getString("userImagePath"));
                         userInfo.setUserFirstName(jsonObject.getString("userFirstName"));
                         userInfo.setUserLastName(jsonObject.getString("userLastName"));
+                        userInfo.setEngaged(jsonObject.getInt("isEngaged"));
+                        userInfo.setActiveGameId(jsonObject.getString("activeGame"));
+                        userInfo.setGroupOwnerUserId(jsonObject.getString("groupOwnerUserId"));
+                        userInfo.setAllowedPlayersCount(jsonObject.getInt("allowedPlayersCount"));
+                        userInfo.setIsGroupOwner(jsonObject.getInt("isGroupOwner"));
+
 
                         JSONArray jsonGameIdArray = jsonObject.getJSONArray("gameId");
                         JSONArray jsonGameNameArray = jsonObject.getJSONArray("gameName");
@@ -149,7 +184,9 @@ public class UserList extends Activity {
                         userInfo.setGameInfoList(Arrays.asList(gameInfo));
                         userList.add(userInfo);
                     }
+
                     ((UserAdapter) adapter).notifyDataSetChanged();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (JSONException je) {
@@ -164,9 +201,42 @@ public class UserList extends Activity {
         });
     }
 
+    private void updateView(MyGameInfo myInfo) {
+        if(myInfo.getIsEngaged() == 0) {
+            llCurrentGame.setVisibility(View.GONE);
+        }
+        else {
+            txtCurrentGame.setText(myInfo.getCurrentActiveGame());
+        }
+    }
     private void getMutualGames(final String userId) {
-        final ArrayList<String> remoteUserIds = ((UserAdapter)adapter).getUserIds();
+        final ArrayList<NearbyUserInfo> remoteUsers = ((UserAdapter)adapter).getUserIds();
 
+        final ArrayList<String> remoteUserIds = new ArrayList<>();
+        for(NearbyUserInfo userInfo : remoteUsers) {
+            remoteUserIds.add(userInfo.getUserId());
+        }
+
+        if(remoteUsers.size() == 1 && remoteUsers.get(0).isEngaged() == 0) {
+            Utils.showAlertMessage(UserList.this, "Game Invitation", "Would you like to involve any other player in this game?",
+                    new DialogActionListener() {
+                        @Override
+                        public void dialogPositiveButtonPerformed() {
+                            sendRequestToGetMutualGames(0, userId, remoteUserIds);
+                        }
+
+                        @Override
+                        public void dialogNegativeButtonPerformed() {
+                            sendRequestToGetMutualGames(1, userId, remoteUserIds);
+                        }
+                    });
+        }
+        else {
+            sendRequestToGetMutualGames(0, userId, remoteUserIds);
+        }
+    }
+
+    private void sendRequestToGetMutualGames(int isTwoPlayerOnly, String userId, final ArrayList<String> remoteUserIds) {
         ReqGameInvite req = new ReqGameInvite(userId, remoteUserIds, 0 );
 
         Call<ResponseBody> call = MobileMeasurementApplication.getInstance().getService().getMutualGames(req);

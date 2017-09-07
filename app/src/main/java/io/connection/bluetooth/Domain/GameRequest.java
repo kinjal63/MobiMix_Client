@@ -124,12 +124,14 @@ public class GameRequest implements Parcelable {
         bundle.putString("remote_user_name", this.remoteUserName);
         bundle.putString("bluetooth_address", this.bluetoothAddress);
         bundle.putString("wifi_address", this.wifiAddress);
+        bundle.putInt("notification_type", this.notificationType);
+        bundle.putInt("connection_type", this.connectionType);
         dest.writeBundle(bundle);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
         public GameRequest createFromParcel(Parcel in) {
-            Bundle bundle = new Bundle();
+            Bundle bundle = in.readBundle();
             GameRequest gameRequest = new GameRequest();
             gameRequest.setConnectionType(bundle.getInt("connection_type"));
             gameRequest.setGameId(bundle.getLong("game_id"));
@@ -139,6 +141,7 @@ public class GameRequest implements Parcelable {
             gameRequest.setRemoteUserName(bundle.getString("remote_user_name"));
             gameRequest.setBluetoothAddress(bundle.getString("bluetooth_address"));
             gameRequest.setWifiAddress(bundle.getString("wifi_address"));
+            gameRequest.setNotificationType(bundle.getInt("notification_type"));
 
             return gameRequest;
         }

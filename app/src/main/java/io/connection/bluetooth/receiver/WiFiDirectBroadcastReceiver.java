@@ -42,13 +42,14 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             if (mManager != null) {
                 WifiDirectService wifiService = WifiDirectService.getInstance(context);
 //                if(wifiService.getWifiDirectDeviceName() != null && wifiService.getWifiDirectDeviceName().length() > 0) {
-                    mManager.requestPeers(mChannel, WifiDirectService.getInstance(context).peerListListener);
+                    mManager.requestPeers(mChannel, wifiService.peerListListener);
 //                }
             }
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
                 if (mManager == null) {
                     return;
                 }
+
                 NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
                 if (networkInfo.isConnected()) {
                     // we are connected with the other device, request connection
@@ -66,6 +67,13 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
                 WifiP2pDevice device = intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
                 LocalP2PDevice.getInstance().setLocalDevice(device);
+
+                System.out.println("Device status->" + device.status);
+
+                if(device.status == WifiP2pDevice.UNAVAILABLE) {
+                    WifiDirectService wifiDirectService = WifiDirectService.getInstance(context);
+                    wifiDirectService.initiateDiscovery();
+                }
 
 //            if (mManager != null) {
 //                mManager.requestPeers(mChannel, WifiDirectService.getInstance(context).peerListListener);
