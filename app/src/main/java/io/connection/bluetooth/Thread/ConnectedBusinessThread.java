@@ -154,7 +154,7 @@ public class ConnectedBusinessThread extends Thread {
                 e.printStackTrace();
             } finally {
                 try {
-                    Thread.sleep(3000);
+                    Thread.sleep(5000);
                     dos.close();
                     mmSocket.close();
                 } catch (Exception e) {

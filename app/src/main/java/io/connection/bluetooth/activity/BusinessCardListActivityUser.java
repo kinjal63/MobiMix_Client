@@ -301,9 +301,11 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
     }
 
     @Override
-    public void onBluetoothDeviceClick(BluetoothRemoteDevice device) {
-        connectedThread = new ConnectedBusinessThread(device.getDevice());
-        connectedThread.start();
+    public void onBluetoothDeviceClick(BluetoothRemoteDevice... devices) {
+        for(BluetoothRemoteDevice remoteDevice : devices) {
+            connectedThread = new ConnectedBusinessThread(remoteDevice.getDevice());
+            connectedThread.start();
+        }
         NotificationManagerCompat.from(this).cancelAll();
     }
 

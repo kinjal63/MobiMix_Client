@@ -1,0 +1,38 @@
+[
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_tint_switch_thumb.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_tint_switch_thumb.xml"
+    },
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_color_highlight_material.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_color_highlight_material.xml"
+    },
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_tint_btn_checkable.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_tint_btn_checkable.xml"
+    },
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_tint_switch_track.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_tint_switch_track.xml"
+    },
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_tint_seek_thumb.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_tint_seek_thumb.xml"
+    },
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_btn_colored_borderless_text_material.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_btn_colored_borderless_text_material.xml"
+    },
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_tint_default.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_tint_default.xml"
+    },
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_tint_spinner.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_tint_spinner.xml"
+    },
+    {
+        "merged": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\res\\merged\\debug\\color-v23\\abc_tint_edittext.xml",
+        "source": "D:\\Kinjal\\Workspaces\\Android_Workspace\\MobiMix_Client\\mobimix\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\25.0.1\\res\\color-v23\\abc_tint_edittext.xml"
+    }
+]

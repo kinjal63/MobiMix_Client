@@ -8,6 +8,6 @@ import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
  */
 
 public interface DeviceClickListener {
-    void onBluetoothDeviceClick(BluetoothRemoteDevice device);
+    void onBluetoothDeviceClick(BluetoothRemoteDevice... device);
     void onWifiDeviceClick(WifiP2PRemoteDevice device);
 }
