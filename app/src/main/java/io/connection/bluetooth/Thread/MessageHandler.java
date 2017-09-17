@@ -13,10 +13,13 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.QueueManager;
 import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.DeviceChatActivity;
@@ -29,6 +32,7 @@ import io.connection.bluetooth.socketmanager.SocketHeartBeat;
 import io.connection.bluetooth.socketmanager.SocketManager;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.NotificationUtil;
+import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -67,18 +71,15 @@ public class MessageHandler implements Handler.Callback {
                 Log.d(TAG, "handleMessage, " + Constants.FIRSTMESSAGEXCHANGE + " case");
 
                 socketManager = (SocketManager) obj;
-                String moduleName = this.wifiP2PService.getModule() == Modules.FILE_SHARING?
-                        Constants.FILESHARING_MODULE : (this.wifiP2PService.getModule() == Modules.BUSINESS_CARD ?
-                        Constants.BUSINESSCARD_MODULE : (this.wifiP2PService.getModule() == Modules.CHAT ? Constants.CHAT_MODULE : "None"));
 
-                String message = moduleName + "_" + LocalP2PDevice.getInstance().getLocalDevice().deviceAddress + "_" +
-                        LocalP2PDevice.getInstance().getLocalDevice().deviceName;
+                String message = getMessageModuleToSend();
                 socketManager.writeMessage(message.getBytes());
 
                 heartbeat = new SocketHeartBeat(socketManager);
                 heartbeat.start();
 
                 break;
+
             case Constants.MESSAGE_READ:
                 if(msg.obj != null) {
                     byte[] buf = (byte[])msg.obj;
@@ -92,9 +93,31 @@ public class MessageHandler implements Handler.Callback {
         return true;
     }
 
+    private String getMessageModuleToSend() {
+        String moduleName = this.wifiP2PService.getModule() == Modules.FILE_SHARING?
+                Constants.FILESHARING_MODULE : (this.wifiP2PService.getModule() == Modules.BUSINESS_CARD ?
+                Constants.BUSINESSCARD_MODULE : (this.wifiP2PService.getModule() == Modules.CHAT ? Constants.CHAT_MODULE : "None"));
+
+        if(!UtilsHandler.getGamesFromStack().empty()) {
+            final GameRequest gameRequest = UtilsHandler.removeGameFromStack();
+
+            WifiDirectService.getInstance(context).updateGameConnectionAndLaunchGame(gameRequest);
+            return Constants.START_GAME_MODULE + "_" + gameRequest.getGamePackageName() + "_" + LocalP2PDevice.getInstance().getLocalDevice().deviceAddress + "_" +
+                    LocalP2PDevice.getInstance().getLocalDevice().deviceName;
+        }
+        else {
+            return moduleName + "_" + LocalP2PDevice.getInstance().getLocalDevice().deviceAddress + "_" +
+                    LocalP2PDevice.getInstance().getLocalDevice().deviceName;
+        }
+    }
+
     private void handleObject(String message) {
         System.out.println("Actual message received::" + message);
-        if(message.startsWith(Constants.NO_MODULE) ||
+        if(message.startsWith(Constants.START_GAME_MODULE)) {
+            String gamePackageName = message.split("_")[1];
+            UtilsHandler.launchGame(gamePackageName);
+        }
+        else if(message.startsWith(Constants.NO_MODULE) ||
                 message.startsWith(Constants.CHAT_MODULE) ||
                 message.startsWith(Constants.FILESHARING_MODULE) ||
                 message.startsWith(Constants.BUSINESSCARD_MODULE)) {

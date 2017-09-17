@@ -205,7 +205,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         config.wps.setup = WpsInfo.PBC;
         config.groupOwnerIntent = 15;
 
-        manager.createGroup(channel, new WifiP2pManager.ActionListener() {
+        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
 
             @Override
             public void onSuccess() {
@@ -468,6 +468,15 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         public void run() {
             initiateDiscovery();
         }
+    }
+
+    public void updateGameConnectionAndLaunchGame(final GameRequest gameRequest) {
+        updateConnectionInfo(gameRequest, false, new IUpdateListener() {
+            @Override
+            public void onUpdated() {
+                UtilsHandler.launchGame(gameRequest.getGamePackageName());
+            }
+        });
     }
 
 }

@@ -85,9 +85,9 @@ public class PushReceiveService extends FirebaseMessagingService {
                 } else if (request.getNotificationType() == 4) {
                     generateNearByUserNotification("User " + request.getRemoteUserName() + " is nearby");
                 }
-                else if (request.getNotificationType() == 5) {
-                    launchGame(request);
-                }
+//                else if (request.getNotificationType() == 5) {
+//                    launchGame(request);
+//                }
 
             } catch (Exception e) {
                 e.printStackTrace();

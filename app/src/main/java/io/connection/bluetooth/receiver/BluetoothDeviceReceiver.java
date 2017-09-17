@@ -62,26 +62,26 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
             final BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
             if (remoteDevice != null) {
-                Log.d(TAG, "onReceive: " + remoteDevice.getAddress().trim());
-
-                User userAvailable = new User();
-                userAvailable.setName(remoteDevice.getName());
-                userAvailable.setMacAddress(remoteDevice.getAddress());
-                userAvailable.setEmail(remoteDevice.getName());
-
-                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
-                    @Override
-                    public void onResponceSuccess(Call<User> call, Response<User> response) {
-                        User user = response.body();
-                        BluetoothRemoteDevice device = new BluetoothRemoteDevice(remoteDevice, user.getName());
+//                Log.d(TAG, "onReceive: " + remoteDevice.getAddress().trim());
+//
+//                User userAvailable = new User();
+//                userAvailable.setName(remoteDevice.getName());
+//                userAvailable.setMacAddress(remoteDevice.getAddress());
+//                userAvailable.setEmail(remoteDevice.getName());
+//
+////                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+////                    @Override
+////                    public void onResponceSuccess(Call<User> call, Response<User> response) {
+////                        User user = response.body();
+                        BluetoothRemoteDevice device = new BluetoothRemoteDevice(remoteDevice, remoteDevice.getName());
                         bluetoothService.setRemoteBluetoothDevice(device);
-                    }
-
-                    @Override
-                    public void onResponseFailure(Call call) {
-
-                    }
-                });
+//                    }
+//
+//                    @Override
+//                    public void onResponseFailure(Call call) {
+//
+//                    }
+//                });
             }
         }
     }

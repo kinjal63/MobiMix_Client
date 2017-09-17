@@ -7,5 +7,6 @@ public enum Modules {
     FILE_SHARING,
     CHAT,
     BUSINESS_CARD,
+    GAME,
     NONE;
 }

@@ -110,17 +110,17 @@ public class DialogActivity extends Activity{
                                 @Override
                                 public void devicePaired(boolean isPaired) {
                                     if(isPaired) {
-                                        UtilsHandler.launchGame(gameRequest.getGamePackageName());
                                         BluetoothService.getInstance().updateConnectionInfo(gameRequest, true, 1, new IUpdateListener() {
                                             @Override
                                             public void onUpdated() {
+                                                UtilsHandler.launchGame(gameRequest.getGamePackageName());
                                             }
                                         });
+                                        finish();
                                     }
                                 }
                             });
                             bluetoothAdapter.startDiscovery();
-                            finish();
                         }
                     }
                 })
@@ -170,14 +170,14 @@ public class DialogActivity extends Activity{
                                                 Toast.makeText(DialogActivity.this, "Wait a moment, Game is launching...", Toast.LENGTH_LONG).show();
 //                                                updateConnectionInfo(gameRequest);
                                                 System.out.println("Updating connection info + before");
-                                                WifiDirectService.getInstance(DialogActivity.this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
-                                                    @Override
-                                                    public void onUpdated() {
-                                                        System.out.println("Updating connection info + Updated");
-                                                        UtilsHandler.removeGameFromStack();
-                                                        finish();
-                                                    }
-                                                });
+//                                                WifiDirectService.getInstance(DialogActivity.this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
+//                                                    @Override
+//                                                    public void onUpdated() {
+//                                                        System.out.println("Updating connection info + Updated");
+//                                                        UtilsHandler.removeGameFromStack();
+//                                                        finish();
+//                                                    }
+//                                                });
                                             }
                                         });
                             }

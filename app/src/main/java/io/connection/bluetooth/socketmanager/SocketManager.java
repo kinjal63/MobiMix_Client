@@ -51,6 +51,7 @@ public class SocketManager implements Runnable {
             byte [] buffer = new byte[1024];
             int bytes;
 
+
             handler.getHandler().obtainMessage(Constants.FIRSTMESSAGEXCHANGE, this).sendToTarget();
 
             System.out.println("Sending first message");

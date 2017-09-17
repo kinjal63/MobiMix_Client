@@ -36,11 +36,12 @@ public class MobiMixService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        init();
+//        init();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        init();
         return START_NOT_STICKY;
     }
 

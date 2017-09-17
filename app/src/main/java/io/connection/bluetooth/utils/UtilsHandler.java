@@ -59,8 +59,8 @@ public class UtilsHandler {
         return stackGameRequest;
     }
 
-    public static void removeGameFromStack() {
-        stackGameRequest.pop();
+    public static GameRequest removeGameFromStack() {
+        return stackGameRequest.pop();
     }
 
 }
