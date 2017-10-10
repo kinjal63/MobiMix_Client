@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.User;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import okhttp3.ResponseBody;
@@ -36,7 +36,7 @@ public class WSManager {
 
     private void initialize() {
         apiCall = ApiClient.getClient().create(ApiCall.class);
-        mContext = MobileMeasurementApplication.getInstance().getContext();
+        mContext = MobiMixApplication.getInstance().getContext();
     }
 
     public void checkIfUserAvailable(User user, final ResponseCallback responseCall) {

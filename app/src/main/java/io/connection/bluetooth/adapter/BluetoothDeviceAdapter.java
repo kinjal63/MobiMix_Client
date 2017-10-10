@@ -178,4 +178,8 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
         }
     }
 
+    public List<BluetoothRemoteDevice> getSelectedDevices() {
+        return selectedDevices;
+    }
+
 }

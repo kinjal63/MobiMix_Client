@@ -5,13 +5,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
-import android.os.Build;
 import android.support.v4.app.ActivityCompat;
-import android.util.Log;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,8 +18,9 @@ import java.util.Vector;
 import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
@@ -32,7 +28,6 @@ import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
-import io.connection.bluetooth.utils.Utils;
 
 /**
  * Created by KP49107 on 14-04-2017.
@@ -82,7 +77,7 @@ public class BluetoothService {
     }
 
     public void init() {
-        this.context = MobileMeasurementApplication.getInstance().getContext();
+        this.context = MobiMixApplication.getInstance().getContext();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         bluetoothDeviceFoundReceiver = BluetoothDeviceReceiver.getInstance();
@@ -91,7 +86,7 @@ public class BluetoothService {
         if (!bluetoothAdapter.isEnabled()) {
             bluetoothAdapter.enable();
             Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            MobileMeasurementApplication.getInstance().getActivity()
+            MobiMixApplication.getInstance().getActivity()
                     .startActivityForResult(enableBlueTooth, 1);
         } else {
             startBluetoothDiscoveryTimer();
@@ -239,7 +234,7 @@ public class BluetoothService {
 //        }
 
         connectionInfo.setGameId(gameRequest.getGameId());
-        connectionInfo.setUserId(ApplicationSharedPreferences.getInstance(MobileMeasurementApplication.getInstance().getContext()).
+        connectionInfo.setUserId(ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).
                 getValue("user_id"));
         connectionInfo.setConnectedUserId(gameRequest.getRemoteUserId());
         connectionInfo.setIsNeedToNotify(isNeedToNotify);
@@ -251,5 +246,21 @@ public class BluetoothService {
 
     public void unregisterReceiver() {
         context.unregisterReceiver(bluetoothDeviceFoundReceiver);
+    }
+
+    public void acceptRequest(final GameRequest gameRequest) {
+        BluetoothDeviceReceiver.getInstance().pairWithDevice(gameRequest.getBluetoothAddress(), new BluetoothPairCallback() {
+            @Override
+            public void devicePaired(boolean isPaired) {
+                if (isPaired) {
+                    BluetoothService.getInstance().updateConnectionInfo(gameRequest, true, 1, new IUpdateListener() {
+                        @Override
+                        public void onUpdated() {
+//                            UtilsHandler.launchGame(gameRequest.getGamePackageName());
+                        }
+                    });
+                }
+            }
+        });
     }
 }

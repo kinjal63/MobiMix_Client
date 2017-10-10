@@ -12,6 +12,7 @@ import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
@@ -103,6 +104,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
         initiateDiscovery();
         new Timer().schedule(new DiscoveryTask(), 500, 45000);
+
 
         messageHandler = new MessageHandler(mContext, this);
     }
@@ -477,6 +479,22 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 UtilsHandler.launchGame(gameRequest.getGamePackageName());
             }
         });
+    }
+
+    public void acceptRequest(GameRequest gameRequest) {
+        setWifiDirectDeviceName(gameRequest.getWifiAddress());
+        List<WifiP2PRemoteDevice> devices = getWifiP2PDeviceList();
+        for(WifiP2PRemoteDevice remoteDevice : devices) {
+            if( remoteDevice.getDevice().deviceName.equalsIgnoreCase(gameRequest.getWifiAddress())) {
+                UtilsHandler.addGameInStack(gameRequest);
+
+                connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
+                    @Override
+                    public void onDeviceConnected(boolean isConnected) {
+                    }
+                });
+            }
+        }
     }
 
 }

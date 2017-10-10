@@ -21,10 +21,9 @@ import java.util.List;
 
 import io.connection.bluetooth.Domain.GameInfo;
 import io.connection.bluetooth.Domain.NearbyUserInfo;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.actionlisteners.DialogActionListener;
-import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.RecyclerItemClickListener;
 import io.connection.bluetooth.adapter.UserAdapter;
@@ -83,7 +82,7 @@ public class UserList extends Activity {
             }
         });
 
-        MobileMeasurementApplication.getInstance().registerActivity(this);
+        MobiMixApplication.getInstance().registerActivity(this);
         addOnItemTouchListener();
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,7 +119,7 @@ public class UserList extends Activity {
     }
 
     private void getNearByGames() {
-        retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().
+        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().
                 getService().getNearByGameList(ApplicationSharedPreferences.getInstance(UserList.this).getValue("user_id"));
 
         req1.enqueue(new Callback<ResponseBody>() {
@@ -239,7 +238,7 @@ public class UserList extends Activity {
     private void sendRequestToGetMutualGames(int isTwoPlayerOnly, String userId, final ArrayList<String> remoteUserIds) {
         ReqGameInvite req = new ReqGameInvite(userId, remoteUserIds, 0 );
 
-        Call<ResponseBody> call = MobileMeasurementApplication.getInstance().getService().getMutualGames(req);
+        Call<ResponseBody> call = MobiMixApplication.getInstance().getService().getMutualGames(req);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

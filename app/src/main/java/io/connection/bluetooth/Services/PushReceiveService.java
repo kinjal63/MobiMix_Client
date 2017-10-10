@@ -21,9 +21,8 @@ import org.json.JSONObject;
 
 import java.lang.reflect.Method;
 
-import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.GameRequest;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.activity.DialogActivity;
@@ -85,9 +84,12 @@ public class PushReceiveService extends FirebaseMessagingService {
                 } else if (request.getNotificationType() == 4) {
                     generateNearByUserNotification("User " + request.getRemoteUserName() + " is nearby");
                 }
-//                else if (request.getNotificationType() == 5) {
-//                    launchGame(request);
-//                }
+                else if (request.getNotificationType() == 5) {
+                    launchGame(request);
+                }
+                else if (request.getNotificationType() == 6) {
+                    acceptRequest(getBaseContext(), request);
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -102,7 +104,7 @@ public class PushReceiveService extends FirebaseMessagingService {
             m.invoke(device, (Object[]) null);
             Log.d("pairDevice()", "Pairing finished.");
 
-            MobileMeasurementApplication.getInstance().getActivity().runOnUiThread(new Runnable() {
+            MobiMixApplication.getInstance().getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     AlertDialog alertbox = new AlertDialog.Builder(getBaseContext())
@@ -114,9 +116,9 @@ public class PushReceiveService extends FirebaseMessagingService {
                                 // do something when the button is clicked
                                 public void onClick(DialogInterface arg0, int arg1) {
 
-                                    Intent LaunchIntent = MobileMeasurementApplication.getInstance().getContext().getPackageManager().
+                                    Intent LaunchIntent = MobiMixApplication.getInstance().getContext().getPackageManager().
                                             getLaunchIntentForPackage(GameAdapter.gamePackageName);
-                                    MobileMeasurementApplication.getInstance().getContext().startActivity(LaunchIntent);
+                                    MobiMixApplication.getInstance().getContext().startActivity(LaunchIntent);
                                 }
                             })
                             .show();
@@ -213,6 +215,15 @@ public class PushReceiveService extends FirebaseMessagingService {
         UtilsHandler.launchGame(request.getGamePackageName());
     }
 
+    private void acceptRequest(Context context, final GameRequest gameRequest) {
+        if(gameRequest.getConnectionType() == 1) {
+            BluetoothService.getInstance().acceptRequest(gameRequest);
+        }
+        else {
+            WifiDirectService.getInstance(context).acceptRequest(gameRequest);
+        }
+    }
+
     private void launchGameAndUpdateConnectionInfo(final GameRequest request) {
         if(request.getConnectionType() == 1) {
             BluetoothService.getInstance().updateConnectionInfo(request, false, 0, new IUpdateListener() {
@@ -223,7 +234,7 @@ public class PushReceiveService extends FirebaseMessagingService {
             });
         }
         else {
-            WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getContext()).updateConnectionInfo(request, false, new IUpdateListener() {
+            WifiDirectService.getInstance(MobiMixApplication.getInstance().getContext()).updateConnectionInfo(request, false, new IUpdateListener() {
                 @Override
                 public void onUpdated() {
                     UtilsHandler.launchGame(request.getGamePackageName());

@@ -23,10 +23,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.DialogActionListener;
-import io.connection.bluetooth.adapter.GameAdapter;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -58,7 +57,7 @@ public class Utils {
 
     public static void setBluetoothAdapterName() {
         boolean isNameSet = mBluetoothAdapter.setName(ApplicationSharedPreferences.getInstance(
-                MobileMeasurementApplication.getInstance().getContext()).getValue("email"));
+                MobiMixApplication.getInstance().getContext()).getValue("email"));
         Log.d("BluetoothAdapter:", "Is Name Set::" + isNameSet + ", BluetoothAdapter Name:" + Utils.getBluetoothAdapter().getName());
     }
 

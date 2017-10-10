@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,13 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.Domain.GameInfo;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.request.ReqGameInvite;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
-import io.connection.bluetooth.utils.UtilsHandler;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -144,7 +142,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
                 remoteUserIds, 1);
         gameInvite.setGamePackageName(gamePackageName);
-        retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
+        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -170,7 +168,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
                 remoteUserIds, 2);
         gameInvite.setGamePackageName(gamePackageName);
-        retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().getService().sendConnectionInvite(gameInvite);
+        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 
         req1.enqueue(new Callback<ResponseBody>() {
             @Override

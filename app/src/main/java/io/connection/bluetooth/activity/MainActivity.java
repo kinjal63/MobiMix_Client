@@ -73,7 +73,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends BaseActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
+public class MainActivity extends BaseActivity implements SearchView.OnQueryTextListener {
     private static final String TAG = "MainActivity";
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -119,6 +119,14 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
         tabLayout.setupWithViewPager(viewPager);
 
         Button buttonsend = (Button) findViewById(R.id.buttonsend);
+        Button sendFilesButton = (Button)findViewById(R.id.sendFileButton);
+
+        sendFilesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendFiles();
+            }
+        });
         buttonsend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -288,11 +296,6 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
     }
 
-    @Override
-    public void onWifiDeviceClick(WifiP2PRemoteDevice device) {
-
-    }
-
     private void initBluetooth() {
         networkType = NetworkType.BLUETOOTH;
 
@@ -300,7 +303,6 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
         listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
         deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
-        deviceAdapter.setDeviceClickListener(this);
 
         bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
             @Override
@@ -443,8 +445,7 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
     }
 
-    @Override
-    public void onBluetoothDeviceClick(final BluetoothRemoteDevice... remoteDevices) {
+    public void sendFiles(){
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.final_dialog_box);
         dialog.setTitle("Transfer File ... ");
@@ -496,21 +497,21 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
                 CheckBox audioCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.audio_final_checkbox);
                 CheckBox videoCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.video_final_checkbox);
 
-                for(BluetoothRemoteDevice remoteDevice : remoteDevices) {
+                for(BluetoothRemoteDevice remoteDevice : deviceAdapter.getSelectedDevices()) {
                     BluetoothDevice device = remoteDevice.getDevice();
                     if (imageCheckbox.isChecked()) {
                         for (String check : ImageCache.getImageCheckBox().keySet()) {
                             if (ImageCache.getImageCheckBox(check)) {
                                 ImageCache.putUri(device.getAddress(), Uri.parse(check));
-                                ImageCache.setImageCheckBoxValue(check, false);
+//                                ImageCache.setImageCheckBoxValue(check, false);
                             }
                         }
                     } else {
                         for (String check : ImageCache.getImageCheckBox().keySet()) {
-                            ImageCache.setImageCheckBoxValue(check, false);
+//                            ImageCache.setImageCheckBoxValue(check, false);
                         }
                     }
-                    ImagesFragment.updateChekBox();
+//                    ImagesFragment.updateChekBox();
 
                     if (audioCheckbox.isChecked()) {
                         for (String check : ImageCache.getAudioCheckBox().keySet()) {
@@ -566,6 +567,9 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
                     }
                 }
+
+                ImageCache.clearImageCheckBox();
+                ImagesFragment.updateChekBox();
 
                 NotificationManagerCompat.from(MainActivity.this).cancelAll();
                 dialog.dismiss();

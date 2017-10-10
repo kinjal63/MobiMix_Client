@@ -5,39 +5,23 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pGroup;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Stack;
-import java.util.Vector;
 
-import io.connection.bluetooth.Api.WSManager;
-import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
-import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
-import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
-import io.connection.bluetooth.socketmanager.WifiP2PServerHandler;
-import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
@@ -215,7 +199,7 @@ public class DialogActivity extends Activity{
 //                                        }
 //                                    });
                         }
-                        WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity())
+                        WifiDirectService.getInstance(MobiMixApplication.getInstance().getActivity())
                                 .initiateDiscovery();
                     }
                 })

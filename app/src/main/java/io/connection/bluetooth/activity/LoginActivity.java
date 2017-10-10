@@ -17,21 +17,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Domain.DeviceDetails;
-import io.connection.bluetooth.Domain.GameProfileTimeDetails;
 import io.connection.bluetooth.Domain.User;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
@@ -147,7 +142,7 @@ public class LoginActivity extends Fragment {
                                 editorGameTime.apply();
                                 getActivity().finish();
 
-                                ApplicationSharedPreferences.getInstance(MobileMeasurementApplication.getInstance().getContext()).
+                                ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).
                                         addValue("user_id", userObject.getId());
                                 ApplicationSharedPreferences.getInstance(getActivity()).addValue("email", userObject.getEmail());
                                 ApplicationSharedPreferences.getInstance(getActivity()).addBooleanValue("is_login", true);

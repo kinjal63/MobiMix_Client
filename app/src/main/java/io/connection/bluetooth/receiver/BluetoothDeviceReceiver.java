@@ -14,15 +14,11 @@ import java.util.Set;
 
 import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.User;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
-import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
-import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
-import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
-import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,7 +39,7 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
 
     public BluetoothDeviceReceiver() {
         bluetoothService = BluetoothService.getInstance();
-        mContext = MobileMeasurementApplication.getInstance().getContext();
+        mContext = MobiMixApplication.getInstance().getContext();
     }
 
     public static BluetoothDeviceReceiver getInstance() {

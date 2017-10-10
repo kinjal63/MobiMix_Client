@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 
+import org.greenrobot.greendao.database.Database;
+
 import java.util.concurrent.TimeUnit;
 
 import io.connection.bluetooth.Api.ApiCall;
@@ -14,9 +16,9 @@ import okhttp3.logging.HttpLoggingInterceptor;
 /**
  * Created by Kinjal on 11/24/2016.
  */
-public class MobileMeasurementApplication extends Application {
+public class MobiMixApplication extends Application {
     private ApiCall service;
-    private static MobileMeasurementApplication mApplication;
+    private static MobiMixApplication mApplication;
     private Activity mActivity;
 
     @Override
@@ -26,7 +28,7 @@ public class MobileMeasurementApplication extends Application {
         init();
     }
 
-    public static MobileMeasurementApplication getInstance() {
+    public static MobiMixApplication getInstance() {
         return mApplication;
     }
 
@@ -59,6 +61,8 @@ public class MobileMeasurementApplication extends Application {
 //                .baseUrl(Constants.endPointAddress)
 //                .addConverterFactory(GsonConverterFactory.create())
 //                .client(client).build().create(ApiCall.class);
+
+        // Green DAO initialization
 
     }
 }

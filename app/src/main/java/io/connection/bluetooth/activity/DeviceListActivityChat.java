@@ -2,18 +2,12 @@ package io.connection.bluetooth.activity;
 
 import android.app.SearchManager;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -22,34 +16,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import io.connection.bluetooth.Api.ApiCall;
-import io.connection.bluetooth.Api.ApiClient;
-import io.connection.bluetooth.Domain.User;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.BluetoothService;
 import io.connection.bluetooth.Services.WifiDirectService;
-import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
@@ -59,9 +35,6 @@ import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
-import io.connection.bluetooth.utils.ApplicationSharedPreferences;
-import io.connection.bluetooth.utils.Constants;
-import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -92,7 +65,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
         // requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.device_layout_list_chat);
 
-        MobileMeasurementApplication.getInstance().registerActivity(this);
+        MobiMixApplication.getInstance().registerActivity(this);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -244,7 +217,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     }
 
     @Override
-    public void onBluetoothDeviceClick(BluetoothRemoteDevice device) {
+    public void onBluetoothDeviceClick(BluetoothRemoteDevice... device) {
         Intent intent = new Intent();
 
         intent.setClass(mContext, DeviceChatActivity.class);

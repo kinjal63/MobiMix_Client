@@ -355,7 +355,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
     }
 
     @Override
-    public void onBluetoothDeviceClick(BluetoothRemoteDevice device) {
+    public void onBluetoothDeviceClick(BluetoothRemoteDevice... device) {
 
     }
 

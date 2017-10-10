@@ -1,6 +1,5 @@
 package io.connection.bluetooth.socketmanager;
 
-import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
@@ -8,8 +7,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import io.connection.bluetooth.MobileMeasurementApplication;
-import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.utils.Constants;

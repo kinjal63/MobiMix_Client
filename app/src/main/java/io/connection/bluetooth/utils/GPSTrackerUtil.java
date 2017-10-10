@@ -35,9 +35,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.connection.bluetooth.MobileMeasurementApplication;
-import io.connection.bluetooth.activity.MobileDataUsageActivity;
-import io.connection.bluetooth.request.ReqGameInvite;
+import io.connection.bluetooth.MobiMixApplication;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -439,7 +437,7 @@ public class GPSTrackerUtil extends Service implements LocationListener {
 
     private void updateLocation() {
         String userId = ApplicationSharedPreferences.getInstance(mContext).getValue("user_id");
-        retrofit2.Call<okhttp3.ResponseBody> req1 = MobileMeasurementApplication.getInstance().
+        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().
                                                     getService().updateUserLocation(userId, latitude, longitude);
 
         req1.enqueue(new Callback<ResponseBody>() {

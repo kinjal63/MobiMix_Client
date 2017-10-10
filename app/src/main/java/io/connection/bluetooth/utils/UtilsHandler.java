@@ -9,7 +9,7 @@ import android.os.Looper;
 import java.util.Stack;
 
 import io.connection.bluetooth.Domain.GameRequest;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 
 /**
  * Created by songline on 10/08/16.
@@ -29,7 +29,7 @@ public class UtilsHandler {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-        progressDialog = ProgressDialog.show(MobileMeasurementApplication.getInstance().getActivity(), "Press back to cancel", message, true,
+        progressDialog = ProgressDialog.show(MobiMixApplication.getInstance().getActivity(), "Press back to cancel", message, true,
                 true, new DialogInterface.OnCancelListener() {
 
                     @Override
@@ -46,9 +46,9 @@ public class UtilsHandler {
     }
 
     public static void launchGame(String gamePackageName) {
-        Intent launchIntent = MobileMeasurementApplication.getInstance().getContext().getPackageManager().
+        Intent launchIntent = MobiMixApplication.getInstance().getContext().getPackageManager().
                 getLaunchIntentForPackage(gamePackageName);
-        MobileMeasurementApplication.getInstance().getContext().startActivity(launchIntent);
+        MobiMixApplication.getInstance().getContext().startActivity(launchIntent);
     }
 
     public static void addGameInStack(GameRequest gameRequest) {

@@ -1,15 +1,11 @@
 package io.connection.bluetooth.Thread;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -18,16 +14,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import io.connection.bluetooth.MobileMeasurementApplication;
-import io.connection.bluetooth.R;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Services.BluetoothService;
-import io.connection.bluetooth.activity.BusinessCardReceivedList;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.DeviceChatActivity;
-import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
-import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.UtilsHandler;
 
@@ -139,7 +131,7 @@ class readFile extends Thread {
                     device = socket.getRemoteDevice();
                     BluetoothRemoteDevice remoteDevice = new BluetoothRemoteDevice(device, device.getName());
 
-                    Intent intent = new Intent(MobileMeasurementApplication.getInstance().getActivity(), DeviceChatActivity.class);
+                    Intent intent = new Intent(MobiMixApplication.getInstance().getActivity(), DeviceChatActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("device", remoteDevice);
 

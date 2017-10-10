@@ -3,7 +3,6 @@ package io.connection.bluetooth.socketmanager.modules;
 import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -24,9 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import io.connection.bluetooth.MobileMeasurementApplication;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.enums.Modules;

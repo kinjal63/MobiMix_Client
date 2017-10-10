@@ -2,44 +2,34 @@ package io.connection.bluetooth.Thread;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
-import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.QueueManager;
-import io.connection.bluetooth.MobileMeasurementApplication;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Services.WifiDirectService;
-import io.connection.bluetooth.actionlisteners.IUpdateListener;
-import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.activity.ChatDataConversation;
-import io.connection.bluetooth.activity.DeviceChatActivity;
-import io.connection.bluetooth.activity.Home_Master;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
-import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.SocketHeartBeat;
 import io.connection.bluetooth.socketmanager.SocketManager;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.NotificationUtil;
-import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by KP49107 on 29-03-2017.
  */
-public class MessageHandler implements Handler.Callback {
-    private Handler handler = new Handler(this);
+public class MessageHandler {
+    private Handler handler = null;
     private Modules module;
     private SocketManager socketManager;
 
@@ -55,14 +45,26 @@ public class MessageHandler implements Handler.Callback {
     public MessageHandler(Context context, WifiDirectService service) {
         this.context = context;
         this.wifiP2PService = service;
+        //To receive message on differesnt thread
+        startHandler();
+    }
+
+    private void startHandler() {
+        HandlerThread thread = new HandlerThread("MyHandlerThread");
+        thread.start();
+        handler = new Handler(thread.getLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                MessageHandler.this.handleMessage(msg);
+            }
+        };
     }
 
     public WifiDirectService getWifiP2PService() {
         return wifiP2PService;
     }
 
-    @Override
-    public boolean handleMessage(Message msg) {
+    public void handleMessage(Message msg) {
         System.out.println("Message received in handler, message object : " + msg.what);
         switch (msg.what) {
             case Constants.FIRSTMESSAGEXCHANGE:
@@ -89,8 +91,6 @@ public class MessageHandler implements Handler.Callback {
             default:
                 break;
         }
-
-        return true;
     }
 
     private String getMessageModuleToSend() {
@@ -155,7 +155,7 @@ public class MessageHandler implements Handler.Callback {
 
                     WifiP2PRemoteDevice remoteDevice = socketManager.getRemoteDevice();
 
-                    Intent intent = new Intent(MobileMeasurementApplication.getInstance().getActivity(), WifiP2PChatActivity.class);
+                    Intent intent = new Intent(MobiMixApplication.getInstance().getActivity(), WifiP2PChatActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra("device", remoteDevice);
 

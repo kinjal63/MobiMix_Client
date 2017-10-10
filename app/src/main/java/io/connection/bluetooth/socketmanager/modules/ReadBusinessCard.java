@@ -13,14 +13,10 @@ import java.net.Socket;
 
 import io.connection.bluetooth.Database.BusinessCard;
 import io.connection.bluetooth.Database.DataBaseHelper;
-import io.connection.bluetooth.MobileMeasurementApplication;
-import io.connection.bluetooth.Services.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
-import io.connection.bluetooth.activity.BusinessCardListActivityUser;
 import io.connection.bluetooth.activity.BusinessCardReceivedList;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.enums.Modules;
-import io.connection.bluetooth.socketmanager.SocketManager;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**

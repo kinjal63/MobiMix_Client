@@ -43,6 +43,10 @@ public class ImageCache {
         return imageCheckBox;
     }
 
+    public static void clearImageCheckBox() {
+        imageCheckBox.clear();
+    }
+
 
     private static Map<String, Boolean> audioCheckBox = new WeakHashMap<>();
 

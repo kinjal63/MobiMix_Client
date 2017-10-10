@@ -323,7 +323,6 @@ public class ThreadConnection {
             notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-
         }
 
         @Override
@@ -361,13 +360,20 @@ public class ThreadConnection {
                                 .setContentText("Recevie File in progress");
 
                         int counting = 0;
-                        if (!new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth").exists()) {
-                            new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth").mkdir();
-                            new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth/BusinessCard").mkdir();
-                            new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth/MediaFiles").mkdir();
+                        if (!new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                                    + "/TransferBluetooth").exists()) {
+                            new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                                    + "/TransferBluetooth").mkdir();
+                            new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                                    + "/TransferBluetooth/BusinessCard").mkdir();
+                            new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                                    + "/TransferBluetooth/MediaFiles").mkdir();
                         }
 
-                        files[i] = new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth/MediaFiles", filename);
+                        files[i] = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                                + "/TransferBluetooth/MediaFiles", filename);
+
+                        files[i].createNewFile();
                         FileOutputStream fos = new FileOutputStream(files[i]);
                         BufferedOutputStream bos = new BufferedOutputStream(fos);
                         in = socket.getInputStream();

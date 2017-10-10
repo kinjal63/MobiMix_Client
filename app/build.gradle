@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "23.0.3"
+    buildToolsVersion "25.0.0"
 
     defaultConfig {
         applicationId "io.connection.bluetooth"
@@ -41,6 +42,9 @@ dependencies {
     compile 'com.google.firebase:firebase-messaging:9.0.2'
     compile 'com.borax12.materialdaterangepicker:library:1.7'
     compile 'com.android.support:recyclerview-v7:24.1.1'
+
+    //Green Dao for SQLite
+    compile 'org.greenrobot:greendao:3.2.0'
  //   compile 'com.theartofdev.edmodo:android-image-cropper:2.3.+'
     compile project(':imagecrop')
 
