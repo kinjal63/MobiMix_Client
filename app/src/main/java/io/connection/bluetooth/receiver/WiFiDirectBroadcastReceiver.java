@@ -8,13 +8,10 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
-import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
-import io.connection.bluetooth.Services.WifiDirectService;
-import io.connection.bluetooth.actionlisteners.IUpdateListener;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
-import io.connection.bluetooth.utils.UtilsHandler;
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 

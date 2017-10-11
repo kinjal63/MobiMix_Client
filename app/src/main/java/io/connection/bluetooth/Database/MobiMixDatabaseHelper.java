@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import io.connection.bluetooth.Database.models.MBNearbyPlayers;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayers;
 
 /**
  * Created by Kinjal on 10/7/2017.

@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import java.io.IOException;
@@ -15,7 +14,7 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 import io.connection.bluetooth.MobiMixApplication;
-import io.connection.bluetooth.Services.BluetoothService;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.DeviceChatActivity;
 import io.connection.bluetooth.activity.ImageCache;

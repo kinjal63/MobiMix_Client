@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import io.connection.bluetooth.Services.BluetoothService;
+import io.connection.bluetooth.core.BluetoothService;
 
 /**
  * Created by KP49107 on 17-04-2017.

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.Database.exception.NoTableMappedException;
-import io.connection.bluetooth.Database.models.MBNearbyPlayers;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayers;
 import io.connection.bluetooth.Database.utils.DatabaseUtils;
 import io.connection.bluetooth.MobiMixApplication;
 

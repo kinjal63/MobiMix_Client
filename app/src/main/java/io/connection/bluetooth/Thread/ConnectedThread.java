@@ -13,8 +13,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.UUID;
 
-import io.connection.bluetooth.Services.BluetoothService;
-import io.connection.bluetooth.activity.DeviceChatActivity;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.utils.UtilsHandler;
 

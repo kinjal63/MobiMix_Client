@@ -1,4 +1,4 @@
-package io.connection.bluetooth.Services;
+package io.connection.bluetooth.core;
 
 /**
  * Created by songline on 04/12/16.

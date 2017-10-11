@@ -32,7 +32,6 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,8 +42,7 @@ import java.util.Set;
 import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.WifiDirectService;
-import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
@@ -52,7 +50,6 @@ import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
-import io.connection.bluetooth.enums.Modules;
 
 public class WifiDirectMainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
     private static final String TAG = "MainActivity";

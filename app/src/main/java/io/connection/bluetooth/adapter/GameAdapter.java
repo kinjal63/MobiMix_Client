@@ -21,7 +21,7 @@ import java.util.List;
 import io.connection.bluetooth.Domain.GameInfo;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.request.ReqGameInvite;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
