@@ -36,12 +36,12 @@ public class WSManager {
         initialize();
     }
 
-//    public static WSManager getInstance() {
-//        if(instance == null) {
-//            instance = new WSManager();
-//        }
-//        return instance;
-//    }
+    public static WSManager getInstance(Handler handler_) {
+        if(instance == null) {
+            instance = new WSManager(handler_);
+        }
+        return instance;
+    }
 
     private void initialize() {
         apiCall = ApiClient.getClient().create(ApiCall.class);

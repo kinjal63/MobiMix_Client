@@ -10,6 +10,8 @@ import java.util.List;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.DaoException;
 
+import io.connection.bluetooth.Database.annotations.Exclude;
+
 /**
  * Created by Kinjal on 10/7/2017.
  */
@@ -36,7 +38,8 @@ public class MBNearbyPlayers {
 
     @ToMany
     @JoinEntity(entity = MBPlayerGames.class, sourceProperty = "playerId", targetProperty = "gameId")
-    private List<MBGameInfo> playerGameList;
+    @Exclude
+    private List<MBGameInfo> playerGames;
 
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
@@ -115,7 +118,7 @@ public class MBNearbyPlayers {
      */
     @Generated(hash = 1471577322)
     public List<MBGameInfo> getPlayerGameList() {
-        if (playerGameList == null) {
+        if (playerGames == null) {
             final DaoSession daoSession = this.daoSession;
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
@@ -124,18 +127,18 @@ public class MBNearbyPlayers {
             List<MBGameInfo> playerGameListNew = targetDao
                     ._queryMBNearbyPlayers_PlayerGameList(playerId);
             synchronized (this) {
-                if (playerGameList == null) {
-                    playerGameList = playerGameListNew;
+                if (playerGames == null) {
+                    playerGames = playerGameListNew;
                 }
             }
         }
-        return playerGameList;
+        return playerGames;
     }
 
     /** Resets a to-many relationship, making the next get call to query for a fresh result. */
     @Generated(hash = 1399930046)
     public synchronized void resetPlayerGameList() {
-        playerGameList = null;
+        playerGames = null;
     }
 
     /**

@@ -10,6 +10,8 @@ import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Unique;
 
+import io.connection.bluetooth.Database.annotations.Exclude;
+
 /**
  * Created by Kinjal on 10/8/2017.
  */
@@ -30,10 +32,8 @@ public class MBGameInfo {
     @Property(nameInDb = "game_image_path")
     private String gameImagePath;
 
-    @Property(nameInDb = "game_network_type")
-    private int gameNetworkType;
-
     @ToMany(referencedJoinProperty = "gameId")
+    @Exclude
     private List<MBPlayerGames> playerGames;
 
     /** Used to resolve relations */
@@ -51,7 +51,6 @@ public class MBGameInfo {
         this.gameName = gameName;
         this.gamePackageName = gamePackageName;
         this.gameImagePath = gameImagePath;
-        this.gameNetworkType = gameNetworkType;
     }
 
     @Generated(hash = 549549529)
@@ -80,14 +79,6 @@ public class MBGameInfo {
 
     public void setGameImagePath(String gameImagePath) {
         this.gameImagePath = gameImagePath;
-    }
-
-    public int getGameNetworkType() {
-        return gameNetworkType;
-    }
-
-    public void setGameNetworkType(int gameNetworkType) {
-        this.gameNetworkType = gameNetworkType;
     }
 
     public long getGameId() {

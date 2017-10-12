@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
+import io.connection.bluetooth.Database.entity.DaoMaster;
+import io.connection.bluetooth.Database.entity.DaoSession;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 
@@ -20,6 +22,7 @@ public class MobiMixApplication extends Application {
     private ApiCall service;
     private static MobiMixApplication mApplication;
     private Activity mActivity;
+    private DaoSession daoSession;
 
     @Override
     public void onCreate() {
@@ -55,14 +58,15 @@ public class MobiMixApplication extends Application {
                 readTimeout(60, TimeUnit.SECONDS).
                 connectTimeout(60, TimeUnit.SECONDS).build();
 
-// Change base URL to your upload server URL.
         service = ApiClient.getClient().create(ApiCall.class);
-//        service = new Retrofit.Builder()
-//                .baseUrl(Constants.endPointAddress)
-//                .addConverterFactory(GsonConverterFactory.create())
-//                .client(client).build().create(ApiCall.class);
 
         // Green DAO initialization
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "mobimix.db");
+        Database db = helper.getWritableDb();
+        daoSession = new DaoMaster(db).newSession();
+    }
 
+    public DaoSession getDaoSession() {
+        return daoSession;
     }
 }

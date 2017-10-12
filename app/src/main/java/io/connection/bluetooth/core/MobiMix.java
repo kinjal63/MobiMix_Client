@@ -8,6 +8,6 @@ public class MobiMix {
     Constants to get network calls for DB sync operation
      */
     public interface DatabaseSyncOperation {
-        public static final int GET_NEARBY_PLAYERS = 0;
+        public static final int RESPONSE_GET_NEARBY_PLAYERS = 0;
     }
 }
