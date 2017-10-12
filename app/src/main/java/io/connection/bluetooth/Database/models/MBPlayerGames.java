@@ -14,13 +14,10 @@ public class MBPlayerGames {
     @Id
     private int id;
 
-    @Property(nameInDb = "game_id")
-    private long gameId;
-
     @Property(nameInDb = "player_id")
     private String playerId;
 
-    @ToOne()
+    @ToOne(joinProperty = "game_id")
     private MBGameInfo gameInfo;
 
     public int getId() {
