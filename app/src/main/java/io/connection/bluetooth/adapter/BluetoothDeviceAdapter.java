@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.BluetoothService;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.activity.BusinessCardListActivityUser;

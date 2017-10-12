@@ -204,24 +204,30 @@
             android:screenOrientation="portrait">
         </activity>
 
-        <service android:name=".Services.MobiMixService"
+        <service android:name=".core.MobiMixService"
                  android:stopWithTask="true">
         </service>
 
-        <service android:name=".Services.InstanceIdService">
+        <service android:name=".core.InstanceIdService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
 
-        <service android:name=".Services.PushReceiveService">
+        <service android:name=".core.PushReceiveService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
-        <service android:name=".Services.GPSTracker">
+        <service android:name=".core.GPSTracker">
 
+        </service>
+
+        <service
+            android:name=".core.DBSyncService"
+            android:label="Database Sync Service"
+            android:permission="android.permission.BIND_JOB_SERVICE" >
         </service>
 
         <receiver android:name=".PairingReceiver">

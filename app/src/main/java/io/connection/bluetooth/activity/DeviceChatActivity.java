@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -27,14 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.BluetoothService;
-import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
-import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**

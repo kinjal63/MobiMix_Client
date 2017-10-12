@@ -1,7 +1,5 @@
 package io.connection.bluetooth.activity;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,15 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.WifiDirectService;
-import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
-import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**

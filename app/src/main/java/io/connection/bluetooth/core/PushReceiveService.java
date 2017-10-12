@@ -1,4 +1,4 @@
-package io.connection.bluetooth.Services;
+package io.connection.bluetooth.core;
 
 import android.app.AlertDialog;
 import android.app.NotificationManager;

@@ -1,7 +1,6 @@
 package io.connection.bluetooth.adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,16 +10,14 @@ import android.widget.TextView;
 import java.util.List;
 
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.activity.BusinessCardListActivityUser;
 import io.connection.bluetooth.activity.DeviceListActivityChat;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.activity.WifiDirectMainActivity;
-import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
-import io.connection.bluetooth.enums.NetworkType;
 
 /**
  * Created by KP49107 on 28-03-2017.

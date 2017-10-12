@@ -1,11 +1,10 @@
-package io.connection.bluetooth.Services;
+package io.connection.bluetooth.core;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.support.v4.app.ActivityCompat;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -241,7 +240,7 @@ public class BluetoothService {
         connectionInfo.setIsGroupOwner(isGroupOwner);
         connectionInfo.setConnectionType(gameRequest.getConnectionType());
 
-        WSManager.getInstance().updateConnectionInfo(connectionInfo, iUpdateListener);
+        NetworkManager.getInstance().updateConnectionInfo(connectionInfo, iUpdateListener);
     }
 
     public void unregisterReceiver() {

@@ -14,7 +14,7 @@ import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.QueueManager;
 import io.connection.bluetooth.MobiMixApplication;
-import io.connection.bluetooth.Services.WifiDirectService;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;

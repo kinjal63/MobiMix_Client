@@ -129,8 +129,4 @@ public class DatabaseUtils {
         }
         return contentValues;
     }
-
-    public static String getFieldValue(Field field) {
-        field.get(obj)
-    }
 }

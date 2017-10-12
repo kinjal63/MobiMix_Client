@@ -1,18 +1,16 @@
-package io.connection.bluetooth.Services;
+package io.connection.bluetooth.core;
 
 import android.app.Service;
-import android.bluetooth.BluetoothDevice;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
+import io.connection.bluetooth.MobiMixApplication;
 
 /**
  * Created by KP49107 on 28-03-2017.
@@ -36,6 +34,7 @@ public class MobiMixService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        initJobScheular();
 //        init();
     }
 
@@ -59,6 +58,18 @@ public class MobiMixService extends Service {
     private void initWifiDirect() {
         wifiDirectService = WifiDirectService.getInstance(this);
         wifiDirectService.registerReceiver();
+    }
+
+    // Database sync initilization
+    private void initJobScheular() {
+        ComponentName componentName = new ComponentName(MobiMixApplication.getInstance().getContext(), DBSyncService.class);
+        JobInfo.Builder builder = new JobInfo.Builder(0, componentName);
+        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
+        builder.setMinimumLatency(2 * 1000);
+        builder.setOverrideDeadline(3 * 1000);
+
+        JobScheduler jobSchedular = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        jobSchedular.schedule(builder.build());
     }
 
     @Override

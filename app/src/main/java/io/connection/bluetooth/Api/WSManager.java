@@ -1,9 +1,16 @@
 package io.connection.bluetooth.Api;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import io.connection.bluetooth.Api.response.entity.NearByPlayer;
+import io.connection.bluetooth.Api.response.entity.NearByPlayerResponse;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayers;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.MobiMixApplication;
@@ -22,14 +29,16 @@ public class WSManager {
     private ApiCall apiCall;
     private static WSManager instance;
     private Context mContext;
+    private Handler handler_;
 
-    public WSManager() {
+    public WSManager(Handler handler_) {
+        this.handler_ = handler_;
         initialize();
     }
 
-    public static WSManager getInstance() {
+    public static WSManager getInstance(Handler handler_) {
         if(instance == null) {
-            instance = new WSManager();
+            instance = new WSManager(handler_);
         }
         return instance;
     }
@@ -81,6 +90,34 @@ public class WSManager {
 
             }
         });
+    }
 
+    public void getNearbyUsers() {
+        NearByPlayerResponse response = new NearByPlayerResponse();
+
+        List<NearByPlayer> players = new ArrayList<>();
+
+        NearByPlayer player = new NearByPlayer();
+        player.setPlayerId("123");
+        player.setPlayerName("Kinjal");
+        player.setIsEngaged(1);
+        player.setActiveGameName("Xender");
+        player.setPlayerImagePath("");
+
+        NearByPlayer player2 = new NearByPlayer();
+        player2.setPlayerId("12345");
+        player2.setPlayerName("Shashank");
+        player2.setIsEngaged(0);
+        player2.setActiveGameName("Chess");
+        player2.setPlayerImagePath("");
+
+
+        players.add(player);
+        players.add(player2);
+        response.setPlayerlist(players);
+
+        Message msg = new Message();
+        msg.obj = response;
+        handler_.sendMessage(msg);
     }
 }
