@@ -3,6 +3,7 @@ package io.connection.bluetooth.Api;
 import java.util.HashSet;
 import java.util.List;
 
+import io.connection.bluetooth.Api.response.entity.NearByPlayerResponse;
 import io.connection.bluetooth.Domain.DeviceDetails;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameProfile;
@@ -19,8 +20,6 @@ import retrofit2.http.Query;
  * Created by songline on 31/07/16.
  */
 public interface ApiCall {
-
-
     @POST("login")
     Call<User> login(@Body User userLogin);
 
@@ -80,5 +79,8 @@ public interface ApiCall {
 
     @POST("updateGameConnectionInfo")
     Call<ResponseBody> updateConnectionInfo(@Body GameConnectionInfo connectionInfo);
+
+    @POST("findPlayers")
+    Call<ResponseBody> findPlayers(@Query("userId") String userId);
 }
 

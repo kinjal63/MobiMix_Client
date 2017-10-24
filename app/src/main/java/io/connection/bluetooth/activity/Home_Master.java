@@ -260,7 +260,7 @@ public class Home_Master extends BaseActivity implements View.OnClickListener {
                 startActivity(businessIntent);
                 break;
             case R.id.game_card_id:
-                Intent gameIntent = new Intent(this, UserList.class);
+                Intent gameIntent = new Intent(this, PlayerListActivity.class);
                 startActivity(gameIntent);
                 break;
             case R.id.user_availability_id:

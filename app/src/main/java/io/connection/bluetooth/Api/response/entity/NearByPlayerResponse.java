@@ -9,7 +9,7 @@ import java.util.List;
  * Created by KP49107 on 11-10-2017.
  */
 public class NearByPlayerResponse {
-    @SerializedName("players")
+    @SerializedName("playerlist")
     @Expose
     private List<NearByPlayer> players = null;
 

@@ -27,7 +27,7 @@ import io.connection.bluetooth.R;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.Home_Master;
-import io.connection.bluetooth.activity.UserList;
+import io.connection.bluetooth.activity.PlayerListActivity;
 import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.utils.UtilsHandler;
 
@@ -132,7 +132,7 @@ public class PushReceiveService extends FirebaseMessagingService {
 
     private void generateNearByUserNotification(String messageBody) {
         if (!isNotificationVisible()) {
-            Intent intent = new Intent(this, UserList.class);
+            Intent intent = new Intent(this, PlayerListActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                     PendingIntent.FLAG_ONE_SHOT);

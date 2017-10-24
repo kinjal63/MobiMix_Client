@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName;
 public class PlayerGame {
     @SerializedName("gameId")
     @Expose
-    private Integer gameId;
+    private Long gameId;
     @SerializedName("gameName")
     @Expose
     private String gameName;
@@ -20,11 +20,11 @@ public class PlayerGame {
     @Expose
     private String gameImagePath;
 
-    public Integer getGameId() {
+    public Long getGameId() {
         return gameId;
     }
 
-    public void setGameId(Integer gameId) {
+    public void setGameId(Long gameId) {
         this.gameId = gameId;
     }
 

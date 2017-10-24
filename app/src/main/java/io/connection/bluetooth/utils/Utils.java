@@ -144,6 +144,15 @@ public class Utils {
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
+
+    public static void showErrorDialog(Context context, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(message);
+        builder.setTitle("Error");
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
     public static void makeDeviceDiscoverable(Context context) {
         if (mBluetoothAdapter.getScanMode() !=
                 BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {

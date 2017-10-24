@@ -9,6 +9,7 @@ import org.greenrobot.greendao.annotation.ToMany;
 import java.util.List;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.DaoException;
+import org.greenrobot.greendao.annotation.Unique;
 
 import io.connection.bluetooth.Database.annotations.Exclude;
 
@@ -16,7 +17,7 @@ import io.connection.bluetooth.Database.annotations.Exclude;
  * Created by Kinjal on 10/7/2017.
  */
 @Entity(nameInDb = "mb_nearby_players")
-public class MBNearbyPlayers {
+public class MBNearbyPlayer {
     @Id
     @Property(nameInDb = "player_id")
     private String playerId;
@@ -36,6 +37,12 @@ public class MBNearbyPlayers {
     @Property(nameInDb = "is_group_owner")
     private int isGroupOwner;
 
+    @Property(nameInDb = "group_owner_user_id")
+    private String groupOwnerUserId;
+
+    @Property(nameInDb = "max_players")
+    private int maxPlayers;
+
     @ToMany
     @JoinEntity(entity = MBPlayerGames.class, sourceProperty = "playerId", targetProperty = "gameId")
     @Exclude
@@ -46,22 +53,24 @@ public class MBNearbyPlayers {
     private transient DaoSession daoSession;
 
     /** Used for active entity operations. */
-    @Generated(hash = 2126476922)
-    private transient MBNearbyPlayersDao myDao;
+    @Generated(hash = 1708284874)
+    private transient MBNearbyPlayerDao myDao;
 
-    @Generated(hash = 209860190)
-    public MBNearbyPlayers(String playerId, String playerName, String playerImagePath, int isEngaged,
-            String activeGameName, int isGroupOwner) {
+    @Generated(hash = 1422947906)
+    public MBNearbyPlayer(String playerId, String playerName, String playerImagePath, int isEngaged,
+            String activeGameName, int isGroupOwner, String groupOwnerUserId, int maxPlayers) {
         this.playerId = playerId;
         this.playerName = playerName;
         this.playerImagePath = playerImagePath;
         this.isEngaged = isEngaged;
         this.activeGameName = activeGameName;
         this.isGroupOwner = isGroupOwner;
+        this.groupOwnerUserId = groupOwnerUserId;
+        this.maxPlayers = maxPlayers;
     }
 
-    @Generated(hash = 1826228633)
-    public MBNearbyPlayers() {
+    @Generated(hash = 763795256)
+    public MBNearbyPlayer() {
     }
 
     public String getPlayerName() {
@@ -116,7 +125,7 @@ public class MBNearbyPlayers {
      * To-many relationship, resolved on first access (and after reset).
      * Changes to to-many relations are not persisted, make changes to the target entity.
      */
-    @Generated(hash = 1801515357)
+    @Generated(hash = 193937895)
     public List<MBGameInfo> getPlayerGames() {
         if (playerGames == null) {
             final DaoSession daoSession = this.daoSession;
@@ -124,7 +133,7 @@ public class MBNearbyPlayers {
                 throw new DaoException("Entity is detached from DAO context");
             }
             MBGameInfoDao targetDao = daoSession.getMBGameInfoDao();
-            List<MBGameInfo> playerGamesNew = targetDao._queryMBNearbyPlayers_PlayerGames(playerId);
+            List<MBGameInfo> playerGamesNew = targetDao._queryMBNearbyPlayer_PlayerGames(playerId);
             synchronized (this) {
                 if (playerGames == null) {
                     playerGames = playerGamesNew;
@@ -176,10 +185,30 @@ public class MBNearbyPlayers {
         myDao.update(this);
     }
 
+    public String getGroupOwnerUserId() {
+        return groupOwnerUserId;
+    }
+
+    public void setGroupOwnerUserId(String groupOwnerUserId) {
+        this.groupOwnerUserId = groupOwnerUserId;
+    }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
+    public void setMaxPlayers(int maxPlayers) {
+        this.maxPlayers = maxPlayers;
+    }
+
+    public void setPlayerGames(List<MBGameInfo> playerGames) {
+        this.playerGames = playerGames;
+    }
+
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 1741787484)
+    @Generated(hash = 364374368)
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
-        myDao = daoSession != null ? daoSession.getMBNearbyPlayersDao() : null;
+        myDao = daoSession != null ? daoSession.getMBNearbyPlayerDao() : null;
     }
 }

@@ -8,8 +8,6 @@ import android.content.Intent;
  * Created by KP49107 on 11-10-2017.
  */
 public class DBSyncService extends JobService {
-    private NetworkManager networkManager_ = null;
-
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
         syncDB();
@@ -17,12 +15,14 @@ public class DBSyncService extends JobService {
     }
 
     private void syncDB() {
-        networkManager_.sendRequestTofetchNearbyPlayers();
+        NetworkManager networkManager_ = NetworkManager.getInstance();
+        if(networkManager_.isNetworkConnected()) {
+            networkManager_.sendRequestTofetchNearbyPlayers();
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        networkManager_ = NetworkManager.getInstance();
         return START_STICKY;
     }
 

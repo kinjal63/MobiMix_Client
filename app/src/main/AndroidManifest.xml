@@ -176,7 +176,7 @@
         </activity>
 
         <activity
-            android:name=".activity.UserList"
+            android:name=".activity.PlayerListActivity"
             android:label="Users List"
             android:screenOrientation="portrait">
         </activity>

@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.connection.bluetooth.Database.entity.MBNearbyPlayers;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Database.exception.NoTableMappedException;
 import io.connection.bluetooth.Database.utils.DatabaseUtils;
 import io.connection.bluetooth.MobiMixApplication;
@@ -124,18 +124,18 @@ public class DatabaseStatements {
     public void queryPlayers() {
         SQLiteDatabase database = mobimixDatabase.getReadableDatabase();
 
-        String tableName = getTable(MBNearbyPlayers.class);
+        String tableName = getTable(MBNearbyPlayer.class);
         String sql = "select * from " + tableName;
 
         Cursor c = database.rawQuery(sql, null);
-        List<MBNearbyPlayers> nearbyPlayerList = new ArrayList<>();
+        List<MBNearbyPlayer> nearbyPlayerList = new ArrayList<>();
         if(c != null && c.getCount() > 0) {
             while (c.moveToNext()) {
                 String playerId = c.getString(c.getColumnIndex("player_id"));
                 String playerName = c.getString(c.getColumnIndex("player_name"));
 
-                MBNearbyPlayers nearbyPlayer = new MBNearbyPlayers();
-                nearbyPlayer.setPlayerID(playerId);
+                MBNearbyPlayer nearbyPlayer = new MBNearbyPlayer();
+                nearbyPlayer.setPlayerId(playerId);
                 nearbyPlayer.setPlayerName(playerName);
 
                 nearbyPlayerList.add(nearbyPlayer);

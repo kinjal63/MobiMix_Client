@@ -3,7 +3,6 @@ package io.connection.bluetooth.adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +11,13 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.firebase.auth.UserInfo;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import io.connection.bluetooth.Domain.NearbyUserInfo;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.adapter.model.MyGameInfo;
 
@@ -29,10 +27,10 @@ import io.connection.bluetooth.adapter.model.MyGameInfo;
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> {
 
     private Context context;
-    private List<NearbyUserInfo> userList;
+    private List<MBNearbyPlayer> userList;
     private ImageLoader imageLoader;
     private MyGameInfo myGameInfo;
-    private ArrayList<NearbyUserInfo> toUserIds = new ArrayList<>();
+    private ArrayList<String> toUserIds = new ArrayList<>();
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView name, txtActiveGame;
@@ -50,7 +48,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         }
     }
 
-    public UserAdapter(Context context, List<NearbyUserInfo> userList, Activity activity) {
+    public UserAdapter(Context context, List<MBNearbyPlayer> userList, Activity activity) {
         this.context = context;
         this.userList = userList;
         imageLoader = ImageLoader.getInstance();
@@ -71,7 +69,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        NearbyUserInfo userInfo = userList.get(position);
+        MBNearbyPlayer userInfo = userList.get(position);
 
 //        int drawable = 0;
 //        if(userInfo.isEngaged() == 1 && userInfo.getAllowedPlayersCount() <= 0
@@ -84,13 +82,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 //                myGameInfo.getGroupOwnerId().equalsIgnoreCase(userInfo.getGroupOwnerUserId())) {
 //
 //        }
-        int drawable = (userInfo.isEngaged() == 1 && userInfo.getAllowedPlayersCount() <= 0)
-                        || (userInfo.isEngaged() == 1 &&
+        int drawable = (userInfo.getIsEngaged() == 1 && userInfo.getMaxPlayers() <= 0)
+                        || (userInfo.getIsEngaged() == 1 &&
                             myGameInfo.getIsEngaged() == 1 &&
                             !myGameInfo.getGroupOwnerId().equalsIgnoreCase(userInfo.getGroupOwnerUserId()))
                             ? R.drawable.view_deactive_background : R.drawable.view_active_background;
 
-        if(userInfo.isEngaged() == 1) {
+        if(userInfo.getIsEngaged() == 1) {
             holder.viewIsEngaged.setBackground(context.getResources().getDrawable(drawable));
         }
         else {
@@ -99,33 +97,33 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
 
         int chckBoxVisibility =
                 (myGameInfo.getIsEngaged() == 1 && myGameInfo.getAllowedPlayersCount() <= 0) ||
-                (userInfo.isEngaged() == 1 && userInfo.getIsGroupOwner() == 0) ||
-                (userInfo.isEngaged() == 1 && userInfo.getIsGroupOwner() == 1 && userInfo.getAllowedPlayersCount() <= 0) ||
-                        (userInfo.isEngaged() == 1 && userInfo.getIsGroupOwner() == 1 &&
+                (userInfo.getIsEngaged() == 1 && userInfo.getIsGroupOwner() == 0) ||
+                (userInfo.getIsEngaged() == 1 && userInfo.getIsGroupOwner() == 1 && userInfo.getMaxPlayers() <= 0) ||
+                        (userInfo.getIsEngaged() == 1 && userInfo.getIsGroupOwner() == 1 &&
                         (myGameInfo.getIsEngaged() == 1 && !myGameInfo.getGroupOwnerId().equalsIgnoreCase(userInfo.getGroupOwnerUserId())))
                 ? View.INVISIBLE : View.VISIBLE;
 
-        if(userInfo.getActiveGameId() != null && !userInfo.getActiveGameId().equalsIgnoreCase("null")) {
+        if(userInfo.getActiveGameName() != null && !userInfo.getActiveGameName().equalsIgnoreCase("null")) {
             holder.txtActiveGame.setVisibility(View.VISIBLE);
-            holder.txtActiveGame.setText(userInfo.getActiveGameId());
+            holder.txtActiveGame.setText(userInfo.getActiveGameName());
         }
         else {
             holder.txtActiveGame.setVisibility(View.GONE);
         }
-        holder.name.setText(userInfo.getUserFirstName());
-        imageLoader.displayImage(userInfo.getUserImagePath(), holder.imageView);
+        holder.name.setText(userInfo.getPlayerName());
+        imageLoader.displayImage(userInfo.getPlayerImagePath(), holder.imageView);
 
         holder.checkBox.setVisibility(chckBoxVisibility);
         holder.checkBox.setTag(position);
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                toUserIds.add(userList.get((int)compoundButton.getTag()));
+                toUserIds.add(userList.get((int)compoundButton.getTag()).getPlayerId());
             }
         });
     }
 
-    public ArrayList<NearbyUserInfo> getUserIds() {
+    public ArrayList<String> getUserIds() {
         return toUserIds;
     }
 

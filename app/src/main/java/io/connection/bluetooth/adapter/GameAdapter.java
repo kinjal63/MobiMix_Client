@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.connection.bluetooth.Domain.GameInfo;
+import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.core.WifiDirectService;
@@ -35,7 +35,7 @@ import retrofit2.Response;
  */
 public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> {
 
-    private List<GameInfo> gameList;
+    private List<MBGameInfo> gameList;
     private ImageLoader imageLoader;
     private ArrayList<String> remoteUserIds;
     private Context context;
@@ -55,7 +55,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         }
     }
 
-    public GameAdapter(Context context, List<GameInfo> gameList, Activity activity) {
+    public GameAdapter(Context context, List<MBGameInfo> gameList, Activity activity) {
         this.context = context;
         this.gameList = gameList;
         imageLoader = ImageLoader.getInstance();
@@ -76,16 +76,16 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        final GameInfo userInfo = gameList.get(position);
+        final MBGameInfo gameInfo = gameList.get(position);
 
-        holder.name.setText(userInfo.getGamneName());
+        holder.name.setText(gameInfo.getGameName());
         holder.imgWifi.setTag(position);
         holder.imgBluetooth.setTag(position);
 
         holder.imgBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                gameName = gameList.get((int)view.getTag()).getGamneName();
+                gameName = gameList.get((int)view.getTag()).getGameName();
                 gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -108,7 +108,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         holder.imgWifi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                gameName = gameList.get((int)view.getTag()).getGamneName();
+                gameName = gameList.get((int)view.getTag()).getGameName();
                 gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -128,7 +128,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
                 builder.create().show();
             }
         });
-        imageLoader.displayImage(userInfo.getGameImagePath(), holder.imageView);
+        imageLoader.displayImage(gameInfo.getGameImagePath(), holder.imageView);
     }
 
     @Override

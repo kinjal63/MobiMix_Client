@@ -13,12 +13,14 @@ import java.util.List;
 import java.util.Set;
 
 import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Api.async.IAPIResponse;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.core.NetworkManager;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -85,29 +87,24 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
         Set<BluetoothDevice> listdevice = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
 //        if (Utils.isConnected(mContext)) {
             for (final BluetoothDevice device : listdevice) {
-                User userAvailable = new User();
-                userAvailable.setName(device.getName());
-                userAvailable.setMacAddress(device.getAddress());
-                userAvailable.setEmail(device.getName());
+                User user = new User();
+                user.setName(device.getName());
+                user.setMacAddress(device.getAddress());
+                user.setEmail(device.getName());
 
-                WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+                NetworkManager.getInstance().checkIfUserAvailable(user, new IAPIResponse<User>() {
                     @Override
-                    public void onResponceSuccess(Call<User> call, Response<User> response) {
-                        User user = response.body();
-                        BluetoothRemoteDevice remoteDevice = new BluetoothRemoteDevice(device, user.getName());
+                    public void onResponseSuccess(User u) {
+                        BluetoothRemoteDevice remoteDevice = new BluetoothRemoteDevice(device, u.getName());
                         bluetoothService.setRemoteBluetoothDevice(remoteDevice);
                     }
 
                     @Override
-                    public void onResponseFailure(Call call) {
+                    public void onResponseFailure(Call<User> call) {
                         Toast.makeText(mContext, "No users are found.", Toast.LENGTH_SHORT);
                     }
                 });
-
             }
-//        } else {
-//            Toast.makeText(mContext, Constants.INTERNET_ERROR_MESSAGE, Toast.LENGTH_LONG).show();
-//        }
     }
 
     public void pairWithDevice(String remoteUserName, BluetoothPairCallback bluetoothPairResult) {

@@ -4,7 +4,7 @@ package io.connection.bluetooth.Domain;
  * Created by Kinjal on 11/24/2016.
  */
 public class GameInfo {
-    private long gameId;
+    private Long gameId;
     private String gamneName;
     private String gamePackageName;
     private String gameImagePath;
@@ -27,11 +27,11 @@ public class GameInfo {
         this.networkType = networkType;
     }
 
-    public long getGameId() {
+    public Long getGameId() {
         return gameId;
     }
 
-    public void setGameId(long gameId) {
+    public void setGameId(Long gameId) {
         this.gameId = gameId;
     }
 

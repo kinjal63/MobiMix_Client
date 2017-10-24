@@ -24,6 +24,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Api.async.IAPIResponse;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.User;
@@ -287,21 +288,17 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             System.out.println("Peers list->" + device.deviceName);
             WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
             wifiP2PDeviceList.add(remoteDevice);
-            User userAvailable = new User();
-            userAvailable.setName(device.deviceName);
-            userAvailable.setEmail(device.deviceName);
+            User user = new User();
+            user.setName(device.deviceName);
+            user.setEmail(device.deviceName);
 
-            WSManager.getInstance().checkIfUserAvailable(userAvailable, new ResponseCallback<User>() {
+            NetworkManager.getInstance().checkIfUserAvailable(user, new IAPIResponse<User>() {
                 @Override
-                public void onResponceSuccess(Call<User> call, Response<User> response) {
-                    User user = response.body();
-//                    WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, user.getName());
-//                    wifiP2PDeviceList.add(remoteDevice);
+                public void onResponseSuccess(User body) {
                 }
 
                 @Override
-                public void onResponseFailure(Call call) {
-
+                public void onResponseFailure(Call<User> call) {
                 }
             });
 
@@ -389,7 +386,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                         connectionInfo.setIsNeedToNotify(isNeedToNotify);
                         connectionInfo.setConnectionType(gameRequest.getConnectionType());
 
-                        WSManager.getInstance().updateConnectionInfo(connectionInfo, iUpdateListener);
+                        NetworkManager.getInstance().updateConnectionInfo(connectionInfo, iUpdateListener);
                     }
                 }
         });

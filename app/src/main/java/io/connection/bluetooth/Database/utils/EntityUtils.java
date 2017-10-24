@@ -15,10 +15,16 @@ public class EntityUtils {
         for(Field field : destFields) {
             try {
                 if(!field.isAnnotationPresent(Exclude.class)) {
-                    field.set(destEntity, field.get(srcEntity));
+                    Field srcField = srcEntity.getClass().getDeclaredField(field.getName());
+                    srcField.setAccessible(true);
+                    field.setAccessible(true);
+
+                    Object srcValue = srcField.get(srcEntity);
+
+                    field.set(destEntity, srcField.get(srcEntity));
                 }
             }
-            catch (IllegalAccessException e) {
+            catch (IllegalAccessException | NoSuchFieldException e) {
                 e.printStackTrace();
             }
         }

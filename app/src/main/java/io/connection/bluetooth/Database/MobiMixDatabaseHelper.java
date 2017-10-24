@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import io.connection.bluetooth.Database.entity.MBNearbyPlayers;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 
 /**
  * Created by Kinjal on 10/7/2017.
@@ -22,7 +22,7 @@ public class MobiMixDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        dbManager_.createTable(MBNearbyPlayers.class);
+//        dbManager_.createTable(MBNearbyPlayer.class);
     }
 
     @Override
