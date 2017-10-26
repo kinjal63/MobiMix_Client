@@ -26,7 +26,6 @@ public class DatabaseManager {
     private static DatabaseManager dbManager_ = new DatabaseManager();
     private static String object_ = "object";
     private Context context;
-    private MobiMixDatabaseHelper mobimixDatabase;
 
     public DatabaseManager() {
         initDB();

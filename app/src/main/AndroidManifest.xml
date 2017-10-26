@@ -236,6 +236,14 @@
                 <action android:name="android.bluetooth.device.action.BOND_STATE_CHANGED" />
             </intent-filter>
         </receiver>
+
+        <provider
+            android:name=".Database.MobiMixProvider"
+            android:authorities="io.connection.bluetooth"
+            android:exported="true"
+            android:multiprocess="true" >
+        </provider>
+
     </application>
 
 </manifest>
