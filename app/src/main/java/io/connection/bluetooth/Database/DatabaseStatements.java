@@ -11,6 +11,7 @@ import java.util.List;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Database.exception.NoTableMappedException;
 import io.connection.bluetooth.Database.utils.DatabaseUtils;
+import io.connection.bluetooth.Database.utils.MobiMixDatabaseHelper;
 import io.connection.bluetooth.MobiMixApplication;
 
 /**
@@ -29,7 +30,6 @@ public class DatabaseStatements {
 
     private void initDB() {
         context = MobiMixApplication.getInstance().getContext();
-//        mobimixDatabase = new MobiMixDatabaseHelper(context, this);
     }
 
     public static DatabaseManager getInstance() {

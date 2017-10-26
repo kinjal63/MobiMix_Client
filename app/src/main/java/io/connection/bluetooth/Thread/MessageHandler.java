@@ -8,6 +8,8 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.util.List;
 
 import io.connection.bluetooth.Domain.GameRequest;
@@ -114,7 +116,11 @@ public class MessageHandler {
     private void handleObject(String message) {
         System.out.println("Actual message received::" + message);
         if(message.startsWith(Constants.START_GAME_MODULE)) {
+            JSONObject jsonObject = new JSONObject(message);
+            
+            sendEventToGUI();
             String gamePackageName = message.split("_")[1];
+            UtilsHandler.generateNotification();
             UtilsHandler.launchGame(gamePackageName);
         }
         else if(message.startsWith(Constants.NO_MODULE) ||
