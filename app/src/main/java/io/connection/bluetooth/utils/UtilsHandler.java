@@ -19,7 +19,6 @@ public class UtilsHandler {
     private static Stack<GameRequest> stackGameRequest = new Stack<>();
 
     public static void runOnUiThread(Runnable runnable){
-
         Handler UIHandler = new Handler(
                 Looper.getMainLooper());
         UIHandler.post(runnable);

@@ -1,15 +1,20 @@
 package io.connection.bluetooth.activity.gui;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 
 import java.util.List;
 
 import io.connection.bluetooth.Database.DBParams;
 import io.connection.bluetooth.Database.action.IDatabaseActionListener;
+import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.activity.IDBResponse;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.NetworkManager;
+import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by Kinjal on 10/13/2017.
@@ -17,7 +22,6 @@ import io.connection.bluetooth.core.NetworkManager;
 
 public class GUIManager {
     private NetworkManager  networkManager_;
-    private Context context;
     private static GUIManager guiManager_ = null;
 
     GUIManager() {
@@ -67,5 +71,26 @@ public class GUIManager {
                 IDBResponseListener.onDataFailure();
             }
         });
+    }
+
+    private Handler handler_ = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MobiMix.GUIEvent.EVENT_GAME_REQUEST:
+                    if( msg.obj != null ) {
+                        GameRequest gameRequest = (GameRequest)msg.obj;
+                        generateNotificationForGameRequest(gameRequest);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
+
+    public void generateNotificationForGameRequest(GameRequest gameRequest) {
+
     }
 }

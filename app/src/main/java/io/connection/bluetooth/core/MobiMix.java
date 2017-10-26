@@ -20,4 +20,14 @@ public class MobiMix {
         public static final int DB_RES_FIND_NEARBY_PLAYERS = 201;
         public static final int DB_RES_FIND_MUTUAL_GAMES = 202;
     }
+
+    public interface MBDatabase {
+        public static final String DATABASE_NAME = "mobimix.db";
+        public static final String TABLE_NAME_NEARBY_PLAYERS = "mb_nearby_players";
+        public static final int DATABASE_VERSION = 1;
+    }
+
+    public interface GUIEvent {
+        public static final int EVENT_GAME_REQUEST = 1;
+    }
 }

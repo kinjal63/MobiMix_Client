@@ -13,41 +13,41 @@ import android.net.Uri;
 import android.os.CancellationSignal;
 import android.support.annotation.Nullable;
 
+import org.greenrobot.greendao.database.Database;
+import org.greenrobot.greendao.database.StandardDatabase;
+
 import java.util.HashMap;
+
+import io.connection.bluetooth.Database.entity.DaoSession;
+import io.connection.bluetooth.Database.utils.MobiMixDatabaseHelper;
+import io.connection.bluetooth.MobiMixApplication;
+import io.connection.bluetooth.core.MobiMix;
 
 /**
  * Created by Kinjal on 10/25/2017.
  */
 
 public class MobiMixProvider extends ContentProvider {
-    static final String PROVIDER_NAME = "com.mobimix.MobiMixProvider";
-    static final String URL = "content://" + PROVIDER_NAME;
+    static final String PROVIDER_NAME = "com.mobimix.provider";
+    static final String URL = "content://" + PROVIDER_NAME; // + "/mobimix";
     static final Uri CONTENT_URI = Uri.parse(URL);
 
-    static final int uriCode = 1;
     static final UriMatcher uriMatcher;
     private static HashMap<String, String> values;
 
     private SQLiteDatabase db;
 
-    static final String DATABASE_NAME = "mobimix.db";
-    static final String TABLE_NAME = "names";
-    static final int DATABASE_VERSION = 1;
-    static final String CREATE_DB_TABLE = " CREATE TABLE " + TABLE_NAME
-            + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + " name TEXT NOT NULL)";
-
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(PROVIDER_NAME, "mobimix", uriCode);
-        uriMatcher.addURI(PROVIDER_NAME, "mobimix/*", uriCode);
+        uriMatcher.addURI(PROVIDER_NAME, "mobimix", DBUri.URI_NEARBY_PLAYERS.ordinal());
+        uriMatcher.addURI(PROVIDER_NAME, "mobimix/*", DBUri.URI_NEARBY_PLAYERS.ordinal());
+        uriMatcher.addURI(PROVIDER_NAME, "mobimix/#", DBUri.URI_NEARBY_PLAYERS_BY_ID.ordinal());
     }
 
     @Override
     public boolean onCreate() {
-        Context context = getContext();
-        DatabaseHelper dbHelper = new DatabaseHelper(context);
-        db = dbHelper.getWritableDatabase();
+        Database database = MobiMixApplication.getInstance().getDaoSession().getDatabase();
+        db = ((StandardDatabase)database).getSQLiteDatabase();
         if (db != null) {
             return true;
         }
@@ -57,9 +57,16 @@ public class MobiMixProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
-        long rowId = db.insertOrThrow(TABLE_NAME, "", contentValues);
+        long rowId = 0;
+        switch (uriMatcher.match(uri)) {
+            case 1:
+                rowId = db.insertOrThrow(MobiMix.MBDatabase.TABLE_NAME_NEARBY_PLAYERS, "", contentValues);
+                break;
+            default:
+                break;
+        }
         if(rowId > 0) {
-            Uri _uri = ContentUris.withAppendedId(CONTENT_URI, rowId);
+            Uri _uri = ContentUris.withAppendedId(uri, rowId);
             getContext().getContentResolver().notifyChange(_uri, null);
         }
         throw new SQLException("Failed to add a record into " + uri);
@@ -68,7 +75,17 @@ public class MobiMixProvider extends ContentProvider {
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
-        return super.query(uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
+        String tableName = null;
+        switch (uriMatcher.match(uri)) {
+            case 1:
+                tableName = "mb_nearby_players";
+                break;
+            default:
+                break;
+        }
+        Cursor c = db.query(tableName, projection, selection, selectionArgs, null, null, sortOrder);
+        c.setNotificationUri(getContext().getContentResolver(), uri);
+        return c;
     }
 
     @Nullable
@@ -92,27 +109,4 @@ public class MobiMixProvider extends ContentProvider {
     public int delete(Uri uri, String s, String[] strings) {
         return 0;
     }
-
-    private static class DatabaseHelper extends SQLiteOpenHelper
-    {
-        DatabaseHelper(Context context)
-        {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db)
-        {
-            db.execSQL(CREATE_DB_TABLE);
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
-        {
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-            onCreate(db);
-        }
-    }
-}
-
 }
