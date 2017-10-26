@@ -21,11 +21,9 @@ import java.util.HashMap;
 
 public class MobiMixProvider extends ContentProvider {
     static final String PROVIDER_NAME = "com.mobimix.MobiMixProvider";
-    static final String URL = "content://" + PROVIDER_NAME + "/mobimix";
+    static final String URL = "content://" + PROVIDER_NAME;
     static final Uri CONTENT_URI = Uri.parse(URL);
 
-    static final String id = "id";
-    static final String name = "name";
     static final int uriCode = 1;
     static final UriMatcher uriMatcher;
     private static HashMap<String, String> values;
@@ -37,7 +35,7 @@ public class MobiMixProvider extends ContentProvider {
     static final int DATABASE_VERSION = 1;
     static final String CREATE_DB_TABLE = " CREATE TABLE " + TABLE_NAME
             + " (id INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + " name TEXT NOT NULL);";
+            + " name TEXT NOT NULL)";
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
