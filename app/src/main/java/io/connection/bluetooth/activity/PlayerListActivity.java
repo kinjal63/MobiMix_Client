@@ -25,6 +25,8 @@ import io.connection.bluetooth.adapter.RecyclerItemClickListener;
 import io.connection.bluetooth.adapter.UserAdapter;
 import io.connection.bluetooth.adapter.model.MyGameInfo;
 import io.connection.bluetooth.core.MobiMix;
+import io.connection.bluetooth.core.WifiDirectService;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Utils;
 
@@ -49,6 +51,9 @@ public class PlayerListActivity extends Activity implements IDBResponse {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_user_info);
+
+        // Set Game Module
+        WifiDirectService.getInstance(this).setModule(Modules.GAME);
         recyclerView = (RecyclerView) this.findViewById(R.id.recycler_view1);
         btnSubmit = (Button) this.findViewById(R.id.btnSubmit);
 

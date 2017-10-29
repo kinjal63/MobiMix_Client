@@ -1,9 +1,15 @@
 package io.connection.bluetooth.activity.gui;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.app.NotificationCompat;
 
 import java.util.List;
 
@@ -11,10 +17,12 @@ import io.connection.bluetooth.Database.DBParams;
 import io.connection.bluetooth.Database.action.IDatabaseActionListener;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobiMixApplication;
+import io.connection.bluetooth.R;
+import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.IDBResponse;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.NetworkManager;
-import io.connection.bluetooth.utils.UtilsHandler;
+import io.connection.bluetooth.utils.NotificationUtil;
 
 /**
  * Created by Kinjal on 10/13/2017.
@@ -22,9 +30,11 @@ import io.connection.bluetooth.utils.UtilsHandler;
 
 public class GUIManager {
     private NetworkManager  networkManager_;
+    private Context context_ = null;
     private static GUIManager guiManager_ = null;
 
     GUIManager() {
+        context_ = MobiMixApplication.getInstance().getContext();
         networkManager_ = NetworkManager.getInstance();
     }
 
@@ -33,6 +43,10 @@ public class GUIManager {
             guiManager_ = new GUIManager();
         }
         return guiManager_;
+    }
+
+    public Handler getHandler() {
+        return handler_;
     }
 
     public void getNearbyPlayers(DBParams params, final IDBResponse IDBResponseListener) {
@@ -80,7 +94,7 @@ public class GUIManager {
                 case MobiMix.GUIEvent.EVENT_GAME_REQUEST:
                     if( msg.obj != null ) {
                         GameRequest gameRequest = (GameRequest)msg.obj;
-                        generateNotificationForGameRequest(gameRequest);
+                        NotificationUtil.generateNotificationForGameRequest(gameRequest);
                     }
                     break;
                 default:
@@ -89,8 +103,4 @@ public class GUIManager {
             super.handleMessage(msg);
         }
     };
-
-    public void generateNotificationForGameRequest(GameRequest gameRequest) {
-
-    }
 }

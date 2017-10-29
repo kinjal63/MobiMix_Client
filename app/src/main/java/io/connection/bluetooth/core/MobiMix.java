@@ -30,4 +30,10 @@ public class MobiMix {
     public interface GUIEvent {
         public static final int EVENT_GAME_REQUEST = 1;
     }
+
+    public interface GameEvent {
+        public static final int EVENT_GAME_REQUEST_ASK = 301;
+        public static final int EVENT_GAME_REQUEST_RECEIVED = 302;
+        public static final int EVENT_GAME_LAUNCHED = 303;
+    }
 }

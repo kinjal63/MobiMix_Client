@@ -10,12 +10,18 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.QueueManager;
 import io.connection.bluetooth.MobiMixApplication;
+import io.connection.bluetooth.activity.gui.GUIManager;
+import io.connection.bluetooth.core.CoreEngine;
+import io.connection.bluetooth.core.MobiMix;
+import io.connection.bluetooth.core.RequestData;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
@@ -24,6 +30,7 @@ import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.SocketHeartBeat;
 import io.connection.bluetooth.socketmanager.SocketManager;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.MessageConstructor;
 import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.UtilsHandler;
 
@@ -41,7 +48,6 @@ public class MessageHandler {
     private SocketHeartBeat heartbeat;
 
     private boolean isSocketConnected = false;
-
     private String TAG = "MessageHandler";
 
     public MessageHandler(Context context, WifiDirectService service) {
@@ -73,11 +79,10 @@ public class MessageHandler {
                 final Object obj = msg.obj;
 
                 Log.d(TAG, "handleMessage, " + Constants.FIRSTMESSAGEXCHANGE + " case");
-
                 socketManager = (SocketManager) obj;
 
-                String message = getMessageModuleToSend();
-                socketManager.writeMessage(message.getBytes());
+                String moduleName = getMessageModuleToSend();
+                socketManager.writeMessage(moduleName.getBytes());
 
                 heartbeat = new SocketHeartBeat(socketManager);
                 heartbeat.start();
@@ -85,9 +90,16 @@ public class MessageHandler {
                 break;
 
             case Constants.MESSAGE_READ:
-                if(msg.obj != null) {
-                    byte[] buf = (byte[])msg.obj;
+                if (msg.obj != null) {
+                    byte[] buf = (byte[]) msg.obj;
                     handleObject(new String(buf));
+                }
+                break;
+            case Constants.MESSAGE_READ_GAME:
+                if (msg.obj != null) {
+                    Map<String, String> mapObj = (Map<String, String>) msg.obj;
+                    int event = msg.arg1;
+                    handleGameObject(event, mapObj);
                 }
                 break;
             default:
@@ -96,53 +108,61 @@ public class MessageHandler {
     }
 
     private String getMessageModuleToSend() {
-        String moduleName = this.wifiP2PService.getModule() == Modules.FILE_SHARING?
-                Constants.FILESHARING_MODULE : (this.wifiP2PService.getModule() == Modules.BUSINESS_CARD ?
-                Constants.BUSINESSCARD_MODULE : (this.wifiP2PService.getModule() == Modules.CHAT ? Constants.CHAT_MODULE : "None"));
-
-        if(!UtilsHandler.getGamesFromStack().empty()) {
-            final GameRequest gameRequest = UtilsHandler.removeGameFromStack();
-
-            WifiDirectService.getInstance(context).updateGameConnectionAndLaunchGame(gameRequest);
-            return Constants.START_GAME_MODULE + "_" + gameRequest.getGamePackageName() + "_" + LocalP2PDevice.getInstance().getLocalDevice().deviceAddress + "_" +
-                    LocalP2PDevice.getInstance().getLocalDevice().deviceName;
+        String moduleName = this.wifiP2PService.getModule().getModuleName();
+        if(moduleName.equalsIgnoreCase(Modules.GAME.getModuleName())) {
+            readData();
         }
-        else {
-            return moduleName + "_" + LocalP2PDevice.getInstance().getLocalDevice().deviceAddress + "_" +
-                    LocalP2PDevice.getInstance().getLocalDevice().deviceName;
-        }
+        return moduleName + "_" + LocalP2PDevice.getInstance().getLocalDevice().deviceAddress + "_" +
+                LocalP2PDevice.getInstance().getLocalDevice().deviceName;
+    }
+
+    private Map<String, String> constructObjectForGame(GameRequest gameRequest) {
+        Map<String, String> mapObj = new HashMap<>();
+        mapObj.put(Constants.GAME_ID, String.valueOf(gameRequest.getGameId()));
+        mapObj.put(Constants.GAME_NAME, gameRequest.getGameName());
+        mapObj.put(Constants.GAME_PACKAGE_NAME, gameRequest.getGamePackageName());
+        mapObj.put(Constants.GAME_REQUEST_SENDER_ID, gameRequest.getRemoteUserId());
+        mapObj.put(Constants.GAME_REQUEST_SENDER_NAME, gameRequest.getRemoteUserName());
+        mapObj.put(Constants.GAME_REQUEST_CONNECTION_TYPE, String.valueOf(gameRequest.getConnectionType()));
+        return mapObj;
+    }
+
+    private Map<String, String> constructObjectForModule() {
+        Map<String, String> mapObj = new HashMap<>();
+        return mapObj;
     }
 
     private void handleObject(String message) {
         System.out.println("Actual message received::" + message);
-        if(message.startsWith(Constants.START_GAME_MODULE)) {
-            JSONObject jsonObject = new JSONObject(message);
-            
-            sendEventToGUI();
-            String gamePackageName = message.split("_")[1];
-            UtilsHandler.generateNotification();
-            UtilsHandler.launchGame(gamePackageName);
-        }
-        else if(message.startsWith(Constants.NO_MODULE) ||
+
+        if (message.startsWith(Constants.NO_MODULE) ||
                 message.startsWith(Constants.CHAT_MODULE) ||
                 message.startsWith(Constants.FILESHARING_MODULE) ||
-                message.startsWith(Constants.BUSINESSCARD_MODULE)) {
+                message.startsWith(Constants.BUSINESSCARD_MODULE) ||
+                message.startsWith(Constants.GAME_MODULE)) {
 
             socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
             socketConnected();
 
+            // Enable read module after receiving module in First Message
+            readData();
+
             if (message.startsWith(Constants.FILESHARING_MODULE)) {
                 wifiP2PService.setModule(Modules.FILE_SHARING);
-                readFiles();
             } else if (message.startsWith(Constants.CHAT_MODULE)) {
                 wifiP2PService.setModule(Modules.CHAT);
-                readChatData();
             } else if (message.startsWith(Constants.BUSINESSCARD_MODULE)) {
                 wifiP2PService.setModule(Modules.BUSINESS_CARD);
-                readBusinessCard();
+            } else if (message.startsWith(Constants.GAME_MODULE)) {
+                wifiP2PService.setModule(Modules.GAME);
+
+                JSONObject object = MessageConstructor.constructObjectToRequestGameData();
+                if(object != null) {
+                    socketManager.writeObject(object);
+                }
             }
-        }
-        else if(message.startsWith("NowClosing")) {
+
+        } else if (message.startsWith("NowClosing")) {
             closeSocket();
 //            if(wifiP2PService.getModule().ordinal() == 1) {
 //                Intent intent = new Intent(context, Home_Master.class);
@@ -150,13 +170,12 @@ public class MessageHandler {
 //                context.startActivity(intent);
 //            }
             wifiP2PService.setModule(Modules.NONE);
-        }
-        else {
+        } else {
             int module = wifiP2PService.getModule().ordinal();
             switch (module) {
                 case 1:
                     ChatDataConversation.putChatConversation(socketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(socketManager.getRemoteDeviceAddress()) + ":  " + message);
-                    Log.d(TAG, "run: Accept thread Receive Message Count -> "+ChatDataConversation.getChatConversation(socketManager.getRemoteDeviceAddress()).size());
+                    Log.d(TAG, "run: Accept thread Receive Message Count -> " + ChatDataConversation.getChatConversation(socketManager.getRemoteDeviceAddress()).size());
                     WifiP2PChatActivity.readMessagae(socketManager.getRemoteDeviceAddress());
 
                     WifiP2PRemoteDevice remoteDevice = socketManager.getRemoteDevice();
@@ -192,41 +211,39 @@ public class MessageHandler {
         }
     }
 
+    private void handleGameObject(Message message) {
+        switch (message.arg1) {
+            case MobiMix.GameEvent.EVENT_GAME_REQUEST:
+                CoreEngine.sendEventToGUI(message);
+                break;
+            default:
+                break;
+        }
+    }
+
     public void sendMessage(byte[] message) {
-        if(socketManager != null) {
+        if (socketManager != null) {
             socketManager.writeMessage(message);
         }
     }
 
     public void sendBusinessCard() {
         Log.d(TAG, "Starting to write business card");
-        if(socketManager != null) {
+        if (socketManager != null) {
             socketManager.writeBusinessCard();
         }
     }
 
     public void sendFiles(List<Uri> files) {
         QueueManager.addFilesToSend(files);
-        if(socketManager != null) {
+        if (socketManager != null) {
             socketManager.writeFiles();
         }
     }
 
-    public void readChatData() {
-        if(socketManager != null) {
-            socketManager.readChatData();
-        }
-    }
-
-    public void readBusinessCard() {
-        if(socketManager != null) {
-            socketManager.readBusinessCard();
-        }
-    }
-
-    public void readFiles() {
-        if(socketManager != null) {
-            socketManager.readFiles();
+    public void readData() {
+        if (socketManager != null) {
+            socketManager.readData();
         }
     }
 
@@ -255,7 +272,7 @@ public class MessageHandler {
     }
 
     public String getRemoteDeviceAddress() {
-        if(socketManager != null) {
+        if (socketManager != null) {
             return socketManager.getRemoteDeviceAddress();
         }
         return null;
@@ -269,7 +286,7 @@ public class MessageHandler {
 //            e.printStackTrace();
 //        }
 
-        if( heartbeat!= null && !heartbeat.isInterrupted() ) {
+        if (heartbeat != null && !heartbeat.isInterrupted()) {
             heartbeat.interrupt();
         }
 

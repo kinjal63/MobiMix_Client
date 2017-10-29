@@ -30,8 +30,9 @@ public class Constants {
     public static final String CHAT_MODULE = "Module :: Chat";
     public static final String BUSINESSCARD_MODULE = "Module :: BusinessCard";
     public static final String FILESHARING_MODULE = "Module :: FileSharing";
-    public static final String START_GAME_MODULE = "Module :: GameModule";
+    public static final String GAME_MODULE = "Module :: GameModule";
     public static final String NO_MODULE = "None";
+    public static final String STR_UNDERSCORE = "_";
 
     public static final int GROUP_OWNER_PORT = 5050;
     public static final int SOCKET_TIMEOUT = 5000;
@@ -40,12 +41,23 @@ public class Constants {
     public static final int MODULE_READ = 0x400 + 3;
     public static final int INIT_MODULE = 0x400 + 4;
     public static final int GAME_REQUEST_ACCEPTED = 0x400 + 5;
+    public static final int MESSAGE_READ_GAME = 0x400 + 6;
 
     public static final int THREAD_COUNT = 20; //maximum number of clients that this GO can manage
     public static final int THREAD_POOL_EXECUTOR_KEEP_ALIVE_TIME = 10;
 
     public static final String PREF_WIFIDIRECT_CONNECTED = "WifiDirect_Connected";
     public static final String PREF_CHAT_ACTIVITY_OPEN = "Chat_Screen_Open_";
+
+    // Game Request Object names
+    public static final String REQUEST_GAME_EVENT = "request_game_event";
+
+    public static final String GAME_NAME = "game_name";
+    public static final String GAME_PACKAGE_NAME = "game_package_name";
+    public static final String GAME_REQUEST_SENDER_NAME = "sender_name";
+    public static final String GAME_ID = "game_id";
+    public static final String GAME_REQUEST_SENDER_ID = "sender_id";
+    public static final String GAME_REQUEST_CONNECTION_TYPE = "connection_type";
 }
 //  Query
 

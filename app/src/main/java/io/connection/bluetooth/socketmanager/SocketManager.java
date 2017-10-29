@@ -5,17 +5,19 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.SocketOperationType;
 import io.connection.bluetooth.socketmanager.modules.ReadBusinessCard;
 import io.connection.bluetooth.socketmanager.modules.ReadChatData;
 import io.connection.bluetooth.socketmanager.modules.ReadFiles;
+import io.connection.bluetooth.socketmanager.modules.ReadGameData;
 import io.connection.bluetooth.socketmanager.modules.SendBusinessCard;
 import io.connection.bluetooth.socketmanager.modules.SendFiles;
 import io.connection.bluetooth.utils.Constants;
@@ -28,7 +30,7 @@ public class SocketManager implements Runnable {
     private SocketOperationType operationType = SocketOperationType.NONE;
     private MessageHandler handler;
     private InputStream is;
-    private OutputStream os;
+    private ObjectOutputStream os;
     private boolean disable = false;
 
     private WifiP2PRemoteDevice remoteDevice;
@@ -45,8 +47,8 @@ public class SocketManager implements Runnable {
     @Override
     public void run() {
         try {
-            is = socket.getInputStream();
-            os = socket.getOutputStream();
+            is = new ObjectInputStream(socket.getInputStream());
+            os = new ObjectOutputStream(socket.getOutputStream());
 
             byte [] buffer = new byte[1024];
             int bytes;
@@ -132,6 +134,11 @@ public class SocketManager implements Runnable {
                     ReadFiles file = new ReadFiles(socket, handler);
                     file.readFiles();
                 }
+                else if(wifiP2PService.getModule() == Modules.GAME) {
+                    System.out.println("Socket is read 3 file Game");
+                    ReadGameData file = new ReadGameData(socket, handler);
+                    file.readGameEvent();
+                }
             }
 
             operationType = SocketOperationType.NONE;
@@ -146,16 +153,14 @@ public class SocketManager implements Runnable {
 
             try {
                 Thread.sleep(500);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if( wifiP2PService != null ) {
-                if(wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
+            if (wifiP2PService != null) {
+                if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
                     SendBusinessCard businessCard = new SendBusinessCard(socket, handler);
                     businessCard.sendCard();
-                }
-                else if(wifiP2PService.getModule() == Modules.FILE_SHARING) {
+                } else if (wifiP2PService.getModule() == Modules.FILE_SHARING) {
                     SendFiles sendFiles = new SendFiles(socket, handler);
                     sendFiles.start();
                 }
@@ -166,21 +171,7 @@ public class SocketManager implements Runnable {
         }
     }
 
-    public void readChatData() {
-        operationType = SocketOperationType.READ;
-        synchronized (this.obj) {
-            this.obj.notify();
-        }
-    }
-
-    public void readBusinessCard() {
-        operationType = SocketOperationType.READ;
-        synchronized (this.obj) {
-            this.obj.notify();
-        }
-    }
-
-    public void readFiles() {
+    public void readData() {
         operationType = SocketOperationType.READ;
         synchronized (this.obj) {
             this.obj.notify();
@@ -197,6 +188,20 @@ public class SocketManager implements Runnable {
             }
         }
         catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Send Game Object to remote user
+    public void writeObject(Object object) {
+        try {
+            Thread.sleep(500);
+            if (os != null) {
+                os.writeObject(object);
+                os.flush();
+            }
+        }
+        catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
