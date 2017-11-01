@@ -1,23 +1,22 @@
 package io.connection.bluetooth.Api.response.entity;
 
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by KP49107 on 11-10-2017.
  */
-public class NearByPlayerResponse {
+public class NearByPlayerResponse implements Serializable {
     @SerializedName("playerlist")
-    @Expose
-    private List<NearByPlayer> players = null;
+    private List<NearByPlayer> players;
 
-    public List<NearByPlayer> getPlayerlist() {
+    public List<NearByPlayer> getPlayers() {
         return players;
     }
 
-    public void setPlayerlist(List<NearByPlayer> playerlist) {
-        this.players = playerlist;
+    public void setPlayers(List<NearByPlayer> players) {
+        this.players = players;
     }
 }

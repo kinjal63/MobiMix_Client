@@ -70,7 +70,7 @@ public class NetworkManager {
         switch (msg.what) {
             case MobiMix.APIResponse.RESPONSE_GET_NEARBY_PLAYERS:
                 if (msg.obj != null && msg.obj instanceof NearByPlayerResponse) {
-                    List<NearByPlayer> players = ((NearByPlayerResponse) msg.obj).getPlayerlist();
+                    List<NearByPlayer> players = ((NearByPlayerResponse) msg.obj).getPlayers();
                     DatabaseManager.getInstance().insertPlayers(players);
                 }
                 break;

@@ -11,6 +11,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 
+import org.json.JSONObject;
+
 import java.util.List;
 
 import io.connection.bluetooth.Database.DBParams;
@@ -22,6 +24,7 @@ import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.IDBResponse;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.NetworkManager;
+import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.NotificationUtil;
 
 /**
@@ -93,8 +96,18 @@ public class GUIManager {
             switch (msg.what) {
                 case MobiMix.GUIEvent.EVENT_GAME_REQUEST:
                     if( msg.obj != null ) {
-                        GameRequest gameRequest = (GameRequest)msg.obj;
-                        NotificationUtil.generateNotificationForGameRequest(gameRequest);
+                        JSONObject jsonObject = (JSONObject)msg.obj;
+                        if(jsonObject != null) {
+                            GameRequest gameRequest = new GameRequest();
+                            gameRequest.setGameName(jsonObject.optString(Constants.GAME_NAME));
+                            gameRequest.setGameId(jsonObject.optLong(Constants.GAME_ID));
+                            gameRequest.setGamePackageName(jsonObject.optString(Constants.GAME_PACKAGE_NAME));
+                            gameRequest.setRemoteUserName(jsonObject.optString(Constants.GAME_REQUEST_SENDER_NAME));
+                            gameRequest.setRemoteUserId(jsonObject.optString(Constants.GAME_REQUEST_SENDER_ID));
+                            gameRequest.setConnectionType(jsonObject.optInt(Constants.GAME_REQUEST_CONNECTION_TYPE));
+
+                            NotificationUtil.generateNotificationForGameRequest(gameRequest);
+                        }
                     }
                     break;
                 default:

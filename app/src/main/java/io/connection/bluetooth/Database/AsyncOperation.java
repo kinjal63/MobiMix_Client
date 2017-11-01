@@ -41,10 +41,11 @@ public class AsyncOperation extends Thread {
             case MobiMix.DBRequest.DB_FIND_MUTUAL_GAMES:
                 if(params.remoteUserIds_ != null) {
                     QueryBuilder qb = MobiMixApplication.getInstance().getDaoSession().getMBGameInfoDao().queryBuilder();
-                    qb.join(MBPlayerGames.class, MBPlayerGamesDao.Properties.GameId)
-                            .where(new WhereCondition.StringCondition(MBPlayerGamesDao.Properties.PlayerId.in(params.remoteUserIds_) +
-                                    " group by " + MBPlayerGamesDao.Properties.GameId +
-                                    " having count(" + MBPlayerGamesDao.Properties.GameId + ") > " + params.remoteUserIds_.size()));
+
+                    qb.join(MBPlayerGames.class, MBPlayerGamesDao.Properties.GameId);
+//                            .where(new WhereCondition.StringCondition(MBPlayerGamesDao.Properties.PlayerId.in(params.remoteUserIds_) + "" ));
+//                                    " group by " + MBPlayerGamesDao.Properties.GameId +
+//                                    " having count(" + MBPlayerGamesDao.Properties.GameId + ") > " + params.remoteUserIds_.size()));
                     List<MBGameInfo> playerGames = qb.list();
 
                     ((IActionReadListener) this.iActionCRUDListener).onReadOperation(0, playerGames);

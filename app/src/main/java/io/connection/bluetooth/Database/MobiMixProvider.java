@@ -46,12 +46,12 @@ public class MobiMixProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Database database = MobiMixApplication.getInstance().getDaoSession().getDatabase();
-        db = ((StandardDatabase)database).getSQLiteDatabase();
-        if (db != null) {
+//        Database database = MobiMixApplication.getInstance().getDaoSession().getDatabase();
+//        db = ((StandardDatabase)database).getSQLiteDatabase();
+//        if (db != null) {
             return true;
-        }
-        return false;
+//        }
+//        return false;
     }
 
     @Nullable

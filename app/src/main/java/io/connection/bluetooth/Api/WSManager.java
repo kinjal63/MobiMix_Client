@@ -97,105 +97,105 @@ public class WSManager {
     }
 
     public void getNearbyUsers() {
-//        String userId = ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).
-//                getValue("user_id");
+        String userId = ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).
+                getValue("user_id");
+
+        Call<ResponseBody> name = apiCall.findPlayers(userId);
+        name.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> res) {
+                try {
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    NearByPlayerResponse response = gson.fromJson(res.body().string(), NearByPlayerResponse.class);
+                    System.out.println("nearby players are found");
+
+                    Message msg = new Message();
+                    msg.obj = response;
+                    msg.what = MobiMix.APIResponse.RESPONSE_GET_NEARBY_PLAYERS;
+                    networkManager_.handleResponse(msg);
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+
+//        NearByPlayerResponse response = new NearByPlayerResponse();
 //
-//        Call<ResponseBody> name = apiCall.findPlayers(userId);
-//        name.enqueue(new Callback<ResponseBody>() {
-//            @Override
-//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> res) {
-//                try {
-//                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//                    NearByPlayerResponse response = gson.fromJson(res.body().string(), NearByPlayerResponse.class);
-//                    System.out.println("nearby players are found");
+//        List<NearByPlayer> players = new ArrayList<>();
 //
-//                    Message msg = new Message();
-//                    msg.obj = response;
-//                    msg.what = MobiMix.APIResponse.RESPONSE_GET_NEARBY_PLAYERS;
-//                    networkManager_.handleResponse(msg);
-//                }
-//                catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
+//        NearByPlayer myPlayer = new NearByPlayer();
+//        myPlayer.setPlayerId("c034a6735cdd4d54ba7c7d99ddd5393b");
+//        myPlayer.setPlayerName("Redmi");
+//        myPlayer.setIsEngaged(1);
+//        myPlayer.setGroupOwnerUserId("456");
+//        myPlayer.setIsGroupOwner(1);
+//        myPlayer.setActiveGameName("Xender");
+//        myPlayer.setPlayerImagePath("");
+//        myPlayer.setMaxPlayers(3);
 //
-//            @Override
-//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//        NearByPlayer player = new NearByPlayer();
+//        player.setPlayerId("123");
+//        player.setPlayerName("Kinjal");
+//        player.setIsEngaged(1);
+//        player.setGroupOwnerUserId("456");
+//        player.setIsGroupOwner(0);
+//        player.setActiveGameName("Xender");
+//        player.setPlayerImagePath("");
 //
-//            }
-//        });
-
-        NearByPlayerResponse response = new NearByPlayerResponse();
-
-        List<NearByPlayer> players = new ArrayList<>();
-
-        NearByPlayer myPlayer = new NearByPlayer();
-        myPlayer.setPlayerId("c034a6735cdd4d54ba7c7d99ddd5393b");
-        myPlayer.setPlayerName("Redmi");
-        myPlayer.setIsEngaged(1);
-        myPlayer.setGroupOwnerUserId("456");
-        myPlayer.setIsGroupOwner(1);
-        myPlayer.setActiveGameName("Xender");
-        myPlayer.setPlayerImagePath("");
-        myPlayer.setMaxPlayers(3);
-
-        NearByPlayer player = new NearByPlayer();
-        player.setPlayerId("123");
-        player.setPlayerName("Kinjal");
-        player.setIsEngaged(1);
-        player.setGroupOwnerUserId("456");
-        player.setIsGroupOwner(0);
-        player.setActiveGameName("Xender");
-        player.setPlayerImagePath("");
-
-        NearByPlayer player2 = new NearByPlayer();
-        player2.setPlayerId("12345");
-        player2.setPlayerName("Shashank");
-        player2.setIsEngaged(0);
-        player2.setGroupOwnerUserId("456");
-        player2.setIsGroupOwner(1);
-        player2.setActiveGameName("Chess");
-        player2.setPlayerImagePath("");
-
-        PlayerGame playerGame = new PlayerGame();
-        playerGame.setGamePackageName("com.xender");
-        playerGame.setGameImagePath("");
-        playerGame.setGameName("Xender");
-        playerGame.setGameId((long) 1);
-
-        PlayerGame playerGame2 = new PlayerGame();
-        playerGame2.setGamePackageName("com.chess");
-        playerGame2.setGameImagePath("");
-        playerGame2.setGameName("Chess");
-        playerGame2.setGameId((long) 2);
-
-        PlayerGame playerGame3 = new PlayerGame();
-        playerGame3.setGamePackageName("com.cricket");
-        playerGame3.setGameImagePath("");
-        playerGame3.setGameName("Cricket");
-        playerGame3.setGameId((long) 3);
-
-        // Set Player1 games
-        List<PlayerGame> playergames = new ArrayList<>();
-        playergames.add(playerGame);
-        playergames.add(playerGame2);
-        player.setPlayerGameList(playergames);
-        myPlayer.setPlayerGameList(playergames);
-
-        // Set Player2 games
-        List<PlayerGame> playergames2 = new ArrayList<>();
-        playergames2.add(playerGame);
-        playergames2.add(playerGame3);
-        player2.setPlayerGameList(playergames2);
-
-        players.add(myPlayer);
-        players.add(player);
-        players.add(player2);
-        response.setPlayerlist(players);
-
-        Message msg = new Message();
-        msg.obj = response;
-        msg.what = MobiMix.APIResponse.RESPONSE_GET_NEARBY_PLAYERS;
-        networkManager_.handleResponse(msg);
+//        NearByPlayer player2 = new NearByPlayer();
+//        player2.setPlayerId("12345");
+//        player2.setPlayerName("Shashank");
+//        player2.setIsEngaged(0);
+//        player2.setGroupOwnerUserId("456");
+//        player2.setIsGroupOwner(1);
+//        player2.setActiveGameName("Chess");
+//        player2.setPlayerImagePath("");
+//
+//        PlayerGame playerGame = new PlayerGame();
+//        playerGame.setGamePackageName("com.xender");
+//        playerGame.setGameImagePath("");
+//        playerGame.setGameName("Xender");
+//        playerGame.setGameId((long) 1);
+//
+//        PlayerGame playerGame2 = new PlayerGame();
+//        playerGame2.setGamePackageName("com.chess");
+//        playerGame2.setGameImagePath("");
+//        playerGame2.setGameName("Chess");
+//        playerGame2.setGameId((long) 2);
+//
+//        PlayerGame playerGame3 = new PlayerGame();
+//        playerGame3.setGamePackageName("com.cricket");
+//        playerGame3.setGameImagePath("");
+//        playerGame3.setGameName("Cricket");
+//        playerGame3.setGameId((long) 3);
+//
+//        // Set Player1 games
+//        List<PlayerGame> playergames = new ArrayList<>();
+//        playergames.add(playerGame);
+//        playergames.add(playerGame2);
+//        player.setPlayerGameList(playergames);
+//        myPlayer.setPlayerGameList(playergames);
+//
+//        // Set Player2 games
+//        List<PlayerGame> playergames2 = new ArrayList<>();
+//        playergames2.add(playerGame);
+//        playergames2.add(playerGame3);
+//        player2.setPlayerGameList(playergames2);
+//
+//        players.add(myPlayer);
+//        players.add(player);
+//        players.add(player2);
+//        response.setPlayerlist(players);
+//
+//        Message msg = new Message();
+//        msg.obj = response;
+//        msg.what = MobiMix.APIResponse.RESPONSE_GET_NEARBY_PLAYERS;
+//        networkManager_.handleResponse(msg);
     }
 }

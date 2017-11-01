@@ -18,7 +18,6 @@ import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.actionlisteners.DialogActionListener;
 import io.connection.bluetooth.activity.gui.GUIManager;
 import io.connection.bluetooth.adapter.GameAdapter;
 import io.connection.bluetooth.adapter.RecyclerItemClickListener;
@@ -44,7 +43,6 @@ public class PlayerListActivity extends Activity implements IDBResponse {
     private TextView txtCurrentGame;
 
     RecyclerItemClickListener itemClickListener;
-    MyGameInfo gameInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

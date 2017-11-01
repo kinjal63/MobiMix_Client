@@ -15,7 +15,7 @@ public enum Modules {
     private String moduleName;
 
     Modules(String moduleName) {
-        this.moduleName = moduleName
+        this.moduleName = moduleName;
     }
 
     public String getModuleName() {

@@ -199,7 +199,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         mSendButton.setEnabled(true);
         connectionStatus.setText("Connected");
 
-        WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readChatData();
+        WifiDirectService.getInstance(WifiP2PChatActivity.this).getMessageHandler().readData();
     }
 
     /**

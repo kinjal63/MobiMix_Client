@@ -97,9 +97,7 @@ public class MessageHandler {
                 break;
             case Constants.MESSAGE_READ_GAME:
                 if (msg.obj != null) {
-                    Map<String, String> mapObj = (Map<String, String>) msg.obj;
-                    int event = msg.arg1;
-                    handleGameObject(event, mapObj);
+                    handleGameObject(msg);
                 }
                 break;
             default:
@@ -116,22 +114,6 @@ public class MessageHandler {
                 LocalP2PDevice.getInstance().getLocalDevice().deviceName;
     }
 
-    private Map<String, String> constructObjectForGame(GameRequest gameRequest) {
-        Map<String, String> mapObj = new HashMap<>();
-        mapObj.put(Constants.GAME_ID, String.valueOf(gameRequest.getGameId()));
-        mapObj.put(Constants.GAME_NAME, gameRequest.getGameName());
-        mapObj.put(Constants.GAME_PACKAGE_NAME, gameRequest.getGamePackageName());
-        mapObj.put(Constants.GAME_REQUEST_SENDER_ID, gameRequest.getRemoteUserId());
-        mapObj.put(Constants.GAME_REQUEST_SENDER_NAME, gameRequest.getRemoteUserName());
-        mapObj.put(Constants.GAME_REQUEST_CONNECTION_TYPE, String.valueOf(gameRequest.getConnectionType()));
-        return mapObj;
-    }
-
-    private Map<String, String> constructObjectForModule() {
-        Map<String, String> mapObj = new HashMap<>();
-        return mapObj;
-    }
-
     private void handleObject(String message) {
         System.out.println("Actual message received::" + message);
 
@@ -145,7 +127,6 @@ public class MessageHandler {
             socketConnected();
 
             // Enable read module after receiving module in First Message
-            readData();
 
             if (message.startsWith(Constants.FILESHARING_MODULE)) {
                 wifiP2PService.setModule(Modules.FILE_SHARING);
@@ -156,19 +137,15 @@ public class MessageHandler {
             } else if (message.startsWith(Constants.GAME_MODULE)) {
                 wifiP2PService.setModule(Modules.GAME);
 
-                JSONObject object = MessageConstructor.constructObjectToRequestGameData();
+                JSONObject object = MessageConstructor.constructObjectToAskGameRequest();
                 if(object != null) {
                     socketManager.writeObject(object);
                 }
             }
+            readData();
 
         } else if (message.startsWith("NowClosing")) {
             closeSocket();
-//            if(wifiP2PService.getModule().ordinal() == 1) {
-//                Intent intent = new Intent(context, Home_Master.class);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-//                context.startActivity(intent);
-//            }
             wifiP2PService.setModule(Modules.NONE);
         } else {
             int module = wifiP2PService.getModule().ordinal();
@@ -185,21 +162,6 @@ public class MessageHandler {
                     intent.putExtra("device", remoteDevice);
 
                     NotificationUtil.sendChatNotification(intent, message, remoteDevice.getName());
-
-//                    UtilsHandler.runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            WifiP2pDevice device = new WifiP2pDevice();
-//                            device.deviceName = socketManager.getRemoteDeviceAddress();
-//
-//                            Intent intent = new Intent(context, WifiP2PChatActivity.class);
-//                            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-//                            intent.putExtra("device", device);
-//                            intent.putExtra("remoteDeviceAddress", socketManager.getRemoteDeviceAddress());
-//                            context.startActivity(intent);
-//
-//                        }
-//                    });
                     break;
                 case 2:
                     String businessCardInfo = message;
@@ -213,7 +175,7 @@ public class MessageHandler {
 
     private void handleGameObject(Message message) {
         switch (message.arg1) {
-            case MobiMix.GameEvent.EVENT_GAME_REQUEST:
+            case MobiMix.GameEvent.EVENT_GAME_REQUEST_ASK:
                 CoreEngine.sendEventToGUI(message);
                 break;
             default:

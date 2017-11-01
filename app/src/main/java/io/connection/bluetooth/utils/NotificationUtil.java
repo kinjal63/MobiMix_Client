@@ -49,7 +49,7 @@ public class NotificationUtil {
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
-        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPER_NOTIFICATION);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.mipmap.ic_logo)
                 .setContentTitle("Wifi Direct connection")

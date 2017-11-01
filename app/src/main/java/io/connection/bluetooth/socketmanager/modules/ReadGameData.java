@@ -1,5 +1,7 @@
 package io.connection.bluetooth.socketmanager.modules;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -25,20 +27,21 @@ public class ReadGameData {
 
     public void readGameEvent() {
         byte[] buffer = new byte[1024];
-        Map<String, String> objectMap;
+        JSONObject object;
 
         try {
             ois = new ObjectInputStream(socket.getInputStream());
             while (!disable) {
                 if (ois != null) {
                     try {
-                        objectMap = (Map) ois.readObject();
-                        if (objectMap == null) {
+                        object = (JSONObject) ois.readObject();
+                        if (object == null) {
                             break;
                         }
 
                         System.out.println("Getting message" + new String(buffer));
-                        handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, 0, -1, objectMap).sendToTarget();
+                        int arg1 = object.optInt(Constants.GAME_EVENT, 0);
+                        handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, arg1, -1, object).sendToTarget();
                     }
                     catch (ClassNotFoundException e) {
                         e.printStackTrace();

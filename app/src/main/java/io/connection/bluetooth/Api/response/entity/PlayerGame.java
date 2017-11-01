@@ -7,16 +7,16 @@ import com.google.gson.annotations.SerializedName;
  * Created by KP49107 on 11-10-2017.
  */
 public class PlayerGame {
-    @SerializedName("gameId")
+    @SerializedName("game_id")
     @Expose
     private Long gameId;
-    @SerializedName("gameName")
+    @SerializedName("game_name")
     @Expose
     private String gameName;
-    @SerializedName("gamePackageName")
+    @SerializedName("game_package_name")
     @Expose
     private String gamePackageName;
-    @SerializedName("gameImagePath")
+    @SerializedName("game_image_path")
     @Expose
     private String gameImagePath;
 

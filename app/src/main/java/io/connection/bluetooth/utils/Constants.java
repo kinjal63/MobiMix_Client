@@ -11,7 +11,7 @@ public class Constants {
     // public static UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     public static UUID uuid = UUID.fromString("6f50463f-e73f-48ca-a5f6-d2080cd24363");
     //public static final String endPointAddress = "http://transfer-teqnihome.rhcloud.com/";
-    public static final String endPointAddress = "http://192.168.1.104:8080/";
+    public static final String endPointAddress = "http://192.168.1.101:8080/";
     // public static final String endPointAddress = "http://192.168.43.123:8080/";
     public static final String TOKEN = "push_token";
     public static final String TOKEN_KEY = "token";   
@@ -51,6 +51,9 @@ public class Constants {
 
     // Game Request Object names
     public static final String REQUEST_GAME_EVENT = "request_game_event";
+
+    // Set specific game events for game exchange between users
+    public static final String GAME_EVENT = "game_event";
 
     public static final String GAME_NAME = "game_name";
     public static final String GAME_PACKAGE_NAME = "game_package_name";
