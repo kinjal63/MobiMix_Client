@@ -30,7 +30,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
     private List<MBNearbyPlayer> userList;
     private ImageLoader imageLoader;
     private MyGameInfo myGameInfo;
-    private ArrayList<String> toUserIds = new ArrayList<>();
+    private ArrayList<MBNearbyPlayer> selectedPlayers = new ArrayList<>();
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView name, txtActiveGame;
@@ -118,13 +118,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.MyViewHolder> 
         holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                toUserIds.add(userList.get((int)compoundButton.getTag()).getPlayerId());
+                selectedPlayers.add(userList.get((int)compoundButton.getTag()));
             }
         });
     }
 
-    public ArrayList<String> getUserIds() {
-        return toUserIds;
+    public ArrayList<MBNearbyPlayer> getSelectedPlayers() {
+        return selectedPlayers;
     }
 
     @Override

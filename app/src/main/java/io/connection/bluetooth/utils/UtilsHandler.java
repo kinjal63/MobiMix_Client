@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.util.List;
 import java.util.Stack;
 
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobiMixApplication;
 
@@ -17,6 +19,7 @@ import io.connection.bluetooth.MobiMixApplication;
 public class UtilsHandler {
     private static ProgressDialog progressDialog = null;
     private static Stack<GameRequest> stackGameRequest = new Stack<>();
+    private static Stack<MBNearbyPlayer> stackGamePlayers = new Stack<>();
 
     public static void runOnUiThread(Runnable runnable){
         Handler UIHandler = new Handler(
@@ -60,6 +63,14 @@ public class UtilsHandler {
 
     public static GameRequest removeGameFromStack() {
         return stackGameRequest.pop();
+    }
+
+    public static void addPlayersInQueue(List<MBNearbyPlayer> players) {
+        stackGamePlayers.addAll(players);
+    }
+
+    public static MBNearbyPlayer removePlayerFromStack() {
+        return stackGamePlayers.pop();
     }
 
 }

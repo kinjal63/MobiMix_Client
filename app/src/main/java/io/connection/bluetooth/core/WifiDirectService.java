@@ -19,12 +19,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Api.async.IAPIResponse;
+import io.connection.bluetooth.Database.entity.MBGameInfo;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.User;
@@ -251,6 +254,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 }
             } else {
                 Log.d(TAG, "Connected as peer");
+                if(UtilsHandler.getGamesFromStack().size() > 0) {
+                    UtilsHandler.removeGameFromStack();
+                }
                 socketHandler = new WifiP2PClientHandler(messageHandler, p2pInfo.groupOwnerAddress);
                 socketHandler.start();
             }
@@ -486,6 +492,24 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 });
             }
         }
+    }
+
+    public void sendWifiDirectRequestToUser(List<MBNearbyPlayer> players, MBGameInfo gameInfo) {
+        if(players.size() > 0) {
+            MBNearbyPlayer player = players.get(0);
+
+            GameRequest gameRequest = new GameRequest();
+            gameRequest.setGameId(gameInfo.getGameId());
+            gameRequest.setGameName(gameInfo.getGameName());
+            gameRequest.setGamePackageName(gameInfo.getGamePackageName());
+            gameRequest.setRemoteUserId(player.getPlayerId());
+            gameRequest.setRemoteUserName(player.getPlayerName());
+            gameRequest.setWifiAddress(player.getEmail());
+
+            UtilsHandler.addGameInStack(gameRequest);
+            players.remove(0);
+        }
+        UtilsHandler.addPlayersInQueue(players);
     }
 
 }

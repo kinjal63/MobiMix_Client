@@ -122,7 +122,7 @@ public class PlayerListActivity extends Activity implements IDBResponse {
     }
 
     private void getMutualGames(final String userId) {
-        final ArrayList<String> remoteUserIds = ((UserAdapter)adapter).getUserIds();
+        final ArrayList<MBNearbyPlayer> selectedPlayers = ((UserAdapter)adapter).getSelectedPlayers();
 
 //        if(remoteUsers.size() == 1 && remoteUsers.get(0).getIsEngaged() == 0) {
 //            Utils.showAlertMessage(this, "Game Invitation", "Would you like to involve any other player in this game?",
@@ -139,7 +139,7 @@ public class PlayerListActivity extends Activity implements IDBResponse {
 //                    });
 //        }
 //        else {
-            sendRequestToGetMutualGames(0, userId, remoteUserIds);
+        sendRequestToGetMutualGames(0, userId, selectedPlayers);
 //        }
     }
 
@@ -150,8 +150,13 @@ public class PlayerListActivity extends Activity implements IDBResponse {
         GUIManager.getObject().getNearbyPlayers(params, this);
     }
 
-    private void sendRequestToGetMutualGames(int isTwoPlayerOnly, String userId, final ArrayList<String> remoteUserIds) {
+    private void sendRequestToGetMutualGames(int isTwoPlayerOnly, String userId, final ArrayList<MBNearbyPlayer> selectedPlayers) {
+        List<String> remoteUserIds = new ArrayList<>();
         remoteUserIds.add(userId);
+
+        for (MBNearbyPlayer player : selectedPlayers) {
+            remoteUserIds.add(player.getPlayerId());
+        }
 
         DBParams params = new DBParams();
         params.event_ = MobiMix.DBRequest.DB_FIND_MUTUAL_GAMES;
@@ -199,9 +204,15 @@ public class PlayerListActivity extends Activity implements IDBResponse {
         }
         else if(resCode == MobiMix.DBResponse.DB_RES_FIND_MUTUAL_GAMES) {
             isGame = true;
+            List<MBNearbyPlayer> selectedPlayers = null;
+            if(adapter instanceof UserAdapter) {
+                selectedPlayers = ((UserAdapter) adapter).getSelectedPlayers();
+            }
+
             List<MBGameInfo> gameInfoList = (List<MBGameInfo>)data;
 
             adapter = new GameAdapter(PlayerListActivity.this, gameInfoList, PlayerListActivity.this);
+            ((GameAdapter)adapter).setGamePlayers(selectedPlayers);
             recyclerView.setAdapter((GameAdapter) adapter);
         }
     }

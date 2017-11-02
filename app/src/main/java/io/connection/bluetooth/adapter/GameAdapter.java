@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.Database.entity.MBGameInfo;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.core.WifiDirectService;
@@ -37,8 +38,8 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
 
     private List<MBGameInfo> gameList;
     private ImageLoader imageLoader;
-    private ArrayList<String> remoteUserIds;
     private Context context;
+    private List<MBNearbyPlayer> selectedPlayers;
     public static String gamePackageName = "";
     public static String gameName = "";
 
@@ -62,8 +63,8 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         imageLoader.init(ImageLoaderConfiguration.createDefault(activity));
     }
 
-    public void setRemoteUserIds(ArrayList<String> userIds) {
-        this.remoteUserIds = userIds;
+    public void setGamePlayers(List<MBNearbyPlayer> players) {
+        this.selectedPlayers = players;
     }
 
     @Override
@@ -112,7 +113,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
                 gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage("Do you want to send WifiDirect connection for game " + gameName);
+                builder.setMessage("Do you want to send wifi-direct connection to selected users to play game " + gameName);
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -162,29 +163,30 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         });
     }
 
-    private void sendWifiConnectionInvite(String gamePackageName) {
-        WifiDirectService.getInstance(context).initiateDiscovery();
+    private void sendWifiConnectionInvite(MBGameInfo gameInfo) {
+        WifiDirectService.getInstance(context).sendWifiDirectRequestToUser(selectedPlayers, gameInfo);
+//        WifiDirectService.getInstance(context).initiateDiscovery();
+////
+//        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
+//                remoteUserIds, 2);
+//        gameInvite.setGamePackageName(gamePackageName);
+//        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().getService().sendConnectionInvite(gameInvite);
 //
-        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
-                remoteUserIds, 2);
-        gameInvite.setGamePackageName(gamePackageName);
-        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().getService().sendConnectionInvite(gameInvite);
-
-        req1.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    String data = response.body().string();
-                    System.out.println(data);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                t.printStackTrace();
-            }
-        });
+//        req1.enqueue(new Callback<ResponseBody>() {
+//            @Override
+//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                try {
+//                    String data = response.body().string();
+//                    System.out.println(data);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                t.printStackTrace();
+//            }
+//        });
     }
 }

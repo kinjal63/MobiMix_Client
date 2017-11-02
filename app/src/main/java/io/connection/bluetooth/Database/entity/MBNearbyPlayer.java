@@ -25,6 +25,9 @@ public class MBNearbyPlayer {
     @Property(nameInDb = "player_name")
     private String playerName;
 
+    @Property(nameInDb = "email")
+    private String email;
+
     @Property(nameInDb = "player_image_path")
     private String playerImagePath;
 
@@ -203,6 +206,14 @@ public class MBNearbyPlayer {
 
     public void setPlayerGames(List<MBGameInfo> playerGames) {
         this.playerGames = playerGames;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     /** called by internal mechanisms, do not call yourself. */
