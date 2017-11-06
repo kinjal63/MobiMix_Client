@@ -1,6 +1,10 @@
 package io.connection.bluetooth.Database;
 
 import android.content.Context;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.util.Log;
+
+import org.greenrobot.greendao.query.DeleteQuery;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,13 +14,19 @@ import io.connection.bluetooth.Api.response.entity.NearByPlayer;
 import io.connection.bluetooth.Api.response.entity.PlayerGame;
 import io.connection.bluetooth.Database.action.IActionCRUD;
 import io.connection.bluetooth.Database.action.IActionReadListener;
+import io.connection.bluetooth.Database.action.IActionUpdateListener;
 import io.connection.bluetooth.Database.action.IDatabaseActionListener;
+import io.connection.bluetooth.Database.entity.DaoSession;
 import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayerDao;
 import io.connection.bluetooth.Database.entity.MBPlayerGames;
+import io.connection.bluetooth.Database.entity.MBPlayerGamesDao;
 import io.connection.bluetooth.Database.utils.EntityUtils;
 import io.connection.bluetooth.MobiMixApplication;
-import io.connection.bluetooth.core.MobiMix;
+import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.core.WifiDirectService;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 
 /**
  * Created by Kinjal on 10/8/2017.
@@ -83,8 +93,41 @@ public class DatabaseManager {
 
     }
 
+    // Update tables by scanning nearby users
+    public synchronized void deleteUsersIfNotFoundInVicinity() {
+        List<MBNearbyPlayer> players = MobiMixApplication.getInstance().getDaoSession().getMBNearbyPlayerDao().loadAll();
+        List<WifiP2PRemoteDevice> devices = WifiDirectService.getInstance(context).getWifiP2PDeviceList();
+
+        List<String> emailsIds = new ArrayList<>();
+        emailsIds.add(ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).getValue("email"));
+        for(WifiP2PRemoteDevice device : devices) {
+            emailsIds.add(device.getName());
+        }
+
+        List<String> playerIdsToDelete = new ArrayList<>();
+        for(MBNearbyPlayer player : players) {
+            if(!emailsIds.contains(player.getEmail())) {
+                playerIdsToDelete.add(player.getPlayerId());
+            }
+        }
+
+        // Delete from mb_nearby_players table
+        DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
+        DeleteQuery<MBNearbyPlayer> dQPlayers = daoSession.queryBuilder(MBNearbyPlayer.class)
+                .where(MBNearbyPlayerDao.Properties.Email.notIn(emailsIds))
+                .buildDelete();
+        dQPlayers.executeDeleteWithoutDetachingEntities();
+
+        // Delete from player_games table
+        DeleteQuery<MBPlayerGames> dqPlayerGames = daoSession.queryBuilder(MBPlayerGames.class)
+                .where(MBPlayerGamesDao.Properties.PlayerId.in(playerIdsToDelete))
+                .buildDelete();
+        dqPlayerGames.executeDeleteWithoutDetachingEntities();
+
+    }
+
     public synchronized void findPlayers(DBParams params, final IDatabaseActionListener iDatabaseActionListener) {
-        doAsyncFetch(params, new IActionReadListener() {
+        doAsync(params, new IActionReadListener() {
             @Override
             public void onReadOperation(int error, List<?> objects) {
                 if(error == 0) {
@@ -95,7 +138,7 @@ public class DatabaseManager {
     }
 
     public synchronized void findMutualGames(DBParams params, final IDatabaseActionListener iDatabaseActionListener) {
-        doAsyncFetch(params, new IActionReadListener() {
+        doAsync(params, new IActionReadListener() {
             @Override
             public void onReadOperation(int error, List<?> objects) {
                 if(error == 0) {
@@ -105,11 +148,22 @@ public class DatabaseManager {
         });
     }
 
+    public synchronized void updateGameTable(DBParams params) {
+        doAsync(params, new IActionUpdateListener() {
+            @Override
+            public void onUpdateAction(int error) {
+                if(error == 0) {
+                    Log.d("DatabaseManager", "Game table is updated successfully");
+                }
+            }
+        });
+    }
+
     public synchronized void delete() {
     }
 
-    private void doAsyncFetch(DBParams params, IActionCRUD crudListener) {
-        Thread t = new AsyncOperation(params, crudListener);
+    private void doAsync(DBParams params, IActionCRUD crudListener) {
+        Thread t = new DBAsyncOperation(params, crudListener);
         t.start();
     }
 }

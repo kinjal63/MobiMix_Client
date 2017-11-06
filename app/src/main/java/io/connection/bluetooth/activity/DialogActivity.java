@@ -6,24 +6,22 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
-
-import java.util.List;
 
 import io.connection.bluetooth.Domain.GameRequest;
-import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.core.BluetoothService;
-import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
-import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.core.BluetoothService;
+import io.connection.bluetooth.core.EventData;
+import io.connection.bluetooth.core.MobiMix;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
+import io.connection.bluetooth.utils.cache.MobiMixCache;
 
 /**
  * Created by Kinjal on 27-03-2017.
@@ -59,10 +57,10 @@ public class DialogActivity extends Activity{
         }
         else if( intent1 != null && intent1.getParcelableExtra("game_request") != null) {
             GameRequest request = intent1.getParcelableExtra("game_request");
-            if( request != null && request.getNotificationType() == 2 ) {
+            if( request != null && request.getConnectionType() == 2 ) {
                 showWifiDialog(request);
             }
-            else if( request != null && request.getNotificationType() == 1 ) {
+            else if( request != null && request.getConnectionType() == 1 ) {
                 showBluetoothDialog(request);
             }
         }
@@ -121,91 +119,102 @@ public class DialogActivity extends Activity{
     }
 
     private void showWifiDialog(final GameRequest gameRequest) {
-        final String userName = gameRequest.getRemoteUserName();
-        final String wifiDirectName = gameRequest.getWifiAddress();
+        final String remoteUserName = gameRequest.getRemoteUserName();
         final String gameName = gameRequest.getGameName();
         final String gamePackageName = gameRequest.getGamePackageName();
+        final String remoteUserId = gameRequest.getRemoteUserId();
 
         final WifiDirectService wifiDirectService = WifiDirectService.getInstance(DialogActivity.this);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Wifi Direct Connection Invite");
         alertDialogBuilder
-                .setMessage("Do you want to make wifi direct connection with " + userName +
+                .setMessage("Do you want to make wifi direct connection with " + remoteUserName +
                             " to play game " + gameName)
                 .setCancelable(false)
                 .setIcon(R.drawable.wifidirect)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
-                        boolean isDeviceFound = false;
+                        MobiMixCache.putGameInCache(remoteUserId, gameRequest);
 
-                        wifiDirectService.setWifiDirectDeviceName(wifiDirectName);
-                        List<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
-                        for(WifiP2PRemoteDevice remoteDevice : devices) {
-                            if( remoteDevice.getDevice().deviceName.equalsIgnoreCase(wifiDirectName) ) {
-                                isDeviceFound = true;
+                        EventData eventData = new EventData();
+                        eventData.event_ = MobiMix.GameEvent.EVENT_GAME_LAUNCHED;
+                        eventData.userId_ = remoteUserId;
+                        wifiDirectService.sendEvent(eventData);
 
-                                UtilsHandler.addGameInStack(gameRequest);
+                        UtilsHandler.launchGame(gamePackageName);
 
-                                wifiDirectService
-                                        .connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
-                                            @Override
-                                            public void onDeviceConnected(boolean isConnected) {
-                                                Toast.makeText(DialogActivity.this, "Wait a moment, Game is launching...", Toast.LENGTH_LONG).show();
-//                                                updateConnectionInfo(gameRequest);
-                                                System.out.println("Updating connection info + before");
-//                                                WifiDirectService.getInstance(DialogActivity.this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
-//                                                    @Override
-//                                                    public void onUpdated() {
-//                                                        System.out.println("Updating connection info + Updated");
-//                                                        UtilsHandler.removeGameFromStack();
-//                                                        finish();
-//                                                    }
-//                                                });
-                                            }
-                                        });
-                            }
-                        }
-
-                        if(!isDeviceFound) {
-                            Toast.makeText(DialogActivity.this, "Device " + wifiDirectName + " is not found", Toast.LENGTH_LONG).show();
-                            finish();
-//                            wifiDirectService.getWifiP2PManager().requestConnectionInfo(wifiDirectService.getWifiP2PChannel(),
-//                                    new WifiP2pManager.ConnectionInfoListener() {
-//                                        @Override
-//                                        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-//                                            if(wifiP2pInfo != null) {
-//                                                updateConnectionInfo(gameRequest);
+//                        boolean isDeviceFound = false;
+//
+//                        wifiDirectService.setWifiDirectDeviceName(wifiDirectName);
+//                        List<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
+//                        for(WifiP2PRemoteDevice remoteDevice : devices) {
+//                            if( remoteDevice.getDevice().deviceName.equalsIgnoreCase(wifiDirectName) ) {
+//                                isDeviceFound = true;
+//
+//                                UtilsHandler.addGameInStack(gameRequest);
+//
+//                                wifiDirectService
+//                                        .connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
+//                                            @Override
+//                                            public void onDeviceConnected(boolean isConnected) {
+//                                                Toast.makeText(DialogActivity.this, "Wait a moment, Game is launching...", Toast.LENGTH_LONG).show();
+////                                                updateConnectionInfo(gameRequest);
+//                                                System.out.println("Updating connection info + before");
+////                                                WifiDirectService.getInstance(DialogActivity.this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
+////                                                    @Override
+////                                                    public void onUpdated() {
+////                                                        System.out.println("Updating connection info + Updated");
+////                                                        UtilsHandler.removeGameFromStack();
+////                                                        finish();
+////                                                    }
+////                                                });
 //                                            }
-//                                        }
-//                                    });
-//                            wifiDirectService.getWifiP2PManager().requestGroupInfo(wifiDirectService.getWifiP2PChannel(),
-//                                    new WifiP2pManager.GroupInfoListener() {
-//                                        @Override
-//                                        public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
-//                                            if (wifiP2pGroup != null) {
-//                                                if(wifiP2pGroup.getOwner().deviceName.equalsIgnoreCase(wifiDirectName)) {
-//                                                    connectWithDevice(wifiP2pGroup.getOwner().deviceAddress, gameRequest);
-//                                                }
-//                                                else {
-//                                                    Collection<WifiP2pDevice> devices = wifiP2pGroup.getClientList();
-//                                                    for (WifiP2pDevice device : devices) {
-//                                                        if (device.deviceName.equalsIgnoreCase(wifiDirectName)) {
-//                                                            connectWithDevice(device.deviceAddress, gameRequest);
-//                                                        }
-//                                                    }
-//                                                }
-//                                            }
-//                                        }
-//                                    });
-                        }
-                        WifiDirectService.getInstance(MobiMixApplication.getInstance().getActivity())
-                                .initiateDiscovery();
+//                                        });
+//                            }
+//                        }
+//
+//                        if(!isDeviceFound) {
+//                            Toast.makeText(DialogActivity.this, "Device " + wifiDirectName + " is not found", Toast.LENGTH_LONG).show();
+//                            finish();
+////                            wifiDirectService.getWifiP2PManager().requestConnectionInfo(wifiDirectService.getWifiP2PChannel(),
+////                                    new WifiP2pManager.ConnectionInfoListener() {
+////                                        @Override
+////                                        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
+////                                            if(wifiP2pInfo != null) {
+////                                                updateConnectionInfo(gameRequest);
+////                                            }
+////                                        }
+////                                    });
+////                            wifiDirectService.getWifiP2PManager().requestGroupInfo(wifiDirectService.getWifiP2PChannel(),
+////                                    new WifiP2pManager.GroupInfoListener() {
+////                                        @Override
+////                                        public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
+////                                            if (wifiP2pGroup != null) {
+////                                                if(wifiP2pGroup.getOwner().deviceName.equalsIgnoreCase(wifiDirectName)) {
+////                                                    connectWithDevice(wifiP2pGroup.getOwner().deviceAddress, gameRequest);
+////                                                }
+////                                                else {
+////                                                    Collection<WifiP2pDevice> devices = wifiP2pGroup.getClientList();
+////                                                    for (WifiP2pDevice device : devices) {
+////                                                        if (device.deviceName.equalsIgnoreCase(wifiDirectName)) {
+////                                                            connectWithDevice(device.deviceAddress, gameRequest);
+////                                                        }
+////                                                    }
+////                                                }
+////                                            }
+////                                        }
+////                                    });
+//                        }
+//                        WifiDirectService.getInstance(MobiMixApplication.getInstance().getActivity())
+//                                .initiateDiscovery();
                     }
                 })
                 .setNegativeButton("No",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         dialog.cancel();
+                        wifiDirectService.closeConnection();
+                        wifiDirectService.removeGroup();
                         finish();
                     }
                 });

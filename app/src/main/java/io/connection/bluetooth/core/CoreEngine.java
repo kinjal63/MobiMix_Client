@@ -10,7 +10,7 @@ import io.connection.bluetooth.activity.gui.GUIManager;
 
 public class CoreEngine {
     public static void sendEventToGUI(Message message) {
-        GUIManager.getObject().getHandler().obtainMessage(MobiMix.GUIEvent.EVENT_GAME_REQUEST,
+        GUIManager.getObject().getHandler().obtainMessage(message.arg1,
                 -1, -1, message.obj).sendToTarget();
     }
 }

@@ -145,6 +145,7 @@ public class LoginActivity extends Fragment {
                                 ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).
                                         addValue("user_id", userObject.getId());
                                 ApplicationSharedPreferences.getInstance(getActivity()).addValue("email", userObject.getEmail());
+                                ApplicationSharedPreferences.getInstance(getActivity()).addValue("user_name", userObject.getName());
                                 ApplicationSharedPreferences.getInstance(getActivity()).addBooleanValue("is_login", true);
 
                                 preferences = context.getSharedPreferences("myPref", Context.MODE_PRIVATE);

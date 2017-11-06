@@ -5,6 +5,7 @@ import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Property;
 import org.greenrobot.greendao.annotation.ToMany;
 
+import java.io.Serializable;
 import java.util.List;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.DaoException;
@@ -16,7 +17,9 @@ import io.connection.bluetooth.Database.annotations.Exclude;
  * Created by Kinjal on 10/8/2017.
  */
 @Entity(nameInDb = "mb_game_info")
-public class MBGameInfo {
+public class MBGameInfo implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @Property(nameInDb = "game_id")
     private Long gameId;

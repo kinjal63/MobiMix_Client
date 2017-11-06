@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
+import org.json.JSONObject;
+
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -23,6 +25,7 @@ import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import io.connection.bluetooth.activity.IDBResponse;
+import io.connection.bluetooth.utils.Constants;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -57,6 +60,9 @@ public class NetworkManager {
         wsManager_.checkIfUserAvailable(user, listener);
     }
 
+    public void deleteUserIfNotFoundInVicinity() {
+        DatabaseManager.getInstance().deleteUsersIfNotFoundInVicinity();
+    }
     // GUI to update after fetching data from DB
     public void getNearByPlayersFromDB(DBParams params, IDatabaseActionListener dbActionListener) {
         DatabaseManager.getInstance().findPlayers(params, dbActionListener);
@@ -64,6 +70,10 @@ public class NetworkManager {
 
     public void getMutualGames(DBParams params, IDatabaseActionListener dbActionListener) {
         DatabaseManager.getInstance().findMutualGames(params, dbActionListener);
+    }
+
+    public void updateGameTable(DBParams params) {
+        DatabaseManager.getInstance().updateGameTable(params);
     }
 
     public void handleResponse(Message msg) {

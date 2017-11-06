@@ -17,6 +17,9 @@ public class NearByPlayer {
     @SerializedName("player_name")
     @Expose
     private String playerName;
+    @SerializedName("email")
+    @Expose
+    private String email;
     @SerializedName("player_image_path")
     @Expose
     private String playerImagePath;
@@ -57,6 +60,14 @@ public class NearByPlayer {
 
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPlayerImagePath() {

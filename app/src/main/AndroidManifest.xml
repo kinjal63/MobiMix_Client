@@ -177,7 +177,13 @@
 
         <activity
             android:name=".activity.PlayerListActivity"
-            android:label="Users List"
+            android:label="Nearby Players"
+            android:screenOrientation="portrait">
+        </activity>
+
+        <activity
+            android:name=".activity.GameListActivity"
+            android:label="Mutual Games"
             android:screenOrientation="portrait">
         </activity>
 

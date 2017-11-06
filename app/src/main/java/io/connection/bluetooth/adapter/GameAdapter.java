@@ -109,15 +109,16 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         holder.imgWifi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                gameName = gameList.get((int)view.getTag()).getGameName();
-                gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
+                final MBGameInfo gameInfo = gameList.get((int)view.getTag());
+                gameName = gameInfo.getGameName();
+                gamePackageName = gameInfo.getGamePackageName();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setMessage("Do you want to send wifi-direct connection to selected users to play game " + gameName);
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        sendWifiConnectionInvite(gamePackageName);
+                        sendWifiConnectionInvite(gameInfo);
                         dialogInterface.dismiss();
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -138,29 +139,29 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
     }
 
     private void sendBluetoothConnectionInvite(String gamePackageName) {
-        Utils.makeDeviceDiscoverable(context);
-
-        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
-                remoteUserIds, 1);
-        gameInvite.setGamePackageName(gamePackageName);
-        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().getService().sendConnectionInvite(gameInvite);
-
-        req1.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    String data = response.body().string();
-                    System.out.println(data);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                t.printStackTrace();
-            }
-        });
+//        Utils.makeDeviceDiscoverable(context);
+//
+//        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
+//                remoteUserIds, 1);
+//        gameInvite.setGamePackageName(gamePackageName);
+//        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().getService().sendConnectionInvite(gameInvite);
+//
+//        req1.enqueue(new Callback<ResponseBody>() {
+//            @Override
+//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                try {
+//                    String data = response.body().string();
+//                    System.out.println(data);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                t.printStackTrace();
+//            }
+//        });
     }
 
     private void sendWifiConnectionInvite(MBGameInfo gameInfo) {

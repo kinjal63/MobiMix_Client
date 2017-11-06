@@ -14,6 +14,7 @@ public class MobiMix {
     public interface DBRequest {
         public static final int DB_FIND_NEARBY_PLAYERS = 101;
         public static final int DB_FIND_MUTUAL_GAMES = 102;
+        public static final int DB_UPDATE_GAME_TABLE = 103;
     }
 
     public interface DBResponse {
@@ -32,8 +33,9 @@ public class MobiMix {
     }
 
     public interface GameEvent {
-        public static final int EVENT_GAME_REQUEST_ASK = 301;
-        public static final int EVENT_GAME_REQUEST_RECEIVED = 302;
+        public static final int EVENT_GAME_INFO_REQUEST = 301;
+        public static final int EVENT_GAME_INFO_RESPONSE = 302;
         public static final int EVENT_GAME_LAUNCHED = 303;
+        public static final int EVENT_GAME_UPDATE_TABLE = 304;
     }
 }

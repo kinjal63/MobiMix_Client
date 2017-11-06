@@ -31,6 +31,15 @@ public class WifiP2PClientHandler extends Thread {
 
     @Override
     public void run() {
+        try {
+            tryToConnect();
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void tryToConnect() throws InterruptedException {
         mSocket = new Socket();
         try {
             mSocket.bind(null);
@@ -42,13 +51,11 @@ public class WifiP2PClientHandler extends Thread {
             socketManager = new SocketManager(mSocket, mHandler);
             socketManager.setRemoteDeviceHostAddress(mAddress.getHostName());
             new Thread(socketManager).start();
-        } catch (IOException e) {
-            Log.e(TAG, "IOException throwed by socket", e);
-            try {
-                mSocket.close();
-            } catch (IOException e1) {
-                Log.e(TAG, "IOException during close Socket", e1);
-            }
+        }
+        catch (IOException e) {
+            Thread.sleep(5000);
+            tryToConnect();
+            e.printStackTrace();
         }
     }
 

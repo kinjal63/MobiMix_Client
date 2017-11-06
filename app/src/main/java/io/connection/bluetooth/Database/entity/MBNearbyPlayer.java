@@ -6,6 +6,7 @@ import org.greenrobot.greendao.annotation.JoinEntity;
 import org.greenrobot.greendao.annotation.Property;
 import org.greenrobot.greendao.annotation.ToMany;
 
+import java.io.Serializable;
 import java.util.List;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.DaoException;
@@ -17,7 +18,9 @@ import io.connection.bluetooth.Database.annotations.Exclude;
  * Created by Kinjal on 10/7/2017.
  */
 @Entity(nameInDb = "mb_nearby_players")
-public class MBNearbyPlayer {
+public class MBNearbyPlayer implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @Property(nameInDb = "player_id")
     private String playerId;
@@ -59,11 +62,13 @@ public class MBNearbyPlayer {
     @Generated(hash = 1708284874)
     private transient MBNearbyPlayerDao myDao;
 
-    @Generated(hash = 1422947906)
-    public MBNearbyPlayer(String playerId, String playerName, String playerImagePath, int isEngaged,
-            String activeGameName, int isGroupOwner, String groupOwnerUserId, int maxPlayers) {
+    @Generated(hash = 2023716044)
+    public MBNearbyPlayer(String playerId, String playerName, String email, String playerImagePath,
+            int isEngaged, String activeGameName, int isGroupOwner, String groupOwnerUserId,
+            int maxPlayers) {
         this.playerId = playerId;
         this.playerName = playerName;
+        this.email = email;
         this.playerImagePath = playerImagePath;
         this.isEngaged = isEngaged;
         this.activeGameName = activeGameName;

@@ -10,6 +10,7 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import io.connection.bluetooth.Domain.QueueManager;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.activity.gui.GUIManager;
 import io.connection.bluetooth.core.CoreEngine;
+import io.connection.bluetooth.core.EventData;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.RequestData;
 import io.connection.bluetooth.core.WifiDirectService;
@@ -134,10 +136,11 @@ public class MessageHandler {
                 wifiP2PService.setModule(Modules.CHAT);
             } else if (message.startsWith(Constants.BUSINESSCARD_MODULE)) {
                 wifiP2PService.setModule(Modules.BUSINESS_CARD);
-            } else if (message.startsWith(Constants.GAME_MODULE)) {
+            } else if (!this.wifiP2PService.getModule().getModuleName().equalsIgnoreCase(Constants.GAME_MODULE)
+                        && message.startsWith(Constants.GAME_MODULE)) {
                 wifiP2PService.setModule(Modules.GAME);
 
-                JSONObject object = MessageConstructor.constructObjectToAskGameRequest();
+                JSONObject object = MessageConstructor.constructObjectToSendEvent(MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
                 if(object != null) {
                     socketManager.writeObject(object);
                 }
@@ -175,9 +178,16 @@ public class MessageHandler {
 
     private void handleGameObject(Message message) {
         switch (message.arg1) {
-            case MobiMix.GameEvent.EVENT_GAME_REQUEST_ASK:
-                CoreEngine.sendEventToGUI(message);
+            // Send Game Info if requested by remote user
+            case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
+                if(socketManager != null) {
+                    socketManager.writeObject(MessageConstructor.constructObjectToSendGameRequest());
+                }
                 break;
+            case MobiMix.GameEvent.EVENT_GAME_INFO_RESPONSE:
+                CoreEngine.sendEventToGUI(message);
+            case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
+                CoreEngine.sendEventToGUI(message);
             default:
                 break;
         }
@@ -241,13 +251,6 @@ public class MessageHandler {
     }
 
     public void closeSocket() {
-//        sendMessage(new String("NowClosing").getBytes());
-//        try {
-//            Thread.sleep(1500);
-//        }catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-
         if (heartbeat != null && !heartbeat.isInterrupted()) {
             heartbeat.interrupt();
         }
@@ -259,5 +262,19 @@ public class MessageHandler {
         wifiP2PService.removeGroup();
 
         System.out.println("Removing group for wifidirect");
+    }
+
+    public void sendEvent(EventData eventData) {
+        JSONObject eventObj = null;
+        switch (eventData.event_) {
+            case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
+                eventObj = MessageConstructor.getEventGameLaunchedObject(eventData.userId_);
+                break;
+            default:
+                break;
+        }
+        if(socketManager != null && eventObj != null) {
+            socketManager.writeObject(eventObj);
+        }
     }
 }

@@ -65,7 +65,7 @@ public class MobiMixService extends Service {
         ComponentName componentName = new ComponentName(MobiMixApplication.getInstance().getContext(), DBSyncService.class);
         JobInfo.Builder builder = new JobInfo.Builder(0, componentName);
         builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-        builder.setPeriodic(30000);
+        builder.setMinimumLatency(1000);
 
         JobScheduler jobSchedular = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         jobSchedular.schedule(builder.build());

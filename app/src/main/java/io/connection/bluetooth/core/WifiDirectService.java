@@ -19,12 +19,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Api.async.IAPIResponse;
 import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
@@ -35,7 +33,6 @@ import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
-import io.connection.bluetooth.actionlisteners.ResponseCallback;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
@@ -44,8 +41,9 @@ import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
 import io.connection.bluetooth.socketmanager.WifiP2PServerHandler;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.UtilsHandler;
+import io.connection.bluetooth.utils.cache.CacheConstants;
+import io.connection.bluetooth.utils.cache.MobiMixCache;
 import retrofit2.Call;
-import retrofit2.Response;
 
 /**
  * Created by KP49107 on 23-03-2017.
@@ -80,7 +78,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     public static WifiDirectService getInstance(Context context) {
         mContext = context;
         synchronized (obj) {
-            if( wifiDirectService == null ) {
+            if (wifiDirectService == null) {
                 wifiDirectService = new WifiDirectService();
             }
         }
@@ -93,8 +91,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void initialize() {
-        WifiManager wifiManager = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
-        if(!wifiManager.isWifiEnabled()) {
+        WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+        if (!wifiManager.isWifiEnabled()) {
             wifiManager.setWifiEnabled(true);
         }
         setUp();
@@ -150,7 +148,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             Method method = wifiP2PManager
                     .getMethod(
                             "enableP2p",
-                            new Class[] { android.net.wifi.p2p.WifiP2pManager.Channel.class });
+                            new Class[]{android.net.wifi.p2p.WifiP2pManager.Channel.class});
 
             method.invoke(manager, channel);
 
@@ -212,7 +210,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 UtilsHandler.dismissProgressDialog();
                 Toast.makeText(mContext, "Wifi direct connection is established.",
                         Toast.LENGTH_SHORT).show();
-                if( listener != null ) {
+                if (listener != null) {
                     listener.onDeviceConnected(true);
                 }
             }
@@ -222,7 +220,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 UtilsHandler.dismissProgressDialog();
                 Toast.makeText(mContext, "Connect failed. Retry.",
                         Toast.LENGTH_SHORT).show();
-                if( listener != null ) {
+                if (listener != null) {
                     listener.onDeviceConnected(false);
                 }
             }
@@ -236,11 +234,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
          * client socket for every client. This is handled by {@code
          * GroupOwnerSocketHandler}
          */
-        if(p2pInfo.groupFormed) {
-//            if( socketHandler != null ) {
-//                closeConnetion();
-//            }
-
+        if (p2pInfo.groupFormed) {
             if (p2pInfo.isGroupOwner) {
                 Log.d(TAG, "Connected as group owner");
                 try {
@@ -248,75 +242,69 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                     socketHandler = new WifiP2PServerHandler(messageHandler);
                     socketHandler.start();
 
+                    MobiMixCache.putInCache(CacheConstants.CACHE_IS_GROUP_OWNER, 1);
+
                 } catch (IOException e) {
                     Log.e(TAG, "Failed to create a server thread - " + e);
                     return;
                 }
             } else {
                 Log.d(TAG, "Connected as peer");
-                if(UtilsHandler.getGamesFromStack().size() > 0) {
-                    UtilsHandler.removeGameFromStack();
-                }
                 socketHandler = new WifiP2PClientHandler(messageHandler, p2pInfo.groupOwnerAddress);
                 socketHandler.start();
+
+                MobiMixCache.putInCache(CacheConstants.CACHE_IS_GROUP_OWNER, 0);
             }
         }
     }
 
     public void closeConnection() {
-        if(socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
-            ((WifiP2PClientHandler)socketHandler).closeSocketAndKillThisThread();
-        }
-        else if(socketHandler != null && socketHandler instanceof WifiP2PServerHandler) {
-            ((WifiP2PServerHandler)socketHandler).closeSocketAndKillThisThread();
+        if (socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
+            ((WifiP2PClientHandler) socketHandler).closeSocketAndKillThisThread();
+        } else if (socketHandler != null && socketHandler instanceof WifiP2PServerHandler) {
+            ((WifiP2PServerHandler) socketHandler).closeSocketAndKillThisThread();
         }
     }
 
     public boolean isSocketConnectedWithHost(String hostName) {
         return messageHandler.isSocketConnected();
-//        if(socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
-//            return ((WifiP2PClientHandler)socketHandler).checkSocketConnection(hostName);
-//        }
-//        else if(socketHandler != null && socketHandler instanceof WifiP2PServerHandler) {
-//            return ((WifiP2PServerHandler)socketHandler).checkSocketConnection(hostName);
-//        }
-//        return false;
     }
 
     public WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
         @Override
         public void onPeersAvailable(WifiP2pDeviceList peerList) {
-        Collection<WifiP2pDevice> p2pDeviceList = peerList.getDeviceList();
+            Collection<WifiP2pDevice> p2pDeviceList = peerList.getDeviceList();
 
-        wifiP2PDeviceList.clear();
+            wifiP2PDeviceList.clear();
 
-        for(final WifiP2pDevice device : p2pDeviceList) {
-            System.out.println("Peers list->" + device.deviceName);
-            WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
-            wifiP2PDeviceList.add(remoteDevice);
-            User user = new User();
-            user.setName(device.deviceName);
-            user.setEmail(device.deviceName);
+            for (final WifiP2pDevice device : p2pDeviceList) {
+                System.out.println("Peers list->" + device.deviceName);
+                WifiP2PRemoteDevice remoteDevice = new WifiP2PRemoteDevice(device, device.deviceName);
+                wifiP2PDeviceList.add(remoteDevice);
+                User user = new User();
+                user.setName(device.deviceName);
+                user.setEmail(device.deviceName);
 
-            NetworkManager.getInstance().checkIfUserAvailable(user, new IAPIResponse<User>() {
-                @Override
-                public void onResponseSuccess(User body) {
-                }
+//                NetworkManager.getInstance().checkIfUserAvailable(user, new IAPIResponse<User>() {
+//                    @Override
+//                    public void onResponseSuccess(User body) {
+//                    }
+//
+//                    @Override
+//                    public void onResponseFailure(Call<User> call) {
+//                    }
+//                });
 
-                @Override
-                public void onResponseFailure(Call<User> call) {
-                }
-            });
-
-        }
-        if( nearByDeviceCallback != null ) {
-            nearByDeviceCallback.onDevicesAvailable(wifiP2PDeviceList);
-        }
+            }
+            if (nearByDeviceCallback != null) {
+                nearByDeviceCallback.onDevicesAvailable(wifiP2PDeviceList);
+            }
+            NetworkManager.getInstance().deleteUserIfNotFoundInVicinity();
         }
     };
 
     public void a(WifiP2pDevice device) {
-        for( WifiP2PRemoteDevice remoteDevice : wifiP2PDeviceList ) {
+        for (WifiP2PRemoteDevice remoteDevice : wifiP2PDeviceList) {
             if (remoteDevice.getDevice().deviceName.equalsIgnoreCase(wifiDirectDeviceName)) {
                 connectWithWifiAddress(device.deviceAddress, null);
             }
@@ -343,27 +331,27 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 public void onGroupInfoAvailable(WifiP2pGroup group) {
 //                    if (group != null && manager != null && channel != null
 //                            && group.isGroupOwner()) {
-                        manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
+                    manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
 
-                            @Override
-                            public void onSuccess() {
-                                Log.d(TAG, "removeGroup onSuccess -");
-                                initiateDiscovery();
-                            }
+                        @Override
+                        public void onSuccess() {
+                            Log.d(TAG, "removeGroup onSuccess -");
+                            initiateDiscovery();
+                        }
 
-                            @Override
-                            public void onFailure(int reason) {
-                                Log.d(TAG, "removeGroup onFailure -" + reason);
-                            }
-                        });
-                    }
+                        @Override
+                        public void onFailure(int reason) {
+                            Log.d(TAG, "removeGroup onFailure -" + reason);
+                        }
+                    });
+                }
 //                }
             });
         }
     }
 
     public void closeSocket() {
-        if(messageHandler != null) {
+        if (messageHandler != null) {
             messageHandler.socketClosed();
         }
     }
@@ -371,41 +359,42 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     public void updateConnectionInfo(final GameRequest gameRequest, final boolean isNeedToNotify, final IUpdateListener iUpdateListener) {
         System.out.println("Updating connection info");
         manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
-                public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
-                    if(p2pInfo.groupFormed) {
-                        System.out.println("Updating connection info + group formed");
-                        GameConnectionInfo connectionInfo = new GameConnectionInfo();
+            public void onConnectionInfoAvailable(WifiP2pInfo p2pInfo) {
+                if (p2pInfo.groupFormed) {
+                    System.out.println("Updating connection info + group formed");
+                    GameConnectionInfo connectionInfo = new GameConnectionInfo();
 
-                        if (p2pInfo.isGroupOwner) {
-                            Log.d(TAG, "Connected as group owner");
-                            connectionInfo.setIsGroupOwner(1);
+                    if (p2pInfo.isGroupOwner) {
+                        Log.d(TAG, "Connected as group owner");
+                        connectionInfo.setIsGroupOwner(1);
 //                            UtilsHandler.launchGame(gameRequest.getGamePackageName());
-                        } else {
-                            Log.d(TAG, "Connected as peer");
-                            connectionInfo.setIsGroupOwner(0);
-                        }
-
-                        connectionInfo.setGameId(gameRequest.getGameId());
-                        connectionInfo.setUserId(ApplicationSharedPreferences.getInstance(mContext).
-                                getValue("user_id"));
-                        connectionInfo.setConnectedUserId(gameRequest.getRemoteUserId());
-                        connectionInfo.setIsNeedToNotify(isNeedToNotify);
-                        connectionInfo.setConnectionType(gameRequest.getConnectionType());
-
-                        NetworkManager.getInstance().updateConnectionInfo(connectionInfo, iUpdateListener);
+                    } else {
+                        Log.d(TAG, "Connected as peer");
+                        connectionInfo.setIsGroupOwner(0);
                     }
+
+                    connectionInfo.setGameId(gameRequest.getGameId());
+                    connectionInfo.setUserId(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("user_id"));
+                    connectionInfo.setConnectedUserId(gameRequest.getRemoteUserId());
+                    connectionInfo.setIsNeedToNotify(isNeedToNotify);
+                    connectionInfo.setConnectionType(gameRequest.getConnectionType());
+
+                    NetworkManager.getInstance().updateConnectionInfo(connectionInfo, iUpdateListener);
                 }
+            }
         });
     }
+
     public void notifyUserForClosedSocket() {
-        if(socketConnectionListener != null) {
+        if (socketConnectionListener != null) {
             socketConnectionListener.socketClosed();
         }
         initiateDiscovery();
     }
 
     public void notifyUserForConnectedSocket(String remoteDeviceAddress) {
-        if(socketConnectionListener != null) {
+        if (socketConnectionListener != null) {
             socketConnectionListener.socketConnected(true, remoteDeviceAddress);
         }
     }
@@ -457,11 +446,11 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     public void unRegisterReceiver() {
         try {
             mContext.unregisterReceiver(mReceiver);
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
     }
+
     private class DiscoveryTask extends TimerTask {
         @Override
         public void run() {
@@ -481,8 +470,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     public void acceptRequest(GameRequest gameRequest) {
         setWifiDirectDeviceName(gameRequest.getWifiAddress());
         List<WifiP2PRemoteDevice> devices = getWifiP2PDeviceList();
-        for(WifiP2PRemoteDevice remoteDevice : devices) {
-            if( remoteDevice.getDevice().deviceName.equalsIgnoreCase(gameRequest.getWifiAddress())) {
+        for (WifiP2PRemoteDevice remoteDevice : devices) {
+            if (remoteDevice.getDevice().deviceName.equalsIgnoreCase(gameRequest.getWifiAddress())) {
                 UtilsHandler.addGameInStack(gameRequest);
 
                 connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
@@ -494,22 +483,46 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
     }
 
-    public void sendWifiDirectRequestToUser(List<MBNearbyPlayer> players, MBGameInfo gameInfo) {
-        if(players.size() > 0) {
-            MBNearbyPlayer player = players.get(0);
-
-            GameRequest gameRequest = new GameRequest();
-            gameRequest.setGameId(gameInfo.getGameId());
-            gameRequest.setGameName(gameInfo.getGameName());
-            gameRequest.setGamePackageName(gameInfo.getGamePackageName());
-            gameRequest.setRemoteUserId(player.getPlayerId());
-            gameRequest.setRemoteUserName(player.getPlayerName());
-            gameRequest.setWifiAddress(player.getEmail());
-
-            UtilsHandler.addGameInStack(gameRequest);
-            players.remove(0);
+    private void connect(String deviceName, DeviceConnectionListener listener) {
+        List<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
+        for (WifiP2PRemoteDevice remoteDevice : devices) {
+            if (remoteDevice.getDevice().deviceName.equalsIgnoreCase(deviceName)) {
+                connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, listener);
+            }
         }
-        UtilsHandler.addPlayersInQueue(players);
     }
 
+    public void sendWifiDirectRequestToUser(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
+        if (players.size() > 0) {
+            MBNearbyPlayer player = players.get(0);
+            connect(player.getEmail(), new DeviceConnectionListener() {
+                @Override
+                public void onDeviceConnected(boolean isConnected) {
+                    GameRequest gameRequest = new GameRequest();
+                    gameRequest.setGameId(gameInfo.getGameId());
+                    gameRequest.setGameName(gameInfo.getGameName());
+                    gameRequest.setGamePackageName(gameInfo.getGamePackageName());
+                    gameRequest.setRemoteUserId(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("user_id"));
+                    gameRequest.setRemoteUserName(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("user_name"));
+                    gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("email"));
+
+                    UtilsHandler.addGameInStack(gameRequest);
+                    // remove 1st player from list as it is connected
+                    players.remove(0);
+
+                    // add all players except 1st in queue
+                    UtilsHandler.addPlayersInQueue(players);
+                }
+            });
+        }
+    }
+
+    public void sendEvent(EventData eventData) {
+        if(messageHandler != null) {
+            messageHandler.sendEvent(eventData);
+        }
+    }
 }
