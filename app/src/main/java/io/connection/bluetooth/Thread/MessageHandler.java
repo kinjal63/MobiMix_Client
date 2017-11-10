@@ -125,7 +125,8 @@ public class MessageHandler {
                 message.startsWith(Constants.BUSINESSCARD_MODULE) ||
                 message.startsWith(Constants.GAME_MODULE)) {
 
-            socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
+            WifiP2PRemoteDevice device = socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
+            wifiP2PService.addConnectedDevice(device);
             socketConnected();
 
             // Enable read module after receiving module in First Message
@@ -142,7 +143,7 @@ public class MessageHandler {
 
                 JSONObject object = MessageConstructor.constructObjectToSendEvent(MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
                 if(object != null) {
-                    socketManager.writeObject(object);
+                    socketManager.writeMessage(object.toString().getBytes());
                 }
             }
             readData();
@@ -181,7 +182,7 @@ public class MessageHandler {
             // Send Game Info if requested by remote user
             case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
                 if(socketManager != null) {
-                    socketManager.writeObject(MessageConstructor.constructObjectToSendGameRequest());
+                    socketManager.writeMessage(MessageConstructor.constructObjectToSendGameRequest().toString().getBytes());
                 }
                 break;
             case MobiMix.GameEvent.EVENT_GAME_INFO_RESPONSE:
@@ -261,6 +262,8 @@ public class MessageHandler {
         wifiP2PService.closeConnection();
         wifiP2PService.removeGroup();
 
+        wifiP2PService.removeConnectedDevice(socketManager.getRemoteDevice());
+
         System.out.println("Removing group for wifidirect");
     }
 
@@ -274,7 +277,8 @@ public class MessageHandler {
                 break;
         }
         if(socketManager != null && eventObj != null) {
-            socketManager.writeObject(eventObj);
+            byte[] b = eventObj.toString().getBytes();
+            socketManager.writeMessage(b);
         }
     }
 }

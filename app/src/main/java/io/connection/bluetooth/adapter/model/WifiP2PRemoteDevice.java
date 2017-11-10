@@ -17,6 +17,32 @@ public class WifiP2PRemoteDevice implements Parcelable {
     }
 
     @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + device.describeContents();
+        result = prime * result + device.describeContents();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(this == obj) {
+            return true;
+        }
+        else if(obj == null) {
+            return false;
+        }
+        else {
+            WifiP2PRemoteDevice device = (WifiP2PRemoteDevice) obj;
+            if (this.device.deviceAddress.equalsIgnoreCase(device.getDevice().deviceAddress)) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeValue(device);
         dest.writeString(name);

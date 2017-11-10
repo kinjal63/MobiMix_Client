@@ -19,6 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -62,7 +64,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private IntentFilter mIntentFilter;
     private WiFiDirectBroadcastReceiver mReceiver;
 
-    private List<WifiP2PRemoteDevice> wifiP2PDeviceList = new ArrayList<>();
+    private HashSet<WifiP2PRemoteDevice> wifiP2PDeviceList = new HashSet<>();
+    private HashMap<String, WifiP2PRemoteDevice> connectedDeviceMap = new HashMap<>();
     private Thread socketHandler;
     private MessageHandler messageHandler;
 
@@ -296,6 +299,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 //                });
 
             }
+            for(WifiP2PRemoteDevice device : connectedDeviceMap.values()) {
+                wifiP2PDeviceList.add(device);
+            }
             if (nearByDeviceCallback != null) {
                 nearByDeviceCallback.onDevicesAvailable(wifiP2PDeviceList);
             }
@@ -435,8 +441,16 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         return messageHandler.getRemoteDeviceAddress();
     }
 
-    public List<WifiP2PRemoteDevice> getWifiP2PDeviceList() {
+    public HashSet<WifiP2PRemoteDevice> getWifiP2PDeviceList() {
         return wifiP2PDeviceList;
+    }
+
+    public void addConnectedDevice(WifiP2PRemoteDevice remoteDevice) {
+        this.connectedDeviceMap.put(remoteDevice.getDevice().deviceAddress, remoteDevice);
+    }
+
+    public void removeConnectedDevice(WifiP2PRemoteDevice device) {
+        this.connectedDeviceMap.remove(device.getDevice().deviceAddress);
     }
 
     public void registerReceiver() {
@@ -469,7 +483,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
     public void acceptRequest(GameRequest gameRequest) {
         setWifiDirectDeviceName(gameRequest.getWifiAddress());
-        List<WifiP2PRemoteDevice> devices = getWifiP2PDeviceList();
+        HashSet<WifiP2PRemoteDevice> devices = getWifiP2PDeviceList();
         for (WifiP2PRemoteDevice remoteDevice : devices) {
             if (remoteDevice.getDevice().deviceName.equalsIgnoreCase(gameRequest.getWifiAddress())) {
                 UtilsHandler.addGameInStack(gameRequest);
@@ -484,7 +498,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     private void connect(String deviceName, DeviceConnectionListener listener) {
-        List<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
+        HashSet<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
         for (WifiP2PRemoteDevice remoteDevice : devices) {
             if (remoteDevice.getDevice().deviceName.equalsIgnoreCase(deviceName)) {
                 connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, listener);

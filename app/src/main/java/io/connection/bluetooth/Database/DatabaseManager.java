@@ -8,6 +8,7 @@ import org.greenrobot.greendao.query.DeleteQuery;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import io.connection.bluetooth.Api.response.entity.NearByPlayer;
@@ -96,7 +97,7 @@ public class DatabaseManager {
     // Update tables by scanning nearby users
     public synchronized void deleteUsersIfNotFoundInVicinity() {
         List<MBNearbyPlayer> players = MobiMixApplication.getInstance().getDaoSession().getMBNearbyPlayerDao().loadAll();
-        List<WifiP2PRemoteDevice> devices = WifiDirectService.getInstance(context).getWifiP2PDeviceList();
+        HashSet<WifiP2PRemoteDevice> devices = WifiDirectService.getInstance(context).getWifiP2PDeviceList();
 
         List<String> emailsIds = new ArrayList<>();
         emailsIds.add(ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).getValue("email"));

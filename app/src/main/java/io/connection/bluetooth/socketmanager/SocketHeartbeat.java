@@ -38,7 +38,7 @@ public class SocketHeartBeat extends Thread {
             finally {
                 if(!isSocketConnected) {
                     System.out.println("Socket disconnected event is sent from SocketHearBeat");
-                    this.socketManager.socketClosed();
+//                    this.socketManager.socketClosed();
                 }
             }
         }

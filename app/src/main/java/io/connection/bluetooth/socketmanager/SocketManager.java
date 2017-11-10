@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.core.WifiDirectService;
@@ -29,7 +30,7 @@ public class SocketManager implements Runnable {
     private Socket socket;
     private SocketOperationType operationType = SocketOperationType.NONE;
     private MessageHandler handler;
-    private InputStream is;
+    private ObjectInputStream is;
     private ObjectOutputStream os;
     private boolean disable = false;
 
@@ -47,12 +48,11 @@ public class SocketManager implements Runnable {
     @Override
     public void run() {
         try {
-            is = new ObjectInputStream(socket.getInputStream());
             os = new ObjectOutputStream(socket.getOutputStream());
+            is = new ObjectInputStream(socket.getInputStream());
 
-            byte [] buffer = new byte[1024];
+            byte[] buffer = new byte[1024];
             int bytes;
-
 
             handler.getHandler().obtainMessage(Constants.FIRSTMESSAGEXCHANGE, this).sendToTarget();
 
@@ -71,32 +71,27 @@ public class SocketManager implements Runnable {
                         this.obj.wait();
                     }
 
-                    if(operationType == SocketOperationType.READ) {
+                    if (operationType == SocketOperationType.READ) {
                         startReadModule();
-                    }
-                    else {
+                    } else {
                         startWriteModule();
                     }
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-            }
-            catch (InterruptedException i) {
+            } catch (InterruptedException i) {
                 synchronized (this.obj) {
                     this.obj.notify();
                 }
-                if( !Thread.currentThread().isInterrupted() ) {
+                if (!Thread.currentThread().isInterrupted()) {
                     Thread.currentThread().interrupt();
                 }
                 i.printStackTrace();
             }
 //            }
-        }
-        catch (IOException e) {
-            Log.e(TAG,"Exception : " + e.toString());
-        }
-        finally {
+        } catch (IOException e) {
+            Log.e(TAG, "Exception : " + e.toString());
+        } finally {
 //            try {
 //                is.close();
 //                socket.close();
@@ -109,34 +104,30 @@ public class SocketManager implements Runnable {
     public void startReadModule() {
         try {
             Thread.sleep(500);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         System.out.println("Socket is connected 2" + handler.isSocketConnected());
-        if(handler.isSocketConnected()) {
+        if (handler.isSocketConnected()) {
             System.out.println("Socket is connected 2.1");
             WifiDirectService wifiP2PService = handler.getWifiP2PService();
 
-            if( wifiP2PService != null ) {
-                if(wifiP2PService.getModule() == Modules.CHAT) {
+            if (wifiP2PService != null) {
+                if (wifiP2PService.getModule() == Modules.CHAT) {
                     System.out.println("Socket is read 3 Chat");
                     ReadChatData chatData = new ReadChatData(socket, handler);
                     chatData.readChatData();
-                }
-                else if(wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
+                } else if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
                     System.out.println("Socket is read 3 Business");
                     ReadBusinessCard businessCard = new ReadBusinessCard(socket, handler);
                     businessCard.readData();
-                }
-                else if(wifiP2PService.getModule() == Modules.FILE_SHARING) {
+                } else if (wifiP2PService.getModule() == Modules.FILE_SHARING) {
                     System.out.println("Socket is read 3 file sharing");
                     ReadFiles file = new ReadFiles(socket, handler);
                     file.readFiles();
-                }
-                else if(wifiP2PService.getModule() == Modules.GAME) {
+                } else if (wifiP2PService.getModule() == Modules.GAME) {
                     System.out.println("Socket is read 3 file Game");
-                    ReadGameData file = new ReadGameData(socket, handler);
+                    ReadGameData file = new ReadGameData(is, handler);
                     file.readGameEvent();
                 }
             }
@@ -147,7 +138,7 @@ public class SocketManager implements Runnable {
     }
 
     public void startWriteModule() {
-        if(handler.isSocketConnected()) {
+        if (handler.isSocketConnected()) {
             WifiDirectService wifiP2PService = handler.getWifiP2PService();
             System.out.println("Socket is write connected 2");
 
@@ -186,8 +177,7 @@ public class SocketManager implements Runnable {
                 os.write(buffer);
                 os.flush();
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -200,8 +190,7 @@ public class SocketManager implements Runnable {
                 os.writeObject(object);
                 os.flush();
             }
-        }
-        catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -220,11 +209,13 @@ public class SocketManager implements Runnable {
         }
     }
 
-    public void setRemoteDevice(String remoteDeviceAddress, String deviceName) {
+    public WifiP2PRemoteDevice setRemoteDevice(String remoteDeviceAddress, String deviceName) {
         WifiP2pDevice device = new WifiP2pDevice();
         device.deviceAddress = remoteDeviceAddress;
         device.deviceName = deviceName;
         this.remoteDevice = new WifiP2PRemoteDevice(device, deviceName);
+
+        return this.remoteDevice;
     }
 
     public WifiP2PRemoteDevice getRemoteDevice() {

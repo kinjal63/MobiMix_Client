@@ -5,7 +5,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
-import java.util.Map;
 
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.utils.Constants;
@@ -20,8 +19,8 @@ public class ReadGameData {
     private ObjectInputStream ois;
     private MessageHandler handler;
 
-    public ReadGameData(Socket socket, MessageHandler handler) {
-        this.socket = socket;
+    public ReadGameData(ObjectInputStream inputStream, MessageHandler handler) {
+        this.ois = inputStream;
         this.handler = handler;
     }
 
@@ -30,7 +29,6 @@ public class ReadGameData {
         JSONObject object;
 
         try {
-            ois = new ObjectInputStream(socket.getInputStream());
             while (!disable) {
                 if (ois != null) {
                     try {
@@ -51,6 +49,7 @@ public class ReadGameData {
         }
         catch (IOException e) {
             e.printStackTrace();
+            handler.socketClosed();
         }
     }
 }
