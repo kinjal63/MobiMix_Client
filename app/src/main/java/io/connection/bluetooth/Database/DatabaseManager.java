@@ -4,10 +4,14 @@ import android.content.Context;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
+import org.greenrobot.greendao.database.Database;
 import org.greenrobot.greendao.query.DeleteQuery;
+import org.greenrobot.greendao.query.QueryBuilder;
+import org.greenrobot.greendao.query.WhereCondition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -23,9 +27,12 @@ import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayerDao;
 import io.connection.bluetooth.Database.entity.MBPlayerGames;
 import io.connection.bluetooth.Database.entity.MBPlayerGamesDao;
+import io.connection.bluetooth.Database.entity.MBUserAvailability;
+import io.connection.bluetooth.Database.entity.MBUserAvailabilityDao;
 import io.connection.bluetooth.Database.utils.EntityUtils;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 
@@ -54,20 +61,22 @@ public class DatabaseManager {
         MobiMixApplication.getInstance().getDaoSession().getMBNearbyPlayerDao().deleteAll();
         MobiMixApplication.getInstance().getDaoSession().getMBPlayerGamesDao().deleteAll();
         MobiMixApplication.getInstance().getDaoSession().getMBGameInfoDao().deleteAll();
+        MobiMixApplication.getInstance().getDaoSession().getMBUserAvailabilityDao().deleteAll();
 
         MBNearbyPlayer[] nearByPlayers = new MBNearbyPlayer[players.size()];
+
         int i = 0;
-        for(NearByPlayer player : players) {
+        for (NearByPlayer player : players) {
             nearByPlayers[i] = new MBNearbyPlayer();
 
             EntityUtils.copyProperties(player, nearByPlayers[i]);
             List<PlayerGame> playerGames = player.getPlayerGameList();
-            if(playerGames.size() > 0) {
+            if (playerGames.size() > 0) {
                 MBGameInfo[] gameInfo = new MBGameInfo[playerGames.size()];
                 List<MBPlayerGames> playerGamesMap = new ArrayList<>();
 
                 int k = 0;
-                for(PlayerGame playerGame : playerGames) {
+                for (PlayerGame playerGame : playerGames) {
                     gameInfo[k] = new MBGameInfo();
                     EntityUtils.copyProperties(playerGame, gameInfo[k]);
 
@@ -88,6 +97,16 @@ public class DatabaseManager {
             i++;
         }
         MobiMixApplication.getInstance().getDaoSession().getMBNearbyPlayerDao().insertOrReplaceInTx(nearByPlayers);
+
+        for(MBNearbyPlayer player : nearByPlayers) {
+            MBUserAvailability userAvailability = new MBUserAvailability();
+            userAvailability.setPlayer(player);
+            userAvailability.setPlayerId(player.getPlayerId());
+            userAvailability.setIsEngaged(1);
+            userAvailability.setUpdatedAt(new Date());
+
+            MobiMixApplication.getInstance().getDaoSession().getMBUserAvailabilityDao().insertOrReplace(userAvailability);
+        }
     }
 
     public synchronized void update(Object object, String whereKeyClause, String value) {
@@ -99,31 +118,48 @@ public class DatabaseManager {
         List<MBNearbyPlayer> players = MobiMixApplication.getInstance().getDaoSession().getMBNearbyPlayerDao().loadAll();
         HashSet<WifiP2PRemoteDevice> devices = WifiDirectService.getInstance(context).getWifiP2PDeviceList();
 
-        List<String> emailsIds = new ArrayList<>();
-        emailsIds.add(ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).getValue("email"));
-        for(WifiP2PRemoteDevice device : devices) {
-            emailsIds.add(device.getName());
+        List<String> emailIds = new ArrayList<>();
+        emailIds.add(ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).getValue("email"));
+        for (WifiP2PRemoteDevice device : devices) {
+            emailIds.add(device.getName());
         }
 
-        List<String> playerIdsToDelete = new ArrayList<>();
-        for(MBNearbyPlayer player : players) {
-            if(!emailsIds.contains(player.getEmail())) {
-                playerIdsToDelete.add(player.getPlayerId());
-            }
-        }
-
-        // Delete from mb_nearby_players table
         DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
-        DeleteQuery<MBNearbyPlayer> dQPlayers = daoSession.queryBuilder(MBNearbyPlayer.class)
-                .where(MBNearbyPlayerDao.Properties.Email.notIn(emailsIds))
-                .buildDelete();
-        dQPlayers.executeDeleteWithoutDetachingEntities();
+        QueryBuilder<MBNearbyPlayer> qb = daoSession.getMBNearbyPlayerDao().queryBuilder();
+        List<MBNearbyPlayer> playersToUpdate = qb.where(MBNearbyPlayerDao.Properties.Email.in(emailIds)).list();
 
-        // Delete from player_games table
-        DeleteQuery<MBPlayerGames> dqPlayerGames = daoSession.queryBuilder(MBPlayerGames.class)
-                .where(MBPlayerGamesDao.Properties.PlayerId.in(playerIdsToDelete))
-                .buildDelete();
-        dqPlayerGames.executeDeleteWithoutDetachingEntities();
+//        QueryBuilder<MBUserAvailability> qb = daoSession.getMBUserAvailabilityDao().queryBuilder();
+//        qb.join(MBNearbyPlayer.class, MBNearbyPlayerDao.Properties.PlayerId)
+//                .where(MBNearbyPlayerDao.Properties.Email.in(emailIds));
+//        List<MBUserAvailability> userAvailabilities = qb.list();
+
+        for (MBNearbyPlayer player : playersToUpdate) {
+            MBUserAvailability userAvailabilityObj = daoSession.getMBUserAvailabilityDao().queryBuilder().
+                    where(MBUserAvailabilityDao.Properties.PlayerId.eq(player.getPlayerId())).unique();
+            userAvailabilityObj.setIsEngaged(0);
+            daoSession.getMBUserAvailabilityDao().update(userAvailabilityObj);
+        }
+
+
+//        List<String> playerIdsToInActive = new ArrayList<>();
+//        for (MBNearbyPlayer player : players) {
+//            if (!emailsIds.contains(player.getEmail())) {
+//                playerIdsToInActive.add(player.getPlayerId());
+//            }
+//        }
+
+//        // Delete from mb_nearby_players table
+//        DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
+//        DeleteQuery<MBNearbyPlayer> dQPlayers = daoSession.queryBuilder(MBNearbyPlayer.class)
+//                .where(MBNearbyPlayerDao.Properties.Email.notIn(emailsIds))
+//                .up();
+//        dQPlayers.executeDeleteWithoutDetachingEntities();
+//
+//        // Delete from player_games table
+//        DeleteQuery<MBPlayerGames> dbPlayerGames = daoSession.queryBuilder(MBPlayerGames.class)
+//                .where(new WhereCondition().MBPlayerGamesDao.Properties.PlayerId.in(playerIdsToInActive))
+//                .buildDelete();
+//        dbPlayerGames.executeDeleteWithoutDetachingEntities();
 
     }
 
@@ -131,7 +167,7 @@ public class DatabaseManager {
         doAsync(params, new IActionReadListener() {
             @Override
             public void onReadOperation(int error, List<?> objects) {
-                if(error == 0) {
+                if (error == 0) {
                     iDatabaseActionListener.onDataReceived(objects);
                 }
             }
@@ -142,7 +178,7 @@ public class DatabaseManager {
         doAsync(params, new IActionReadListener() {
             @Override
             public void onReadOperation(int error, List<?> objects) {
-                if(error == 0) {
+                if (error == 0) {
                     iDatabaseActionListener.onDataReceived(objects);
                 }
             }
@@ -153,7 +189,7 @@ public class DatabaseManager {
         doAsync(params, new IActionUpdateListener() {
             @Override
             public void onUpdateAction(int error) {
-                if(error == 0) {
+                if (error == 0) {
                     Log.d("DatabaseManager", "Game table is updated successfully");
                 }
             }

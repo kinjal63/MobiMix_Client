@@ -1,8 +1,10 @@
 package io.connection.bluetooth.socketmanager.modules;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
@@ -16,32 +18,37 @@ import io.connection.bluetooth.utils.Constants;
 public class ReadGameData {
     private Socket socket;
     private boolean disable = false;
-    private ObjectInputStream ois;
+    private InputStream is;
     private MessageHandler handler;
 
-    public ReadGameData(ObjectInputStream inputStream, MessageHandler handler) {
-        this.ois = inputStream;
+    public ReadGameData(Socket socket, MessageHandler handler) {
+        this.socket = socket;
         this.handler = handler;
     }
 
     public void readGameEvent() {
-        byte[] buffer = new byte[1024];
+        String message;
         JSONObject object;
-
         try {
+            is = socket.getInputStream();
             while (!disable) {
-                if (ois != null) {
+                if (is != null) {
                     try {
-                        object = (JSONObject) ois.readObject();
-                        if (object == null) {
+                        byte[] buffer = new byte[2048];
+                        System.out.println("Start reading object");
+                        int bytes = is.read(buffer);
+                        if (bytes == -1) {
+                            System.out.println("Start reading object bytes ------1");
                             break;
                         }
+                        message = new String(buffer);
+                        System.out.println("Getting message" + message);
+                        object = new JSONObject(message);
 
-                        System.out.println("Getting message" + new String(buffer));
                         int arg1 = object.optInt(Constants.GAME_EVENT, 0);
                         handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, arg1, -1, object).sendToTarget();
                     }
-                    catch (ClassNotFoundException e) {
+                    catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }

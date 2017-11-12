@@ -5,6 +5,10 @@ android {
     compileSdkVersion 24
     buildToolsVersion "25.0.0"
 
+    greendao {
+        schemaVersion 3
+    }
+
     defaultConfig {
         applicationId "io.connection.bluetooth"
         minSdkVersion 21

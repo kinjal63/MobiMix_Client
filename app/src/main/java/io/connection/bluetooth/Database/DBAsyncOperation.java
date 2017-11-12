@@ -1,6 +1,5 @@
 package io.connection.bluetooth.Database;
 
-import org.greenrobot.greendao.query.Query;
 import org.greenrobot.greendao.query.QueryBuilder;
 import org.greenrobot.greendao.query.WhereCondition;
 import org.json.JSONObject;
@@ -16,6 +15,8 @@ import io.connection.bluetooth.Database.entity.MBGameParticipants;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Database.entity.MBPlayerGames;
 import io.connection.bluetooth.Database.entity.MBPlayerGamesDao;
+import io.connection.bluetooth.Database.entity.MBUserAvailability;
+import io.connection.bluetooth.Database.entity.MBUserAvailabilityDao;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.utils.Constants;
@@ -41,8 +42,12 @@ public class DBAsyncOperation extends Thread {
         DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
         switch (this.params.event_) {
             case MobiMix.DBRequest.DB_FIND_NEARBY_PLAYERS:
-                List<MBNearbyPlayer> lstPlayers = daoSession.loadAll(MBNearbyPlayer.class);
-                List<MBPlayerGames> games = daoSession.loadAll(MBPlayerGames.class);
+//                List<MBUserAvailability> us = daoSession.getMBUserAvailabilityDao().loadAll();
+                QueryBuilder<MBNearbyPlayer> q1 = daoSession.getMBNearbyPlayerDao().queryBuilder();
+                q1.join(MBUserAvailability.class, MBUserAvailabilityDao.Properties.PlayerId).
+                        where(MBUserAvailabilityDao.Properties.IsEngaged.eq(0));
+                List<MBNearbyPlayer> lstPlayers = q1.list();
+
                 ((IActionReadListener)this.iActionCRUDListener).onReadOperation(0, lstPlayers);
                 break;
 
@@ -54,16 +59,16 @@ public class DBAsyncOperation extends Thread {
                     }
                     whereIn = whereIn.substring(0, whereIn.length() - 1);
 
-                    QueryBuilder<MBGameInfo> qb = daoSession.getMBGameInfoDao().queryBuilder();
+                    QueryBuilder<MBGameInfo> q2 = daoSession.getMBGameInfoDao().queryBuilder();
 //                            queryRawCreate(" join mb_player_games mpg on T.game_id = mpg.game_id where mpg.player_id IN (?)", whereIn);
 //                            " group by mpg.player_id" +
 //                                    " having count(mpg.game_id) > " + params.remoteUserIds_.size(), whereIn);
 
-                    qb.join(MBPlayerGames.class, MBPlayerGamesDao.Properties.GameId);
-                    qb.where(new WhereCondition.StringCondition("J1.player_id IN (" + whereIn + ")" +
+                    q2.join(MBPlayerGames.class, MBPlayerGamesDao.Properties.GameId);
+                    q2.where(new WhereCondition.StringCondition("J1.player_id IN (" + whereIn + ")" +
                                     " group by J1.game_id" +
                                     " having count(J1.game_id) > " + (params.remoteUserIds_.size() - 1)));
-                    List<MBGameInfo> playerGames = qb.list();
+                    List<MBGameInfo> playerGames = q2.list();
                     ((IActionReadListener) this.iActionCRUDListener).onReadOperation(0, playerGames);
                 }
                 break;

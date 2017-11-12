@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import io.connection.bluetooth.MobiMixApplication;
@@ -30,8 +31,8 @@ public class SocketManager implements Runnable {
     private Socket socket;
     private SocketOperationType operationType = SocketOperationType.NONE;
     private MessageHandler handler;
-    private ObjectInputStream is;
-    private ObjectOutputStream os;
+    private InputStream is;
+    private OutputStream os;
     private boolean disable = false;
 
     private WifiP2PRemoteDevice remoteDevice;
@@ -48,8 +49,8 @@ public class SocketManager implements Runnable {
     @Override
     public void run() {
         try {
-            os = new ObjectOutputStream(socket.getOutputStream());
-            is = new ObjectInputStream(socket.getInputStream());
+            os = socket.getOutputStream();
+            is = socket.getInputStream();
 
             byte[] buffer = new byte[1024];
             int bytes;
@@ -88,7 +89,6 @@ public class SocketManager implements Runnable {
                 }
                 i.printStackTrace();
             }
-//            }
         } catch (IOException e) {
             Log.e(TAG, "Exception : " + e.toString());
         } finally {
@@ -103,38 +103,32 @@ public class SocketManager implements Runnable {
 
     public void startReadModule() {
         try {
-            Thread.sleep(500);
+            Thread.sleep(100);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Socket is connected 2" + handler.isSocketConnected());
-        if (handler.isSocketConnected()) {
-            System.out.println("Socket is connected 2.1");
-            WifiDirectService wifiP2PService = handler.getWifiP2PService();
+        WifiDirectService wifiP2PService = handler.getWifiP2PService();
 
-            if (wifiP2PService != null) {
-                if (wifiP2PService.getModule() == Modules.CHAT) {
-                    System.out.println("Socket is read 3 Chat");
-                    ReadChatData chatData = new ReadChatData(socket, handler);
-                    chatData.readChatData();
-                } else if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
-                    System.out.println("Socket is read 3 Business");
-                    ReadBusinessCard businessCard = new ReadBusinessCard(socket, handler);
-                    businessCard.readData();
-                } else if (wifiP2PService.getModule() == Modules.FILE_SHARING) {
-                    System.out.println("Socket is read 3 file sharing");
-                    ReadFiles file = new ReadFiles(socket, handler);
-                    file.readFiles();
-                } else if (wifiP2PService.getModule() == Modules.GAME) {
-                    System.out.println("Socket is read 3 file Game");
-                    ReadGameData file = new ReadGameData(is, handler);
-                    file.readGameEvent();
-                }
+        if (wifiP2PService != null) {
+            if (wifiP2PService.getModule() == Modules.CHAT) {
+                System.out.println("Socket is read 3 Chat");
+                ReadChatData chatData = new ReadChatData(socket, handler);
+                chatData.readChatData();
+            } else if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
+                System.out.println("Socket is read 3 Business");
+                ReadBusinessCard businessCard = new ReadBusinessCard(socket, handler);
+                businessCard.readData();
+            } else if (wifiP2PService.getModule() == Modules.FILE_SHARING) {
+                System.out.println("Socket is read 3 file sharing");
+                ReadFiles file = new ReadFiles(socket, handler);
+                file.readFiles();
+            } else if (wifiP2PService.getModule() == Modules.GAME) {
+                System.out.println("Socket is read 3 file Game");
+                ReadGameData file = new ReadGameData(socket, handler);
+                file.readGameEvent();
             }
-
-            operationType = SocketOperationType.NONE;
-//            handler.getWifiP2PService().setModule(Modules.NONE);
         }
+        operationType = SocketOperationType.NONE;
     }
 
     public void startWriteModule() {
@@ -185,9 +179,11 @@ public class SocketManager implements Runnable {
     // Send Game Object to remote user
     public void writeObject(Object object) {
         try {
-            Thread.sleep(500);
+            Thread.sleep(1000);
             if (os != null) {
-                os.writeObject(object);
+                byte[] b = object.toString().getBytes();
+                os.write(b);
+                Log.v(TAG, "written Message::" + object.toString());
                 os.flush();
             }
         } catch (IOException | InterruptedException e) {

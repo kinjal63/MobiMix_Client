@@ -10,45 +10,37 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
-import java.util.EventObject;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.QueueManager;
 import io.connection.bluetooth.MobiMixApplication;
-import io.connection.bluetooth.activity.gui.GUIManager;
-import io.connection.bluetooth.core.CoreEngine;
-import io.connection.bluetooth.core.EventData;
-import io.connection.bluetooth.core.MobiMix;
-import io.connection.bluetooth.core.RequestData;
-import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.core.CoreEngine;
+import io.connection.bluetooth.core.EventData;
+import io.connection.bluetooth.core.MobiMix;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.SocketHeartBeat;
 import io.connection.bluetooth.socketmanager.SocketManager;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.LogUtils;
 import io.connection.bluetooth.utils.MessageConstructor;
 import io.connection.bluetooth.utils.NotificationUtil;
-import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by KP49107 on 29-03-2017.
  */
 public class MessageHandler {
     private Handler handler = null;
-    private Modules module;
     private SocketManager socketManager;
 
     private Context context;
     private WifiDirectService wifiP2PService;
 
     private SocketHeartBeat heartbeat;
-
     private boolean isSocketConnected = false;
     private String TAG = "MessageHandler";
 
@@ -84,7 +76,7 @@ public class MessageHandler {
                 socketManager = (SocketManager) obj;
 
                 String moduleName = getMessageModuleToSend();
-                socketManager.writeMessage(moduleName.getBytes());
+                socketManager.writeObject(moduleName);
 
                 heartbeat = new SocketHeartBeat(socketManager);
                 heartbeat.start();
@@ -109,9 +101,9 @@ public class MessageHandler {
 
     private String getMessageModuleToSend() {
         String moduleName = this.wifiP2PService.getModule().getModuleName();
-        if(moduleName.equalsIgnoreCase(Modules.GAME.getModuleName())) {
-            readData();
-        }
+//        if(moduleName.equalsIgnoreCase(Modules.GAME.getModuleName())) {
+//            readData();
+//        }
         return moduleName + "_" + LocalP2PDevice.getInstance().getLocalDevice().deviceAddress + "_" +
                 LocalP2PDevice.getInstance().getLocalDevice().deviceName;
     }
@@ -137,13 +129,12 @@ public class MessageHandler {
                 wifiP2PService.setModule(Modules.CHAT);
             } else if (message.startsWith(Constants.BUSINESSCARD_MODULE)) {
                 wifiP2PService.setModule(Modules.BUSINESS_CARD);
-            } else if (!this.wifiP2PService.getModule().getModuleName().equalsIgnoreCase(Constants.GAME_MODULE)
-                        && message.startsWith(Constants.GAME_MODULE)) {
+            } else if (message.startsWith(Constants.GAME_MODULE)) {
                 wifiP2PService.setModule(Modules.GAME);
 
                 JSONObject object = MessageConstructor.constructObjectToSendEvent(MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
                 if(object != null) {
-                    socketManager.writeMessage(object.toString().getBytes());
+                    socketManager.writeObject(object);
                 }
             }
             readData();
@@ -178,11 +169,12 @@ public class MessageHandler {
     }
 
     private void handleGameObject(Message message) {
+        LogUtils.printLog(TAG, "handleGameObject Event::" + message.arg1);
         switch (message.arg1) {
-            // Send Game Info if requested by remote user
+            // Send Game Info if requested by remote user after connection established
             case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
                 if(socketManager != null) {
-                    socketManager.writeMessage(MessageConstructor.constructObjectToSendGameRequest().toString().getBytes());
+                    socketManager.writeObject(MessageConstructor.constructObjectToSendGameRequest());
                 }
                 break;
             case MobiMix.GameEvent.EVENT_GAME_INFO_RESPONSE:
@@ -277,8 +269,7 @@ public class MessageHandler {
                 break;
         }
         if(socketManager != null && eventObj != null) {
-            byte[] b = eventObj.toString().getBytes();
-            socketManager.writeMessage(b);
+            socketManager.writeObject(eventObj);
         }
     }
 }

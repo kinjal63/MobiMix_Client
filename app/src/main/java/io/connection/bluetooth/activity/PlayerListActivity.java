@@ -124,7 +124,9 @@ public class PlayerListActivity extends Activity implements IDBResponse {
             }
             adapter.notifyDataSetChanged();
             adapter.setMyInfo(myGameInfo);
-            updateView(myGameInfo);
+            if(myGameInfo != null){
+                updateView(myGameInfo);
+            }
         }
     }
 

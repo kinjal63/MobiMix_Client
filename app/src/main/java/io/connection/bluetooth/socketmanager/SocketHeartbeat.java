@@ -25,8 +25,8 @@ public class SocketHeartBeat extends Thread {
 
         while (isSocketConnected) {
             try {
-                Thread.sleep(3000);
-                if (!address.isReachable(1500)) {
+                Thread.sleep(5000);
+                if (!address.isReachable(2500)) {
                     isSocketConnected = false;
                 }
             } catch (IOException ie) {
@@ -38,7 +38,7 @@ public class SocketHeartBeat extends Thread {
             finally {
                 if(!isSocketConnected) {
                     System.out.println("Socket disconnected event is sent from SocketHearBeat");
-//                    this.socketManager.socketClosed();
+                    this.socketManager.socketClosed();
                 }
             }
         }

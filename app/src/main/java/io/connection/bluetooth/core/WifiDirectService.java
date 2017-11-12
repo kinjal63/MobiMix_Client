@@ -30,6 +30,7 @@ import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
+import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
@@ -299,7 +300,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 //                });
 
             }
-            for(WifiP2PRemoteDevice device : connectedDeviceMap.values()) {
+            for (WifiP2PRemoteDevice device : connectedDeviceMap.values()) {
                 wifiP2PDeviceList.add(device);
             }
             if (nearByDeviceCallback != null) {
@@ -507,6 +508,16 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void sendWifiDirectRequestToUser(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
+        WifiP2pDevice localDevice = LocalP2PDevice.getInstance().getLocalDevice();
+        if (localDevice.status == WifiP2pDevice.CONNECTED && !localDevice.isGroupOwner()) {
+            removeGroup();
+            try {
+                Thread.sleep(2000);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         if (players.size() > 0) {
             MBNearbyPlayer player = players.get(0);
             connect(player.getEmail(), new DeviceConnectionListener() {
@@ -535,7 +546,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void sendEvent(EventData eventData) {
-        if(messageHandler != null) {
+        if (messageHandler != null) {
             messageHandler.sendEvent(eventData);
         }
     }
