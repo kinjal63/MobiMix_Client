@@ -101,7 +101,7 @@ public class DatabaseManager {
         for(MBNearbyPlayer player : nearByPlayers) {
             MBUserAvailability userAvailability = new MBUserAvailability();
             userAvailability.setPlayer(player);
-            userAvailability.setPlayerId(player.getPlayerId());
+//            userAvailability.setPlayerId(player.getPlayerId());
             userAvailability.setIsEngaged(1);
             userAvailability.setUpdatedAt(new Date());
 

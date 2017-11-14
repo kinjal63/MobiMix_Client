@@ -137,7 +137,7 @@ public class MessageHandler {
             } else if (message.startsWith(Constants.GAME_MODULE)) {
                 wifiP2PService.setModule(Modules.GAME);
 
-                JSONObject object = MessageConstructor.constructObjectToSendEvent(MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
+                JSONObject object = MessageConstructor.constructObjectToRequestForEvent(MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
                 if(object != null) {
                     socketManager.writeObject(object);
                 }
@@ -179,7 +179,7 @@ public class MessageHandler {
             // Send Game Info if requested by remote user after connection established
             case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
                 if(socketManager != null) {
-                    socketManager.writeObject(MessageConstructor.constructObjectToSendGameRequest());
+                    socketManager.writeObject(MessageConstructor.constructObjectToSendGameRequestEvent());
                 }
                 break;
             case MobiMix.GameEvent.EVENT_GAME_INFO_RESPONSE:
@@ -268,7 +268,10 @@ public class MessageHandler {
         JSONObject eventObj = null;
         switch (eventData.event_) {
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
-                eventObj = MessageConstructor.getEventGameLaunchedObject(eventData.userId_);
+                eventObj = MessageConstructor.getEventGameLaunchedObject(eventData);
+                break;
+            case MobiMix.GameEvent.EVENT_GAME_LAUNCHED_ACK:
+                eventObj = MessageConstructor.getEventGameLaunchedObject(eventData);
                 break;
             default:
                 break;

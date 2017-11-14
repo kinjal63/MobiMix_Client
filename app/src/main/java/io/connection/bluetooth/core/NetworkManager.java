@@ -76,6 +76,16 @@ public class NetworkManager {
         DatabaseManager.getInstance().updateGameTable(params);
     }
 
+    // Check internet connectivity
+    public boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager)
+                MobiMixApplication.getInstance().getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return isConnected;
+    }
+
     public void handleResponse(Message msg) {
         switch (msg.what) {
             case MobiMix.APIResponse.RESPONSE_GET_NEARBY_PLAYERS:
@@ -87,15 +97,5 @@ public class NetworkManager {
             default:
                 break;
         }
-    }
-
-    // Check internet connectivity
-    public boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager)
-                MobiMixApplication.getInstance().getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-        return isConnected;
     }
 }

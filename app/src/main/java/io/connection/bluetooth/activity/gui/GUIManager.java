@@ -23,8 +23,10 @@ import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.IDBResponse;
+import io.connection.bluetooth.core.EventData;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.NetworkManager;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.UtilsHandler;
@@ -130,6 +132,10 @@ public class GUIManager {
                             params.event_ = MobiMix.DBRequest.DB_UPDATE_GAME_TABLE;
                             params.object_ = jsonObject;
                             NetworkManager.getInstance().updateGameTable(params);
+
+                            EventData eventData = new EventData();
+                            eventData.userId_ = jsonObject.getString(Constants.)
+                            WifiDirectService.getInstance(context_).sendEvent(eventData);
                         }
                         try {
                             UtilsHandler.launchGame(jsonObject.getString(Constants.GAME_PACKAGE_NAME));
@@ -144,4 +150,12 @@ public class GUIManager {
             super.handleMessage(msg);
         }
     };
+
+    public void sendEvent(EventData eventData) {
+        switch (eventData.event_) {
+            case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
+                WifiDirectService.getInstance(context_).sendEvent(eventData);
+
+        }
+    }
 }

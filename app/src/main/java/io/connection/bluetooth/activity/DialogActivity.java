@@ -12,6 +12,7 @@ import io.connection.bluetooth.R;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
+import io.connection.bluetooth.activity.gui.GUIManager;
 import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.core.EventData;
 import io.connection.bluetooth.core.MobiMix;
@@ -140,7 +141,7 @@ public class DialogActivity extends Activity{
                         EventData eventData = new EventData();
                         eventData.event_ = MobiMix.GameEvent.EVENT_GAME_LAUNCHED;
                         eventData.userId_ = remoteUserId;
-                        wifiDirectService.sendEvent(eventData);
+                        GUIManager.getObject().sendEvent(eventData);
 
                         UtilsHandler.launchGame(gamePackageName);
 

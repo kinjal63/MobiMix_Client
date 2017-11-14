@@ -93,8 +93,6 @@ public class DBAsyncOperation extends Thread {
                     gameParticipants.setConnectionType(connectionType);
                     gameParticipants.setMaxPlayers(maxPlayers);
                     gameParticipants.setUpdatedAt(new Date());
-
-
                 }
             break;
             default:

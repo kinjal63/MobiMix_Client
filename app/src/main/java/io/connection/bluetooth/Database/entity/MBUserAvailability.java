@@ -3,6 +3,7 @@ package io.connection.bluetooth.Database.entity;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Keep;
+import org.greenrobot.greendao.annotation.Property;
 import org.greenrobot.greendao.annotation.ToOne;
 
 import java.io.Serializable;
@@ -23,17 +24,17 @@ public class MBUserAvailability implements Serializable {
     @Id
     private Long id;
 
-    @Column(name = "player_id")
+    @Property(nameInDb = "player_id")
     @Unique
     private String playerId;
 
     @ToOne(joinProperty = "playerId")
     private MBNearbyPlayer player;
 
-    @Column(name = "is_engaged")
+    @Property(nameInDb = "is_engaged")
     private int isEngaged;
 
-    @Column(name = "updated_at")
+    @Property(nameInDb = "updated_at")
     private Date updatedAt;
 
     /** Used to resolve relations */

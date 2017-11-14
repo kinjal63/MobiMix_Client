@@ -12,6 +12,8 @@ import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.cache.CacheConstants;
+import io.connection.bluetooth.utils.cache.MobiMixCache;
 
 public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
@@ -57,7 +59,9 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
                     mManager.requestConnectionInfo(mChannel, (WifiP2pManager.ConnectionInfoListener) WifiDirectService.getInstance(context));
                 }
                 else {
+                    MobiMixCache.putInCache(CacheConstants.CACHE_IS_GROUP_OWNER, 0);
                     ApplicationSharedPreferences.getInstance(context).addBooleanValue(Constants.PREF_WIFIDIRECT_CONNECTED, false);
+
                     WifiDirectService.getInstance(context).closeConnection();
                     WifiDirectService.getInstance(context).initiateDiscovery();
                 }
