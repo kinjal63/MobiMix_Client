@@ -35,10 +35,8 @@ public class ReadGameData {
                 if (is != null) {
                     try {
                         byte[] buffer = new byte[2048];
-                        System.out.println("Start reading object");
                         int bytes = is.read(buffer);
                         if (bytes == -1) {
-                            System.out.println("Start reading object bytes ------1");
                             break;
                         }
                         message = new String(buffer);
@@ -46,7 +44,9 @@ public class ReadGameData {
                         object = new JSONObject(message);
 
                         int arg1 = object.optInt(Constants.GAME_EVENT, 0);
-                        handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, arg1, -1, object).sendToTarget();
+                        if(arg1 != 0) {
+                            handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, arg1, -1, object).sendToTarget();
+                        }
                     }
                     catch (JSONException e) {
                         e.printStackTrace();

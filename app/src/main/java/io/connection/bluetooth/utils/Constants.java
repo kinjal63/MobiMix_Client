@@ -42,12 +42,17 @@ public class Constants {
     public static final int INIT_MODULE = 0x400 + 4;
     public static final int GAME_REQUEST_ACCEPTED = 0x400 + 5;
     public static final int MESSAGE_READ_GAME = 0x400 + 6;
+    public static final int MESSAGE_HEARBEAT = 0x400 + 7;
 
     public static final int THREAD_COUNT = 20; //maximum number of clients that this GO can manage
     public static final int THREAD_POOL_EXECUTOR_KEEP_ALIVE_TIME = 10;
 
     public static final String PREF_WIFIDIRECT_CONNECTED = "WifiDirect_Connected";
     public static final String PREF_CHAT_ACTIVITY_OPEN = "Chat_Screen_Open_";
+
+    // HeartBeat signal
+    public static final String HEARTBEAT_SIGNAL = "heartbeat";
+    public static final String HEARTBEAT_MESSAGE = "hello";
 
     // Game Request Object names
     public static final String REQUEST_GAME_EVENT = "request_game_event";

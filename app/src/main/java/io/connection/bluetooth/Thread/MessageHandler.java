@@ -94,6 +94,11 @@ public class MessageHandler {
                     handleGameObject(msg);
                 }
                 break;
+            case Constants.MESSAGE_HEARBEAT:
+                if(msg.obj != null) {
+                    socketManager.writeObject(MessageConstructor.getHandShakeSignalObj());
+                }
+                break;
             default:
                 break;
         }

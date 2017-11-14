@@ -1,16 +1,14 @@
 package io.connection.bluetooth.socketmanager;
 
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.core.WifiDirectService;
@@ -23,6 +21,7 @@ import io.connection.bluetooth.socketmanager.modules.ReadGameData;
 import io.connection.bluetooth.socketmanager.modules.SendBusinessCard;
 import io.connection.bluetooth.socketmanager.modules.SendFiles;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.MessageConstructor;
 
 /**
  * Created by KP49107 on 29-03-2017.
@@ -163,7 +162,11 @@ public class SocketManager implements Runnable {
         }
     }
 
-    public void writeMessage(byte[] buffer) {
+    public synchronized void sendHeartBeat() {
+        handler.getHandler().obtainMessage(Constants.MESSAGE_HEARBEAT, this);
+    }
+
+    public synchronized void writeMessage(byte[] buffer) {
         try {
             if (os != null) {
                 System.out.println("Writing message" + new String(buffer));
@@ -177,7 +180,7 @@ public class SocketManager implements Runnable {
     }
 
     // Send Game Object to remote user
-    public void writeObject(Object object) {
+    public synchronized void writeObject(Object object) {
         try {
             Thread.sleep(1000);
             if (os != null) {
@@ -228,10 +231,6 @@ public class SocketManager implements Runnable {
 
     public Socket getConnectedSocket() {
         return this.socket;
-    }
-
-    public void socketConnected() {
-        handler.socketConnected();
     }
 
     public void socketClosed() {

@@ -69,4 +69,16 @@ public class MessageConstructor {
         }
         return jsonObject;
     }
+
+    public static JSONObject getHandShakeSignalObj() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put(Constants.HEARTBEAT_SIGNAL, Constants.HEARTBEAT_MESSAGE);
+        }
+        catch (JSONException e) {
+            jsonObject = null;
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
 }

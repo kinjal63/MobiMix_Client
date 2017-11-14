@@ -527,6 +527,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                     gameRequest.setGameId(gameInfo.getGameId());
                     gameRequest.setGameName(gameInfo.getGameName());
                     gameRequest.setGamePackageName(gameInfo.getGamePackageName());
+                    gameRequest.setConnectionType(2);
                     gameRequest.setRemoteUserId(ApplicationSharedPreferences.getInstance(mContext).
                             getValue("user_id"));
                     gameRequest.setRemoteUserName(ApplicationSharedPreferences.getInstance(mContext).
