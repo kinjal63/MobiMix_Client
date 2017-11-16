@@ -39,7 +39,8 @@ public class MobiMix {
         public static final int EVENT_GAME_INFO_REQUEST_ACK = 303;
         public static final int EVENT_GAME_LAUNCHED = 304;
         public static final int EVENT_GAME_LAUNCHED_ACK = 305;
-        public static final int EVENT_GAME_UPDATE_TABLE = 306;
-        public static final int EVENT_GAME_UPDATE_TABLE_ACK = 307;
+        public static final int EVENT_GAME_UPDATE_TABLE_REQUEST = 306;
+        public static final int EVENT_GAME_UPDATE_TABLE_DATA = 307;
+        public static final int EVENT_GAME_UPDATE_TABLE_ACK = 308;
     }
 }

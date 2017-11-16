@@ -535,7 +535,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                     gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(mContext).
                             getValue("email"));
 
-                    UtilsHandler.addGameInStack(gameRequest);
+                    MobiMixCache.putGameInCache(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("user_id"), gameRequest);
+//                    UtilsHandler.addGameInStack(gameRequest);
                     // remove 1st player from list as it is connected
                     players.remove(0);
 

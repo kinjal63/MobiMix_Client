@@ -20,6 +20,7 @@ import io.connection.bluetooth.Database.entity.MBUserAvailabilityDao;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.GameConstants;
 
 /**
  * Created by Kinjal on 10/15/2017.
@@ -76,11 +77,11 @@ public class DBAsyncOperation extends Thread {
                 if(this.params.object_ != null) {
                     JSONObject object = params.object_;
 
-                    String groupOwnerUserId = object.optString(Constants.GROUP_OWNER_USER_ID);
-                    String connectedUserId = object.optString(Constants.CONNECTED_USER_ID);
-                    long gameId = object.optLong(Constants.GAME_ID);
-                    int connectionType = object.optInt(Constants.GAME_CONNECTION_TYPE);
-                    int maxPlayers = object.optInt(Constants.GAME_MAX_PLAYERS);
+                    String groupOwnerUserId = object.optString(GameConstants.GROUP_OWNER_USER_ID);
+                    String connectedUserId = object.optString(GameConstants.CONNECTED_USER_ID);
+                    long gameId = object.optLong(GameConstants.GAME_ID);
+                    int connectionType = object.optInt(GameConstants.GAME_CONNECTION_TYPE);
+                    int maxPlayers = object.optInt(GameConstants.GAME_MAX_PLAYERS);
 
                     MBNearbyPlayer groupOwnerPlayer = daoSession.getMBNearbyPlayerDao().load(groupOwnerUserId);
                     MBNearbyPlayer connectedPlayer = daoSession.getMBNearbyPlayerDao().load(connectedUserId);

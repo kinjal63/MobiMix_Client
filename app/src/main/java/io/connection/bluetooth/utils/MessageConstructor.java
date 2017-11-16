@@ -29,22 +29,37 @@ public class MessageConstructor {
         return jsonObject;
     }
 
-    public static JSONObject constructObjectToSendGameRequestEvent() {
-        GameRequest gameRequest = UtilsHandler.removeGameFromStack();
-
+    public static JSONObject constructObjectToRequestForEvent(int event) {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put(GameConstants.GAME_EVENT, MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
-            jsonObject.put(GameConstants.GAME_ID, (int) gameRequest.getGameId());
-            jsonObject.put(GameConstants.GAME_NAME, gameRequest.getGameName());
-            jsonObject.put(GameConstants.GAME_PACKAGE_NAME, gameRequest.getGamePackageName());
-            jsonObject.put(GameConstants.GAME_REQUEST_SENDER_ID, gameRequest.getRemoteUserId());
-            jsonObject.put(GameConstants.GAME_REQUEST_SENDER_NAME, gameRequest.getRemoteUserName());
-            jsonObject.put(GameConstants.GAME_REQUEST_CONNECTION_TYPE, gameRequest.getConnectionType());
+            jsonObject.put(GameConstants.GAME_EVENT, event);
+            jsonObject.put(GameConstants.USER_ID, ApplicationSharedPreferences.getInstance
+                    (MobiMixApplication.getInstance().getContext()).getValue("user_id"));
         }
         catch (JSONException e) {
             jsonObject = null;
             e.printStackTrace();
+        }
+        return jsonObject;
+    }
+
+    public static JSONObject constructObjectToSendGameRequestEvent(EventData eventData) {
+        GameRequest gameRequest = MobiMixCache.getGameFromCache(eventData.userId_);
+        JSONObject jsonObject = null;
+        if(gameRequest != null) {
+            jsonObject = new JSONObject();
+            try {
+                jsonObject.put(GameConstants.GAME_EVENT, MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
+                jsonObject.put(GameConstants.GAME_ID, (int) gameRequest.getGameId());
+                jsonObject.put(GameConstants.GAME_NAME, gameRequest.getGameName());
+                jsonObject.put(GameConstants.GAME_PACKAGE_NAME, gameRequest.getGamePackageName());
+                jsonObject.put(GameConstants.GAME_REQUEST_SENDER_ID, gameRequest.getRemoteUserId());
+                jsonObject.put(GameConstants.GAME_REQUEST_SENDER_NAME, gameRequest.getRemoteUserName());
+                jsonObject.put(GameConstants.GAME_REQUEST_CONNECTION_TYPE, gameRequest.getConnectionType());
+            } catch (JSONException e) {
+                jsonObject = null;
+                e.printStackTrace();
+            }
         }
         return jsonObject;
     }
@@ -66,7 +81,7 @@ public class MessageConstructor {
         return jsonObject;
     }
 
-    public static JSONObject constructObjectToSendUpdateGamePlayersTable(EventData eventData) {
+    public static JSONObject constructObjectToUpdateDBData(EventData eventData) {
         GameRequest gameRequest = MobiMixCache.getGameFromCache(eventData.userId_);
         JSONObject jsonObject = new JSONObject();
         try {

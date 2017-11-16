@@ -136,8 +136,10 @@ public class DatabaseManager {
         for (MBNearbyPlayer player : playersToUpdate) {
             MBUserAvailability userAvailabilityObj = daoSession.getMBUserAvailabilityDao().queryBuilder().
                     where(MBUserAvailabilityDao.Properties.PlayerId.eq(player.getPlayerId())).unique();
-            userAvailabilityObj.setIsEngaged(0);
-            daoSession.getMBUserAvailabilityDao().update(userAvailabilityObj);
+            if(userAvailabilityObj != null) {
+                userAvailabilityObj.setIsEngaged(0);
+                daoSession.getMBUserAvailabilityDao().update(userAvailabilityObj);
+            }
         }
 
 

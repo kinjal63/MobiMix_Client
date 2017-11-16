@@ -182,7 +182,7 @@ public class SocketManager implements Runnable {
     // Send Game Object to remote user
     public synchronized void writeObject(Object object) {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100);
             if (os != null) {
                 byte[] b = object.toString().getBytes();
                 os.write(b);

@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import java.util.List;
 
 import io.connection.bluetooth.Database.DBParams;
+import io.connection.bluetooth.Database.DatabaseManager;
 import io.connection.bluetooth.Database.action.IDatabaseActionListener;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobiMixApplication;
@@ -115,11 +116,11 @@ public class GUIManager {
                             NotificationUtil.generateNotificationForGameRequest(gameRequest);
                         }
                         break;
-                    case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE:
+                    case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_DATA:
                         if (jsonObject != null) {
-                            String connectedUserId = jsonObject.optString(GameConstants.CONNECTED_USER_ID);
-                            String groupOwnerUserId = jsonObject.optString(GameConstants.GROUP_OWNER_USER_ID);
-                            String connectedUserName = jsonObject.optString(GameConstants.GAME_ID);
+                            DBParams params = new DBParams();
+                            params.object_ = jsonObject;
+                            NetworkManager.getInstance().updateGameTable(params);
                         }
                         break;
                     case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
@@ -139,9 +140,7 @@ public class GUIManager {
                 }
             }
 
-            super.
-
-                    handleMessage(msg);
+            super.handleMessage(msg);
         }
     };
 

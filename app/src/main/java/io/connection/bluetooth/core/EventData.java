@@ -11,4 +11,8 @@ public class EventData {
     public EventData(int event) {
         this.event_ = event;
     }
+
+    public EventData() {
+
+    }
 }
