@@ -545,19 +545,4 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             });
         }
     }
-
-    public void sendEvent(EventData eventData) {
-        switch (eventData.event_) {
-            case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
-                if(messageHandler != null) {
-                    messageHandler.sendEvent();
-                }
-                break;
-            default:
-                break;
-        }
-        if (messageHandler != null) {
-            messageHandler.sendEvent(eventData);
-        }
-    }
 }

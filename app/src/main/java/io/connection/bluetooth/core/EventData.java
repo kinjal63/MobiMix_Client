@@ -8,7 +8,7 @@ public class EventData {
     public int event_ = 0;
     public String userId_ = null;
 
-    public EventData() {
-
+    public EventData(int event) {
+        this.event_ = event;
     }
 }

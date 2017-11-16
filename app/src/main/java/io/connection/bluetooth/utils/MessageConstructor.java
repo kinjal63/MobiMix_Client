@@ -15,23 +15,12 @@ import io.connection.bluetooth.utils.cache.MobiMixCache;
  */
 
 public class MessageConstructor {
-
-    public static JSONObject constructObjectToRequestForEvent(int event) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put(Constants.GAME_EVENT, event);
-        }
-        catch (JSONException e) {
-            jsonObject = null;
-            e.printStackTrace();
-        }
-        return jsonObject;
-    }
-
     public static JSONObject constructObjectToSendAckEvent(int event) {
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put(Constants.GAME_EVENT, event);
+            jsonObject.put(GameConstants.GAME_EVENT, event);
+            jsonObject.put(GameConstants.USER_ID, ApplicationSharedPreferences.getInstance
+                    (MobiMixApplication.getInstance().getContext()).getValue("user_id"));
         }
         catch (JSONException e) {
             jsonObject = null;
@@ -45,13 +34,13 @@ public class MessageConstructor {
 
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put(Constants.GAME_EVENT, MobiMix.GameEvent.EVENT_GAME_INFO_RESPONSE);
-            jsonObject.put(Constants.GAME_ID, (int) gameRequest.getGameId());
-            jsonObject.put(Constants.GAME_NAME, gameRequest.getGameName());
-            jsonObject.put(Constants.GAME_PACKAGE_NAME, gameRequest.getGamePackageName());
-            jsonObject.put(Constants.GAME_REQUEST_SENDER_ID, gameRequest.getRemoteUserId());
-            jsonObject.put(Constants.GAME_REQUEST_SENDER_NAME, gameRequest.getRemoteUserName());
-            jsonObject.put(Constants.GAME_REQUEST_CONNECTION_TYPE, gameRequest.getConnectionType());
+            jsonObject.put(GameConstants.GAME_EVENT, MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
+            jsonObject.put(GameConstants.GAME_ID, (int) gameRequest.getGameId());
+            jsonObject.put(GameConstants.GAME_NAME, gameRequest.getGameName());
+            jsonObject.put(GameConstants.GAME_PACKAGE_NAME, gameRequest.getGamePackageName());
+            jsonObject.put(GameConstants.GAME_REQUEST_SENDER_ID, gameRequest.getRemoteUserId());
+            jsonObject.put(GameConstants.GAME_REQUEST_SENDER_NAME, gameRequest.getRemoteUserName());
+            jsonObject.put(GameConstants.GAME_REQUEST_CONNECTION_TYPE, gameRequest.getConnectionType());
         }
         catch (JSONException e) {
             jsonObject = null;
@@ -66,17 +55,10 @@ public class MessageConstructor {
         try {
             String userId = ApplicationSharedPreferences.getInstance(
                     MobiMixApplication.getInstance().getContext()).getValue("user_id");
-            if(Integer.parseInt(MobiMixCache.getFromCache(CacheConstants.CACHE_IS_GROUP_OWNER).toString()) == 1) {
-                jsonObject.put(Constants.GROUP_OWNER_USER_ID, userId);
-                jsonObject.put(Constants.CONNECTED_USER_ID, gameRequest.getRemoteUserId());
-            }
-            else {
-                jsonObject.put(Constants.GROUP_OWNER_USER_ID, gameRequest.getRemoteUserId());
-                jsonObject.put(Constants.CONNECTED_USER_ID, userId);
-            }
-            jsonObject.put(Constants.GAME_EVENT, eventData.event_);
-            jsonObject.put(Constants.GAME_ID, gameRequest.getGameId());
-            jsonObject.put(Constants.GAME_CONNECTION_TYPE, gameRequest.getConnectionType());
+
+            jsonObject.put(GameConstants.GAME_EVENT, eventData.event_);
+            jsonObject.put(GameConstants.USER_ID, userId);
+            jsonObject.put(GameConstants.GAME_ID, gameRequest.getGameId());
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -91,16 +73,16 @@ public class MessageConstructor {
             String userId = ApplicationSharedPreferences.getInstance(
                     MobiMixApplication.getInstance().getContext()).getValue("user_id");
             if(Integer.parseInt(MobiMixCache.getFromCache(CacheConstants.CACHE_IS_GROUP_OWNER).toString()) == 1) {
-                jsonObject.put(Constants.GROUP_OWNER_USER_ID, userId);
-                jsonObject.put(Constants.CONNECTED_USER_ID, gameRequest.getRemoteUserId());
+                jsonObject.put(GameConstants.GROUP_OWNER_USER_ID, userId);
+                jsonObject.put(GameConstants.CONNECTED_USER_ID, gameRequest.getRemoteUserId());
             }
             else {
-                jsonObject.put(Constants.GROUP_OWNER_USER_ID, gameRequest.getRemoteUserId());
-                jsonObject.put(Constants.CONNECTED_USER_ID, userId);
+                jsonObject.put(GameConstants.GROUP_OWNER_USER_ID, gameRequest.getRemoteUserId());
+                jsonObject.put(GameConstants.CONNECTED_USER_ID, userId);
             }
-            jsonObject.put(Constants.GAME_EVENT, eventData.event_);
-            jsonObject.put(Constants.GAME_ID, gameRequest.getGameId());
-            jsonObject.put(Constants.GAME_CONNECTION_TYPE, gameRequest.getConnectionType());
+            jsonObject.put(GameConstants.GAME_EVENT, eventData.event_);
+            jsonObject.put(GameConstants.GAME_ID, gameRequest.getGameId());
+            jsonObject.put(GameConstants.GAME_CONNECTION_TYPE, gameRequest.getConnectionType());
         }
         catch (JSONException e) {
             e.printStackTrace();

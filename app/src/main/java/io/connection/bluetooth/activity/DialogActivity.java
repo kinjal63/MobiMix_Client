@@ -65,15 +65,6 @@ public class DialogActivity extends Activity{
                 showBluetoothDialog(request);
             }
         }
-
-//        else if( intent1 != null && intent1.getParcelableExtra("game_request") != null) {
-//            this.toUserId = intent1.getStringExtra("toUserId");
-//            showWifiDialog(intent1.getStringExtra("wifi_address"), toUserId);
-//        }
-//        else if( intent1 != null && intent1.getStringExtra("bluetooth_address") != null) {
-//            this.toUserId = intent1.getStringExtra("toUserId");
-//            showBluetoothDialog(intent1.getStringExtra("bluetooth_address"), toUserId);
-//        }
     }
 
     private void showBluetoothDialog(final GameRequest gameRequest) {
@@ -138,9 +129,7 @@ public class DialogActivity extends Activity{
                     public void onClick(DialogInterface dialog,int id) {
                         MobiMixCache.putGameInCache(remoteUserId, gameRequest);
 
-                        EventData eventData = new EventData();
-                        eventData.event_ = MobiMix.GameEvent.EVENT_GAME_LAUNCHED;
-                        eventData.userId_ = remoteUserId;
+                        EventData eventData = new EventData(MobiMix.GameEvent.EVENT_GAME_LAUNCHED);
                         GUIManager.getObject().sendEvent(eventData);
 
                         UtilsHandler.launchGame(gamePackageName);

@@ -25,6 +25,7 @@ import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.SocketHeartBeat;
 import io.connection.bluetooth.socketmanager.SocketManager;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.LogUtils;
 import io.connection.bluetooth.utils.MessageConstructor;
@@ -137,7 +138,7 @@ public class MessageHandler {
             } else if (message.startsWith(Constants.GAME_MODULE)) {
                 wifiP2PService.setModule(Modules.GAME);
 
-                JSONObject object = MessageConstructor.constructObjectToRequestForEvent(MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
+                JSONObject object = MessageConstructor.constructObjectToSendAckEvent(MobiMix.GameEvent.EVENT_CONNECTION_ESTABLISHED_ACK);
                 if(object != null) {
                     socketManager.writeObject(object);
                 }
@@ -176,16 +177,16 @@ public class MessageHandler {
     private void handleGameObject(Message message) {
         LogUtils.printLog(TAG, "handleGameObject Event::" + message.arg1);
         switch (message.arg1) {
-            // Send Game Info if requested by remote user after connection established
-            case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
+            // Send Game Request to notify remote user if connection is established
+            case MobiMix.GameEvent.EVENT_CONNECTION_ESTABLISHED_ACK:
                 if(socketManager != null) {
                     socketManager.writeObject(MessageConstructor.constructObjectToSendGameRequestEvent());
                 }
                 break;
-            case MobiMix.GameEvent.EVENT_GAME_INFO_RESPONSE:
-                CoreEngine.sendEventToGUI(message);
+            case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
                 CoreEngine.sendEventToGUI(message);
+                break;
             default:
                 break;
         }
@@ -266,12 +267,13 @@ public class MessageHandler {
 
     public void sendEvent(EventData eventData) {
         JSONObject eventObj = null;
+
         switch (eventData.event_) {
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
-                eventObj = MessageConstructor.getEventGameLaunchedObject(eventData);
+                eventObj = MessageConstructor.constructObjectToSendGameLaunchedEvent(eventData);
                 break;
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED_ACK:
-                eventObj = MessageConstructor.getEventGameLaunchedObject(eventData);
+                eventObj = MessageConstructor.constructObjectToSendAckEvent(eventData.event_);
                 break;
             default:
                 break;

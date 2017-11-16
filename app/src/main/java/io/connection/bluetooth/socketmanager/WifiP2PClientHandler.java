@@ -78,8 +78,4 @@ public class WifiP2PClientHandler extends Thread {
             this.interrupt();
         }
     }
-
-    public void checkSocketConnection(String hostName) {
-
-    }
 }

@@ -23,13 +23,15 @@ import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.IDBResponse;
+import io.connection.bluetooth.core.CoreEngine;
 import io.connection.bluetooth.core.EventData;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.NetworkManager;
 import io.connection.bluetooth.core.WifiDirectService;
-import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.GameConstants;
 import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.UtilsHandler;
+import io.connection.bluetooth.utils.cache.MobiMixCache;
 
 /**
  * Created by Kinjal on 10/13/2017.
@@ -97,65 +99,59 @@ public class GUIManager {
     private Handler handler_ = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MobiMix.GameEvent.EVENT_GAME_INFO_RESPONSE:
-                    if (msg.obj != null) {
-                        JSONObject jsonObject = (JSONObject) msg.obj;
+            if (msg.obj != null) {
+                JSONObject jsonObject = (JSONObject) msg.obj;
+                switch (msg.what) {
+                    case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
                         if (jsonObject != null) {
                             GameRequest gameRequest = new GameRequest();
-                            gameRequest.setGameName(jsonObject.optString(Constants.GAME_NAME));
-                            gameRequest.setGameId(jsonObject.optLong(Constants.GAME_ID));
-                            gameRequest.setGamePackageName(jsonObject.optString(Constants.GAME_PACKAGE_NAME));
-                            gameRequest.setRemoteUserName(jsonObject.optString(Constants.GAME_REQUEST_SENDER_NAME));
-                            gameRequest.setRemoteUserId(jsonObject.optString(Constants.GAME_REQUEST_SENDER_ID));
-                            gameRequest.setConnectionType(jsonObject.optInt(Constants.GAME_REQUEST_CONNECTION_TYPE));
+                            gameRequest.setGameName(jsonObject.optString(GameConstants.GAME_NAME));
+                            gameRequest.setGameId(jsonObject.optLong(GameConstants.GAME_ID));
+                            gameRequest.setGamePackageName(jsonObject.optString(GameConstants.GAME_PACKAGE_NAME));
+                            gameRequest.setRemoteUserName(jsonObject.optString(GameConstants.GAME_REQUEST_SENDER_NAME));
+                            gameRequest.setRemoteUserId(jsonObject.optString(GameConstants.GAME_REQUEST_SENDER_ID));
+                            gameRequest.setConnectionType(jsonObject.optInt(GameConstants.GAME_REQUEST_CONNECTION_TYPE));
 
                             NotificationUtil.generateNotificationForGameRequest(gameRequest);
                         }
-                    }
-                    break;
-                case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE:
-                    if (msg.obj != null) {
-                        JSONObject jsonObject = (JSONObject) msg.obj;
+                        break;
+                    case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE:
                         if (jsonObject != null) {
-                            String connectedUserId = jsonObject.optString(Constants.CONNECTED_USER_ID);
-                            String groupOwnerUserId = jsonObject.optString(Constants.GROUP_OWNER_USER_ID);
-                            String connectedUserName = jsonObject.optString(Constants.GAME_ID);
+                            String connectedUserId = jsonObject.optString(GameConstants.CONNECTED_USER_ID);
+                            String groupOwnerUserId = jsonObject.optString(GameConstants.GROUP_OWNER_USER_ID);
+                            String connectedUserName = jsonObject.optString(GameConstants.GAME_ID);
                         }
-                    }
-                    break;
-                case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
-                    if (msg.obj != null) {
-                        JSONObject jsonObject = (JSONObject) msg.obj;
+                        break;
+                    case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
                         if (jsonObject != null) {
-                            DBParams params = new DBParams();
-                            params.event_ = MobiMix.DBRequest.DB_UPDATE_GAME_TABLE;
-                            params.object_ = jsonObject;
-                            NetworkManager.getInstance().updateGameTable(params);
+                            GameRequest game = MobiMixCache.getGameFromCache(jsonObject.optString(GameConstants.USER_ID));
+                            if (game != null) {
+                                UtilsHandler.launchGame(game.getGamePackageName());
 
-                            EventData eventData = new EventData();
-                            eventData.userId_ = jsonObject.getString(Constants.)
-                            WifiDirectService.getInstance(context_).sendEvent(eventData);
+                                // Send Ack for game launch
+                                EventData eventData = new EventData(MobiMix.GameEvent.EVENT_GAME_LAUNCHED_ACK);
+                                CoreEngine.sendEventToHandler(eventData);
+                            }
                         }
-                        try {
-                            UtilsHandler.launchGame(jsonObject.getString(Constants.GAME_PACKAGE_NAME));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    break;
-                default:
-                    break;
+                        break;
+                    default:
+                        break;
+                }
             }
-            super.handleMessage(msg);
+
+            super.
+
+                    handleMessage(msg);
         }
     };
 
     public void sendEvent(EventData eventData) {
         switch (eventData.event_) {
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
-                WifiDirectService.getInstance(context_).sendEvent(eventData);
-
+                CoreEngine.sendEventToHandler(eventData);
+                break;
+            default:
+                break;
         }
     }
 }

@@ -10,6 +10,7 @@ import java.net.Socket;
 
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.GameConstants;
 
 /**
  * Created by Kinjal on 10/29/2017.
@@ -43,7 +44,7 @@ public class ReadGameData {
                         System.out.println("Getting message" + message);
                         object = new JSONObject(message);
 
-                        int arg1 = object.optInt(Constants.GAME_EVENT, 0);
+                        int arg1 = object.optInt(GameConstants.GAME_EVENT, 0);
                         if(arg1 != 0) {
                             handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, arg1, -1, object).sendToTarget();
                         }
