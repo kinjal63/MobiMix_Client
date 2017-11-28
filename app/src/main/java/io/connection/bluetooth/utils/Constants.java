@@ -10,6 +10,7 @@ public class Constants {
     public static final String NAME_UUID = "custom_uuid";
     // public static UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     public static UUID uuid = UUID.fromString("6f50463f-e73f-48ca-a5f6-d2080cd24363");
+    public static String MY_UUID = "my_uuid";
     //public static final String endPointAddress = "http://transfer-teqnihome.rhcloud.com/";
     public static final String endPointAddress = "http://192.168.1.102:8080/";
     // public static final String endPointAddress = "http://192.168.43.123:8080/";

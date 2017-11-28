@@ -104,8 +104,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
         initiateDiscovery();
         new Timer().schedule(new DiscoveryTask(), 500, 45000);
-
-
         messageHandler = new MessageHandler(mContext, this);
     }
 

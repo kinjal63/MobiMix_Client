@@ -72,7 +72,11 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
                 System.out.println("Device status->" + device.status);
 
-                if(device.status == WifiP2pDevice.UNAVAILABLE) {
+                if(device.status == WifiP2pDevice.CONNECTED) {
+                    ApplicationSharedPreferences.getInstance(context).addBooleanValue(Constants.PREF_WIFIDIRECT_CONNECTED, true);
+                    mManager.requestConnectionInfo(mChannel, (WifiP2pManager.ConnectionInfoListener) WifiDirectService.getInstance(context));
+                }
+                else {
                     WifiDirectService wifiDirectService = WifiDirectService.getInstance(context);
                     wifiDirectService.initiateDiscovery();
                 }

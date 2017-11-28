@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.text.InputType;
 import android.util.Log;
@@ -29,6 +28,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.UUID;
 
 import butterknife.InjectView;
 import io.connection.bluetooth.Api.ApiCall;
@@ -95,6 +95,7 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
                 }
 
                 String macAddress = android.provider.Settings.Secure.getString(getActivity().getContentResolver(), "bluetooth_address");
+                String uuId = UUID.randomUUID().toString();
 
                 final User user = new User();
                 user.setName(name.getText().toString());
@@ -105,6 +106,7 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
                 user.setGender("male");
                 user.setEmailVerified(false);
                 DeviceDetails deviceDetails = new DeviceDetails();
+                deviceDetails.setUuId(uuId);
                 deviceDetails.setDeviceId(Utils.getDeviceId(context));
                 List<DeviceDetails> deviceDetailsList = new ArrayList<DeviceDetails>();
                 deviceDetailsList.add(deviceDetails);

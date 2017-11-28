@@ -63,7 +63,7 @@ public class Login_Register extends AppCompatActivity {
         }
         sharedPref = this.getSharedPreferences("myPref", Context.MODE_PRIVATE);
 
-        if(true && sharedPref.getBoolean("is_login", false)) {
+        if(sharedPref != null && sharedPref.getBoolean("is_login", false)) {
             startActivity(new Intent(this, Home_Master.class));
             finish();
         }
