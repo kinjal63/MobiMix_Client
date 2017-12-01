@@ -16,7 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Thread.GameRequestConnectThread;
+import io.connection.bluetooth.Thread.GameEventConnectThread;
 import io.connection.bluetooth.utils.Constants;
 
 /**
@@ -71,10 +71,10 @@ public class UserResponseDialog extends AppCompatActivity {
                 SharedPreferences prefs = ImageCache.getContext().getSharedPreferences(Constants.LOGIN, Context.MODE_PRIVATE);
                 String name = prefs.getString(Constants.NAME_KEY, "");
                 String msg = "Response:1" + ":" + name + " $#$ " + packageName;
-                GameRequestConnectThread gameRequestConnectThread;
-                gameRequestConnectThread = new GameRequestConnectThread(device, 0);
-                gameRequestConnectThread.setResponse(msg);
-                gameRequestConnectThread.start();
+                GameEventConnectThread gameEventConnectThread;
+                gameEventConnectThread = new GameEventConnectThread(device, 0);
+                gameEventConnectThread.setResponse(msg);
+                gameEventConnectThread.start();
                 Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName.trim());
                 try {
                     context.startActivity(launchIntent);
@@ -97,10 +97,10 @@ public class UserResponseDialog extends AppCompatActivity {
                 SharedPreferences prefs = ImageCache.getContext().getSharedPreferences(Constants.LOGIN, Context.MODE_PRIVATE);
                 String name = prefs.getString(Constants.NAME_KEY, "");
                 String msg = "Response:0" + ":" + name;
-                GameRequestConnectThread gameRequestConnectThread;
-                gameRequestConnectThread = new GameRequestConnectThread(device, 0);
-                gameRequestConnectThread.setResponse(msg);
-                gameRequestConnectThread.start();
+                GameEventConnectThread gameEventConnectThread;
+                gameEventConnectThread = new GameEventConnectThread(device, 0);
+                gameEventConnectThread.setResponse(msg);
+                gameEventConnectThread.start();
                 finish();
 
             }

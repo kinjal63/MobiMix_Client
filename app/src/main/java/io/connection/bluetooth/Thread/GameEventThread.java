@@ -27,7 +27,7 @@ public class GameEventThread extends Thread {
     Context context;
 
     public GameEventThread(BluetoothAdapter bluetoothAdapter, Context context) {
-        MY_UUID_SECURE = UUID.fromString(ApplicationSharedPreferences.getInstance(context).getValue(Constants.MY_UUID));
+        MY_UUID_SECURE = UUID.fromString(ApplicationSharedPreferences.getInstance(context).getValue(Constants.PREF_MY_UUID));
 
         BluetoothServerSocket tmp = null;
         this.context = context;

@@ -44,7 +44,7 @@ import io.connection.bluetooth.core.GPSTracker;
 import io.connection.bluetooth.core.MobiMixService;
 import io.connection.bluetooth.Thread.AcceptBusinessThread;
 import io.connection.bluetooth.Thread.AcceptThread;
-import io.connection.bluetooth.Thread.GameRequestAcceptThread;
+import io.connection.bluetooth.Thread.GameEventAcceptThread;
 import io.connection.bluetooth.Thread.ThreadConnection;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
@@ -198,8 +198,8 @@ public class Home_Master extends BaseActivity implements View.OnClickListener {
             AcceptThread thread = new AcceptThread(BluetoothAdapter.getDefaultAdapter(), this);
             thread.start();
 
-            GameRequestAcceptThread gameRequestAcceptThread = new GameRequestAcceptThread(BluetoothAdapter.getDefaultAdapter(), Home_Master.this);
-            gameRequestAcceptThread.start();
+            GameEventAcceptThread gameEventAcceptThread = new GameEventAcceptThread(BluetoothAdapter.getDefaultAdapter(), Home_Master.this);
+            gameEventAcceptThread.start();
 
             checkThread = true;
         }

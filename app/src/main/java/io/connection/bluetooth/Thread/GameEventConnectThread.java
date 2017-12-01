@@ -13,7 +13,7 @@ import io.connection.bluetooth.activity.ImageCache;
 /**
  * Created by songline on 07/12/16.
  */
-public class GameRequestConnectThread extends Thread {
+public class GameEventConnectThread extends Thread {
     private static final UUID MY_UUID_SECURE =
             UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a56");
 
@@ -37,7 +37,7 @@ public class GameRequestConnectThread extends Thread {
     }
 
 
-    public GameRequestConnectThread(BluetoothDevice device, int flag) {
+    public GameEventConnectThread(BluetoothDevice device, int flag) {
         mContext = ImageCache.getContext();
         this.device = device;
         this.flag = flag;

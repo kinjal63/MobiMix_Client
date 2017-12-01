@@ -50,7 +50,7 @@ import io.connection.bluetooth.Domain.GameLibrary;
 import io.connection.bluetooth.Domain.GameProfile;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.Thread.GameRequestConnectThread;
+import io.connection.bluetooth.Thread.GameEventConnectThread;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.Utils;
 import retrofit2.Call;
@@ -707,7 +707,7 @@ public class UserNearByWithGames extends AppCompatActivity {
 
 
         for (BluetoothDevice bluetoothDevice : deviceList) {
-            GameRequestConnectThread thread = new GameRequestConnectThread(bluetoothDevice, 1);
+            GameEventConnectThread thread = new GameEventConnectThread(bluetoothDevice, 1);
             thread.start();
             thread.setGame(name, gameName);
 
