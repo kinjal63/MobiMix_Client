@@ -49,6 +49,9 @@ public class MBNearbyPlayer implements Serializable {
     @Property(nameInDb = "max_players")
     private int maxPlayers;
 
+    @Property(nameInDb = "bluetooth_uuid")
+    private String bluetoothUUID;
+
     @ToMany
     @JoinEntity(entity = MBPlayerGames.class, sourceProperty = "playerId", targetProperty = "gameId")
     @Exclude
@@ -219,6 +222,14 @@ public class MBNearbyPlayer implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getBluetoothUUID() {
+        return bluetoothUUID;
+    }
+
+    public void setBluetoothUUID(String bluetoothUUID) {
+        this.bluetoothUUID = bluetoothUUID;
     }
 
     /** called by internal mechanisms, do not call yourself. */

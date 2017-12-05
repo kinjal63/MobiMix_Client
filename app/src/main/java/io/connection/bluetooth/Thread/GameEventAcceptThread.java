@@ -24,7 +24,6 @@ import io.connection.bluetooth.utils.UtilsHandler;
  */
 public class GameEventAcceptThread extends Thread {
     private UUID MY_UUID_SECURE;
-
     private final BluetoothServerSocket serverSocket;
     private static final String TAG = "GameEventAcceptThread";
     BluetoothSocket socket = null;

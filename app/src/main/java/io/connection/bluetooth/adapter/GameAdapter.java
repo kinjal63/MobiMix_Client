@@ -166,6 +166,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
 
     private void sendWifiConnectionInvite(MBGameInfo gameInfo) {
         WifiDirectService.getInstance(context).sendWifiDirectRequestToUser(selectedPlayers, gameInfo);
+
 //        WifiDirectService.getInstance(context).initiateDiscovery();
 ////
 //        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),

@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.p2p.WifiP2pDevice;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -15,11 +16,15 @@ import java.util.TimerTask;
 import java.util.Vector;
 
 import io.connection.bluetooth.Api.WSManager;
+import io.connection.bluetooth.Database.entity.MBGameInfo;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
+import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
+import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
@@ -27,6 +32,8 @@ import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.UtilsHandler;
+import io.connection.bluetooth.utils.cache.MobiMixCache;
 
 /**
  * Created by KP49107 on 14-04-2017.
@@ -261,5 +268,40 @@ public class BluetoothService {
                 }
             }
         });
+    }
+
+    public void sendBluetoothRequestToUser(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
+        if (players.size() > 0) {
+            MBNearbyPlayer player = players.get(0);
+            connect(player.getEmail(), new DeviceConnectionListener() {
+                @Override
+                public void onDeviceConnected(boolean isConnected) {
+                    GameRequest gameRequest = new GameRequest();
+                    gameRequest.setGameId(gameInfo.getGameId());
+                    gameRequest.setGameName(gameInfo.getGameName());
+                    gameRequest.setGamePackageName(gameInfo.getGamePackageName());
+                    gameRequest.setConnectionType(2);
+                    gameRequest.setRemoteUserId(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("user_id"));
+                    gameRequest.setRemoteUserName(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("user_name"));
+                    gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("email"));
+
+                    MobiMixCache.putGameInCache(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("user_id"), gameRequest);
+//                    UtilsHandler.addGameInStack(gameRequest);
+                    // remove 1st player from list as it is connected
+                    players.remove(0);
+
+                    // add all players except 1st in queue
+                    UtilsHandler.addPlayersInQueue(players);
+                }
+            });
+        }
+    }
+
+    private void connect(String bluetoothUUID, DeviceConnectionListener connectionListener) {
+
     }
 }
