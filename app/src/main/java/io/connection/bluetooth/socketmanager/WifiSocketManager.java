@@ -1,7 +1,6 @@
 package io.connection.bluetooth.socketmanager;
 
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
@@ -21,12 +20,11 @@ import io.connection.bluetooth.socketmanager.modules.ReadGameData;
 import io.connection.bluetooth.socketmanager.modules.SendBusinessCard;
 import io.connection.bluetooth.socketmanager.modules.SendFiles;
 import io.connection.bluetooth.utils.Constants;
-import io.connection.bluetooth.utils.MessageConstructor;
 
 /**
  * Created by KP49107 on 29-03-2017.
  */
-public class SocketManager implements Runnable {
+public class WifiSocketManager implements Runnable {
     private Socket socket;
     private SocketOperationType operationType = SocketOperationType.NONE;
     private MessageHandler handler;
@@ -40,7 +38,7 @@ public class SocketManager implements Runnable {
 
     private String TAG = "SocketManager";
 
-    SocketManager(Socket socket, MessageHandler handler) {
+    WifiSocketManager(Socket socket, MessageHandler handler) {
         this.socket = socket;
         this.handler = handler;
     }

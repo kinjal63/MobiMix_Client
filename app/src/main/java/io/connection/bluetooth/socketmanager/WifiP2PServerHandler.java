@@ -22,7 +22,7 @@ public class WifiP2PServerHandler extends Thread {
     private MessageHandler mHandler;
     private InetAddress ipAddress;
     private Socket clientSocket;
-    private SocketManager socketManager;
+    private WifiSocketManager wifiSocketManager;
 
     private String TAG = "WifiP2PServerHandler";
 
@@ -48,10 +48,10 @@ public class WifiP2PServerHandler extends Thread {
                     clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
                     ipAddress = clientSocket.getInetAddress();
 
-                    socketManager = new SocketManager(clientSocket, mHandler);
+                    wifiSocketManager = new WifiSocketManager(clientSocket, mHandler);
 
-                    socketManager.setRemoteDeviceHostAddress(ipAddress.getHostName());
-                    pool.execute(socketManager);
+                    wifiSocketManager.setRemoteDeviceHostAddress(ipAddress.getHostName());
+                    pool.execute(wifiSocketManager);
 
                     System.out.println("Hostname by server side :" + clientSocket.getInetAddress().getHostName()
                     + ",Host Address by server side :" + clientSocket.getInetAddress().getHostAddress());
@@ -61,7 +61,7 @@ public class WifiP2PServerHandler extends Thread {
                 try {
                     if (mSocket != null && !mSocket.isClosed()) {
                         mSocket.close();
-                        socketManager.socketClosed();
+                        wifiSocketManager.socketClosed();
                     }
                 } catch (IOException ioe) {
                     Log.e(TAG, "IOException during close Socket", ioe);

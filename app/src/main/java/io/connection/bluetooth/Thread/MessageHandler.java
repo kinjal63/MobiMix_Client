@@ -19,14 +19,14 @@ import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.activity.ChatDataConversation;
 import io.connection.bluetooth.activity.WifiP2PChatActivity;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.core.CoreEngine;
 import io.connection.bluetooth.core.EventData;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.SocketHeartBeat;
-import io.connection.bluetooth.socketmanager.SocketManager;
-import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.socketmanager.WifiSocketManager;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GameConstants;
 import io.connection.bluetooth.utils.LogUtils;
@@ -40,19 +40,22 @@ import io.connection.bluetooth.utils.cache.MobiMixCache;
  */
 public class MessageHandler {
     private Handler handler = null;
-    private SocketManager socketManager;
+    private WifiSocketManager wifiSocketManager;
 
     private Context context;
     private WifiDirectService wifiP2PService;
+    private BluetoothService bluetoothService;
 
     private SocketHeartBeat heartbeat;
     private boolean isSocketConnected = false;
     private String TAG = "MessageHandler";
 
-    public MessageHandler(Context context, WifiDirectService service) {
+    public MessageHandler(Context context) {
         this.context = context;
-        this.wifiP2PService = service;
-        //To receive message on differesnt thread
+        this.wifiP2PService = WifiDirectService.getInstance(context);
+
+        this.bluetoothService = bluetoothService;
+        //To receive message on different thread
         startHandler();
     }
 
@@ -78,12 +81,12 @@ public class MessageHandler {
                 final Object obj = msg.obj;
 
                 Log.d(TAG, "handleMessage, " + Constants.FIRSTMESSAGEXCHANGE + " case");
-                socketManager = (SocketManager) obj;
+                wifiSocketManager = (WifiSocketManager) obj;
 
                 String moduleName = getMessageModuleToSend();
-                socketManager.writeObject(moduleName);
+                wifiSocketManager.writeObject(moduleName);
 
-                heartbeat = new SocketHeartBeat(socketManager);
+                heartbeat = new SocketHeartBeat(wifiSocketManager);
                 heartbeat.start();
 
                 break;
@@ -101,7 +104,7 @@ public class MessageHandler {
                 break;
             case Constants.MESSAGE_HEARBEAT:
                 if (msg.obj != null) {
-                    socketManager.writeObject(MessageConstructor.getHandShakeSignalObj());
+                    wifiSocketManager.writeObject(MessageConstructor.getHandShakeSignalObj());
                 }
                 break;
             default:
@@ -127,7 +130,7 @@ public class MessageHandler {
                 message.startsWith(Constants.BUSINESSCARD_MODULE) ||
                 message.startsWith(Constants.GAME_MODULE)) {
 
-            WifiP2PRemoteDevice device = socketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
+            WifiP2PRemoteDevice device = wifiSocketManager.setRemoteDevice(message.split("_")[1], message.split("_")[2]);
             wifiP2PService.addConnectedDevice(device);
             socketConnected();
 
@@ -142,10 +145,9 @@ public class MessageHandler {
             } else if (message.startsWith(Constants.GAME_MODULE)) {
                 wifiP2PService.setModule(Modules.GAME);
 
-                JSONObject object = MessageConstructor.constructObjectToSendAckEvent(MobiMix.GameEvent.EVENT_CONNECTION_ESTABLISHED_ACK);
-                if (object != null) {
-                    socketManager.writeObject(object);
-                }
+                EventData eventData = new EventData();
+                eventData.event_ = MobiMix.GameEvent.EVENT_CONNECTION_ESTABLISHED_ACK;
+                sendEvent(eventData);
             }
             readData();
 
@@ -156,11 +158,11 @@ public class MessageHandler {
             int module = wifiP2PService.getModule().ordinal();
             switch (module) {
                 case 1:
-                    ChatDataConversation.putChatConversation(socketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(socketManager.getRemoteDeviceAddress()) + ":  " + message);
-                    Log.d(TAG, "run: Accept thread Receive Message Count -> " + ChatDataConversation.getChatConversation(socketManager.getRemoteDeviceAddress()).size());
-                    WifiP2PChatActivity.readMessagae(socketManager.getRemoteDeviceAddress());
+                    ChatDataConversation.putChatConversation(wifiSocketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(wifiSocketManager.getRemoteDeviceAddress()) + ":  " + message);
+                    Log.d(TAG, "run: Accept thread Receive Message Count -> " + ChatDataConversation.getChatConversation(wifiSocketManager.getRemoteDeviceAddress()).size());
+                    WifiP2PChatActivity.readMessagae(wifiSocketManager.getRemoteDeviceAddress());
 
-                    WifiP2PRemoteDevice remoteDevice = socketManager.getRemoteDevice();
+                    WifiP2PRemoteDevice remoteDevice = wifiSocketManager.getRemoteDevice();
 
                     Intent intent = new Intent(MobiMixApplication.getInstance().getActivity(), WifiP2PChatActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -179,34 +181,34 @@ public class MessageHandler {
     }
 
     public void sendMessage(byte[] message) {
-        if (socketManager != null) {
-            socketManager.writeMessage(message);
+        if (wifiSocketManager != null) {
+            wifiSocketManager.writeMessage(message);
         }
     }
 
     public void sendBusinessCard() {
         Log.d(TAG, "Starting to write business card");
-        if (socketManager != null) {
-            socketManager.writeBusinessCard();
+        if (wifiSocketManager != null) {
+            wifiSocketManager.writeBusinessCard();
         }
     }
 
     public void sendFiles(List<Uri> files) {
         QueueManager.addFilesToSend(files);
-        if (socketManager != null) {
-            socketManager.writeFiles();
+        if (wifiSocketManager != null) {
+            wifiSocketManager.writeFiles();
         }
     }
 
     public void readData() {
-        if (socketManager != null) {
-            socketManager.readData();
+        if (wifiSocketManager != null) {
+            wifiSocketManager.readData();
         }
     }
 
     public void socketConnected() {
         isSocketConnected = true;
-        wifiP2PService.notifyUserForConnectedSocket(socketManager.getRemoteDeviceAddress());
+        wifiP2PService.notifyUserForConnectedSocket(wifiSocketManager.getRemoteDeviceAddress());
     }
 
     public void socketClosed() {
@@ -229,8 +231,8 @@ public class MessageHandler {
     }
 
     public String getRemoteDeviceAddress() {
-        if (socketManager != null) {
-            return socketManager.getRemoteDeviceAddress();
+        if (wifiSocketManager != null) {
+            return wifiSocketManager.getRemoteDeviceAddress();
         }
         return null;
     }
@@ -246,7 +248,7 @@ public class MessageHandler {
         wifiP2PService.closeConnection();
         wifiP2PService.removeGroup();
 
-        wifiP2PService.removeConnectedDevice(socketManager.getRemoteDevice());
+        wifiP2PService.removeConnectedDevice(wifiSocketManager.getRemoteDevice());
 
         System.out.println("Removing group for wifidirect");
     }
@@ -320,8 +322,8 @@ public class MessageHandler {
             default:
                 break;
         }
-        if (socketManager != null && eventObj != null) {
-            socketManager.writeObject(eventObj);
+        if (wifiSocketManager != null && eventObj != null) {
+            wifiSocketManager.writeObject(eventObj);
         }
     }
 }

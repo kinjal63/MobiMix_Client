@@ -75,10 +75,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
     private String TAG = "WifiDirectService";
 
-    private WifiDirectService() {
-        initialize();
-    }
-
     public static WifiDirectService getInstance(Context context) {
         mContext = context;
         synchronized (obj) {
@@ -94,7 +90,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         throw new CloneNotSupportedException();
     }
 
-    public void initialize() {
+    public void initialize(MessageHandler handler_) {
+        messageHandler = handler_;
+
         WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         if (!wifiManager.isWifiEnabled()) {
             wifiManager.setWifiEnabled(true);
@@ -104,7 +102,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
         initiateDiscovery();
         new Timer().schedule(new DiscoveryTask(), 500, 45000);
-        messageHandler = new MessageHandler(mContext, this);
+
+        mContext.registerReceiver(mReceiver, mIntentFilter);
     }
 
     public void initiateDiscovery() {

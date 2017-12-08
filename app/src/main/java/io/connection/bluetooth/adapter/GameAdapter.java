@@ -22,6 +22,7 @@ import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.request.ReqGameInvite;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
@@ -138,7 +139,9 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         return gameList.size();
     }
 
-    private void sendBluetoothConnectionInvite(String gamePackageName) {
+    private void sendBluetoothConnectionInvite(MBGameInfo gameInfo) {
+        BluetoothService.getInstance().sendBluetoothRequestToUser(selectedPlayers, gameInfo);
+
 //        Utils.makeDeviceDiscoverable(context);
 //
 //        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),

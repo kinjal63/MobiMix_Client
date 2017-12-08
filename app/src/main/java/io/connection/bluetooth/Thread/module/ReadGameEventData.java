@@ -22,7 +22,7 @@ public class ReadGameEventData extends Thread {
     private InputStream in;
     private boolean disable = false;
 
-    public ReadGameEventData(BluetoothSocket socket, Context context) {
+    public ReadGameEventData(BluetoothSocket socket) {
         this.bluetoothSocket = socket;
     }
 

@@ -11,13 +11,17 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import io.connection.bluetooth.MobiMixApplication;
+import io.connection.bluetooth.Thread.MessageHandler;
 
 /**
  * Created by KP49107 on 28-03-2017.
  */
 public class MobiMixService extends Service {
+    private Context context;
+
     private BluetoothService bluetoothService;
     private WifiDirectService wifiDirectService;
+    private MessageHandler handler;
     private final IBinder mBinder = new LocalBinder();
 
     public class LocalBinder extends Binder {
@@ -27,8 +31,17 @@ public class MobiMixService extends Service {
     }
 
     public void init() {
-        initBluetooth();
-        initWifiDirect();
+        initRadioService();
+    }
+
+    private void initRadioService() {
+        bluetoothService = BluetoothService.getInstance();
+        bluetoothService.init(handler);
+
+        wifiDirectService = WifiDirectService.getInstance(this);
+        wifiDirectService.initialize(handler);
+
+        handler = new MessageHandler(context);
     }
 
     @Override
@@ -48,16 +61,6 @@ public class MobiMixService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
-    }
-
-    private void initBluetooth() {
-        bluetoothService = BluetoothService.getInstance();
-        bluetoothService.init();
-    }
-
-    private void initWifiDirect() {
-        wifiDirectService = WifiDirectService.getInstance(this);
-        wifiDirectService.registerReceiver();
     }
 
     // Database sync initilization

@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.wifi.p2p.WifiP2pDevice;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -15,14 +14,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
-import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
@@ -54,9 +52,14 @@ public class BluetoothService {
     private String TAG = BluetoothService.class.getSimpleName();
     private Modules module;
     private String className;
+    private MessageHandler handler;
 
     BluetoothService() {
 
+    }
+
+    public static BluetoothService getBluetoothService() {
+        return bluetoothService;
     }
 
     public void setModule(Modules module) {
@@ -82,7 +85,8 @@ public class BluetoothService {
         return bluetoothService;
     }
 
-    public void init() {
+    public void init(MessageHandler handler_) {
+        this.handler = handler_;
         this.context = MobiMixApplication.getInstance().getContext();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -281,14 +285,14 @@ public class BluetoothService {
                     gameRequest.setGameName(gameInfo.getGameName());
                     gameRequest.setGamePackageName(gameInfo.getGamePackageName());
                     gameRequest.setConnectionType(2);
-                    gameRequest.setRemoteUserId(ApplicationSharedPreferences.getInstance(mContext).
+                    gameRequest.setRemoteUserId(ApplicationSharedPreferences.getInstance(context).
                             getValue("user_id"));
-                    gameRequest.setRemoteUserName(ApplicationSharedPreferences.getInstance(mContext).
+                    gameRequest.setRemoteUserName(ApplicationSharedPreferences.getInstance(context).
                             getValue("user_name"));
-                    gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(mContext).
+                    gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(context).
                             getValue("email"));
 
-                    MobiMixCache.putGameInCache(ApplicationSharedPreferences.getInstance(mContext).
+                    MobiMixCache.putGameInCache(ApplicationSharedPreferences.getInstance(context).
                             getValue("user_id"), gameRequest);
 //                    UtilsHandler.addGameInStack(gameRequest);
                     // remove 1st player from list as it is connected

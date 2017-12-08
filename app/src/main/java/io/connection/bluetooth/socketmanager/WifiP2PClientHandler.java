@@ -20,7 +20,7 @@ public class WifiP2PClientHandler extends Thread {
     private Socket mSocket;
     private InetAddress mAddress;
     private MessageHandler mHandler;
-    private SocketManager socketManager;
+    private WifiSocketManager wifiSocketManager;
     private SocketConnectionListener mSocketConnectionListener;
     private String TAG = "WifiP2PClientHandler";
 
@@ -48,9 +48,9 @@ public class WifiP2PClientHandler extends Thread {
             System.out.println("Hostname by client side :" + mSocket.getInetAddress().getHostName()
                     + ",Host Address by client side :" + mSocket.getInetAddress().getHostAddress());
 
-            socketManager = new SocketManager(mSocket, mHandler);
-            socketManager.setRemoteDeviceHostAddress(mAddress.getHostName());
-            new Thread(socketManager).start();
+            wifiSocketManager = new WifiSocketManager(mSocket, mHandler);
+            wifiSocketManager.setRemoteDeviceHostAddress(mAddress.getHostName());
+            new Thread(wifiSocketManager).start();
         }
         catch (IOException e) {
             Thread.sleep(5000);
@@ -66,7 +66,7 @@ public class WifiP2PClientHandler extends Thread {
         if(mSocket!=null && !mSocket.isClosed()) {
             try {
                 mSocket.close();
-                socketManager = null;
+                wifiSocketManager = null;
             } catch (IOException e) {
                 Log.e(TAG,"IOException during close Socket" , e);
             }

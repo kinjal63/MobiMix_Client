@@ -41,8 +41,9 @@ public class ReadGameData {
                             break;
                         }
                         message = new String(buffer);
-                        System.out.println("Getting message" + message);
                         object = new JSONObject(message);
+
+                        System.out.println("Getting message" + message);
 
                         int arg1 = object.optInt(GameConstants.GAME_EVENT, 0);
                         if(arg1 != 0) {
