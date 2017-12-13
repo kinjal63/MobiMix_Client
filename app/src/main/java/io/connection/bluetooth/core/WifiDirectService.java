@@ -443,6 +443,10 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         return wifiP2PDeviceList;
     }
 
+    public void setMessageHandler(MessageHandler messageHandler) {
+        this.messageHandler = messageHandler;
+    }
+
     public void addConnectedDevice(WifiP2PRemoteDevice remoteDevice) {
         this.connectedDeviceMap.put(remoteDevice.getDevice().deviceAddress, remoteDevice);
     }

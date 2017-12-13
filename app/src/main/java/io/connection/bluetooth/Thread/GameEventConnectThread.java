@@ -19,10 +19,10 @@ public class GameEventConnectThread extends Thread {
     private BluetoothSocket mmSocket;
     private static final String TAG = "GameRequestConnThread";
 
-    public GameEventConnectThread(BluetoothDevice device) {
+    public GameEventConnectThread(BluetoothDevice device, UUID deviceUUID) {
         BluetoothSocket tmp = null;
         try {
-            tmp = device.createRfcommSocketToServiceRecord(MY_UUID_SECURE);
+            tmp = device.createRfcommSocketToServiceRecord(deviceUUID);
         } catch (IOException e) {
             Log.d(TAG, "ConnectThread: " + e.getMessage());
         }
@@ -34,7 +34,6 @@ public class GameEventConnectThread extends Thread {
         try {
             if (!mmSocket.isConnected())
                 mmSocket.connect();
-
 
             ReadGameEventData gameData = new ReadGameEventData(mmSocket);
             gameData.start();

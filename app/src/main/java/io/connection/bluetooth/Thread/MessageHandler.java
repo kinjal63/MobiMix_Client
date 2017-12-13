@@ -298,6 +298,9 @@ public class MessageHandler {
         JSONObject eventObj = null;
 
         switch (eventData.event_) {
+            case MobiMix.GameEvent.EVENT_CONNECTION_ESTABLISHED_ACK:
+                eventObj = MessageConstructor.constructObjectToSendAckEvent(eventData.event_);
+                break;
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
                 eventObj = MessageConstructor.constructObjectToSendGameLaunchedEvent(eventData);
                 break;

@@ -16,7 +16,7 @@ import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 
 /**
- * Created by songline on 07/12/16.
+ * Created by kinjal on 07/12/17.
  */
 public class GameEventAcceptThread extends Thread {
     private UUID MY_UUID_SECURE;

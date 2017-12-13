@@ -198,6 +198,7 @@ public class Home_Master extends BaseActivity implements View.OnClickListener {
             AcceptThread thread = new AcceptThread(BluetoothAdapter.getDefaultAdapter(), this);
             thread.start();
 
+            // start listening for game events
             GameEventAcceptThread gameEventAcceptThread = new GameEventAcceptThread(BluetoothAdapter.getDefaultAdapter(), Home_Master.this);
             gameEventAcceptThread.start();
 

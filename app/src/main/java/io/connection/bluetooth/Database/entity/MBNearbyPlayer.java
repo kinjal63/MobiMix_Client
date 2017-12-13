@@ -65,10 +65,10 @@ public class MBNearbyPlayer implements Serializable {
     @Generated(hash = 1708284874)
     private transient MBNearbyPlayerDao myDao;
 
-    @Generated(hash = 2023716044)
+    @Generated(hash = 484639795)
     public MBNearbyPlayer(String playerId, String playerName, String email, String playerImagePath,
             int isEngaged, String activeGameName, int isGroupOwner, String groupOwnerUserId,
-            int maxPlayers) {
+            int maxPlayers, String bluetoothUUID) {
         this.playerId = playerId;
         this.playerName = playerName;
         this.email = email;
@@ -78,6 +78,7 @@ public class MBNearbyPlayer implements Serializable {
         this.isGroupOwner = isGroupOwner;
         this.groupOwnerUserId = groupOwnerUserId;
         this.maxPlayers = maxPlayers;
+        this.bluetoothUUID = bluetoothUUID;
     }
 
     @Generated(hash = 763795256)

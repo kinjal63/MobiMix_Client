@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.Vector;
 
 import io.connection.bluetooth.Database.entity.MBGameInfo;
@@ -20,6 +21,7 @@ import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.Thread.GameEventConnectThread;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
@@ -76,6 +78,14 @@ public class BluetoothService {
 
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    public MessageHandler handler() {
+        return handler;
+    }
+
+    public void setHandler(MessageHandler handler) {
+        this.handler = handler;
     }
 
     public static BluetoothService getInstance() {
@@ -178,7 +188,8 @@ public class BluetoothService {
 
     public void setRemoteBluetoothDevice(BluetoothRemoteDevice device) {
         if( !bluetoothDeviceMap.containsKey(device.getDevice().getAddress()) ) {
-            bluetoothDeviceMap.put(device.getDevice().getAddress(), device);
+//            bluetoothDeviceMap.put(device.getDevice().getAddress(), device);
+            bluetoothDeviceMap.put(device.getDevice().getName(), device);
         }
         if( nearbyDeviceFoundAction != null ) {
             nearbyDeviceFoundAction.onBluetoothDeviceAvailable(device);
@@ -209,6 +220,13 @@ public class BluetoothService {
             devices.addAll(bluetoothDeviceMap.values());
         }
         return devices;
+    }
+
+    public BluetoothRemoteDevice getBluetoothDevice(String deviceName) {
+        if(bluetoothDeviceMap.containsKey(deviceName)) {
+            return bluetoothDeviceMap.get(deviceName);
+        }
+        return null;
     }
 
     public void sendChatMessage(byte[] message) {
@@ -277,7 +295,7 @@ public class BluetoothService {
     public void sendBluetoothRequestToUser(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
         if (players.size() > 0) {
             MBNearbyPlayer player = players.get(0);
-            connect(player.getEmail(), new DeviceConnectionListener() {
+            connect(player.getEmail(), player.getBluetoothUUID(), new DeviceConnectionListener() {
                 @Override
                 public void onDeviceConnected(boolean isConnected) {
                     GameRequest gameRequest = new GameRequest();
@@ -305,7 +323,12 @@ public class BluetoothService {
         }
     }
 
-    private void connect(String bluetoothUUID, DeviceConnectionListener connectionListener) {
+    private void connect(String deviceName, String bluetoothUUID, DeviceConnectionListener connectionListener) {
+        BluetoothRemoteDevice remoteDevice = getBluetoothDevice(deviceName);
+        UUID deviceUUID = UUID.fromString(bluetoothUUID);
 
+        // Start Bluetooth Connection thread to connect with bluetooth device
+        GameEventConnectThread gameEventConnectThread = new GameEventConnectThread(remoteDevice.getDevice(), deviceUUID);
+        gameEventConnectThread.start();
     }
 }

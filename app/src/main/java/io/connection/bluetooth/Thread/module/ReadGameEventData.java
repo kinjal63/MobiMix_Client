@@ -2,6 +2,7 @@ package io.connection.bluetooth.Thread.module;
 
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.os.Handler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +10,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GameConstants;
 
@@ -17,13 +21,14 @@ import io.connection.bluetooth.utils.GameConstants;
  */
 
 public class ReadGameEventData extends Thread {
+    private MessageHandler handler = null;
     private BluetoothSocket bluetoothSocket = null;
-    private Context context = null;
     private InputStream in;
     private boolean disable = false;
 
     public ReadGameEventData(BluetoothSocket socket) {
         this.bluetoothSocket = socket;
+        this.handler = BluetoothService.getInstance().handler();
     }
 
     @Override
