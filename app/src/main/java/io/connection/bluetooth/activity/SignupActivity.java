@@ -95,7 +95,7 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
                 }
 
                 String macAddress = android.provider.Settings.Secure.getString(getActivity().getContentResolver(), "bluetooth_address");
-                String uuId = UUID.randomUUID().toString();
+                final String uuId = UUID.randomUUID().toString();
 
                 final User user = new User();
                 user.setName(name.getText().toString());
@@ -105,8 +105,8 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
                 user.setDob(dateOfBirth);
                 user.setGender("male");
                 user.setEmailVerified(false);
+                user.setDeviceUUID(uuId);
                 DeviceDetails deviceDetails = new DeviceDetails();
-                deviceDetails.setUuId(uuId);
                 deviceDetails.setDeviceId(Utils.getDeviceId(context));
                 List<DeviceDetails> deviceDetailsList = new ArrayList<DeviceDetails>();
                 deviceDetailsList.add(deviceDetails);
@@ -125,8 +125,9 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
                         public void onResponse(Call<User> call, Response<User> response) {
                             if (response.isSuccessful()) {
                                 sharedPref = context.getSharedPreferences("myPref", Context.MODE_PRIVATE);
-                                ApplicationSharedPreferences.getInstance(getActivity()).addValue("user_id", response.body().getId());
-                                ApplicationSharedPreferences.getInstance(getActivity()).addValue("email", response.body().getEmail());
+                                ApplicationSharedPreferences.getInstance(context).addValue("user_id", response.body().getId());
+                                ApplicationSharedPreferences.getInstance(context).addValue("email", response.body().getEmail());
+                                ApplicationSharedPreferences.getInstance(context).addValue(Constants.PREF_MY_UUID, uuId);
 
                                 sharedPref.edit().putBoolean("is_login", true).commit();
 

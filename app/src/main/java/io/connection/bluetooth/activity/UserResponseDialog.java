@@ -72,9 +72,9 @@ public class UserResponseDialog extends AppCompatActivity {
                 String name = prefs.getString(Constants.NAME_KEY, "");
                 String msg = "Response:1" + ":" + name + " $#$ " + packageName;
                 GameEventConnectThread gameEventConnectThread;
-                gameEventConnectThread = new GameEventConnectThread(device, 0);
-                gameEventConnectThread.setResponse(msg);
-                gameEventConnectThread.start();
+//                gameEventConnectThread = new GameEventConnectThread(device, 0);
+//                gameEventConnectThread.setResponse(msg);
+//                gameEventConnectThread.start();
                 Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName.trim());
                 try {
                     context.startActivity(launchIntent);
@@ -98,9 +98,9 @@ public class UserResponseDialog extends AppCompatActivity {
                 String name = prefs.getString(Constants.NAME_KEY, "");
                 String msg = "Response:0" + ":" + name;
                 GameEventConnectThread gameEventConnectThread;
-                gameEventConnectThread = new GameEventConnectThread(device, 0);
-                gameEventConnectThread.setResponse(msg);
-                gameEventConnectThread.start();
+//                gameEventConnectThread = new GameEventConnectThread(device, 0);
+//                gameEventConnectThread.setResponse(msg);
+//                gameEventConnectThread.start();
                 finish();
 
             }

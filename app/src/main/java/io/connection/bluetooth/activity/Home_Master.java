@@ -189,17 +189,17 @@ public class Home_Master extends BaseActivity implements View.OnClickListener {
     void bluetoothEnabled() {
 
         if (!checkThread) {
-            ThreadConnection connection = new ThreadConnection(this);
-            connection.start();
-
-            AcceptBusinessThread acceptBusinessThread = new AcceptBusinessThread(BluetoothAdapter.getDefaultAdapter(), this);
-            acceptBusinessThread.start();
-
-            AcceptThread thread = new AcceptThread(BluetoothAdapter.getDefaultAdapter(), this);
-            thread.start();
+//            ThreadConnection connection = new ThreadConnection(this);
+//            connection.start();
+//
+//            AcceptBusinessThread acceptBusinessThread = new AcceptBusinessThread(BluetoothAdapter.getDefaultAdapter(), this);
+//            acceptBusinessThread.start();
+//
+//            AcceptThread thread = new AcceptThread(BluetoothAdapter.getDefaultAdapter(), this);
+//            thread.start();
 
             // start listening for game events
-            GameEventAcceptThread gameEventAcceptThread = new GameEventAcceptThread(BluetoothAdapter.getDefaultAdapter(), Home_Master.this);
+            GameEventAcceptThread gameEventAcceptThread = new GameEventAcceptThread(Home_Master.this, BluetoothAdapter.getDefaultAdapter() );
             gameEventAcceptThread.start();
 
             checkThread = true;

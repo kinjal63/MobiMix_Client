@@ -90,6 +90,10 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         throw new CloneNotSupportedException();
     }
 
+    public void reinitialize() {
+        initialize(messageHandler);
+    }
+
     public void initialize(MessageHandler handler_) {
         messageHandler = handler_;
 

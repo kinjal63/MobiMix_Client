@@ -7,14 +7,13 @@ import java.util.List;
  * Created by songline on 31/07/16.
  */
 public class User implements Serializable {
-
-
     private String id;
     private String name;
     private String password;
     private String macAddress;
     private String bluetoothName;
     private String email;
+    private String deviceUUID;
     private Long dob;
     private String gender;
     private String photoUrl;
@@ -90,6 +89,18 @@ public class User implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getDeviceUUID() {
+        return deviceUUID;
+    }
+
+    public void setDeviceUUID(String deviceUUID) {
+        this.deviceUUID = deviceUUID;
+    }
+
+    public String getBluetoothName() {
+        return bluetoothName;
     }
 
     public Long getDob() {

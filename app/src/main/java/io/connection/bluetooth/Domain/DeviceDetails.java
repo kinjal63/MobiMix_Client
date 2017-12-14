@@ -8,7 +8,6 @@ import java.io.Serializable;
 public class DeviceDetails  implements Serializable{
 
     private String deviceId;
-    private String uuId;
     private String manufacturer;
     private String model;
     private String modelName;
@@ -26,14 +25,6 @@ public class DeviceDetails  implements Serializable{
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
-    }
-
-    public String getUuId() {
-        return uuId;
-    }
-
-    public void setUuId(String uuId) {
-        this.uuId = uuId;
     }
 
     public String getManufacturer() {

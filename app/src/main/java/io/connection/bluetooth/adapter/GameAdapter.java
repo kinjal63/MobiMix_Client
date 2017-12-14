@@ -87,15 +87,16 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         holder.imgBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                gameName = gameList.get((int)view.getTag()).getGameName();
-                gamePackageName = gameList.get((int)view.getTag()).getGamePackageName();
+                final MBGameInfo gameInfo = gameList.get((int)view.getTag());
+                gameName = gameInfo.getGameName();
+                gamePackageName = gameInfo.getGamePackageName();
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setMessage("Do you want to send Bluetooth connection for game " + gameName);
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        sendBluetoothConnectionInvite(gamePackageName);
+                        sendBluetoothConnectionInvite(gameInfo);
                         dialogInterface.dismiss();
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {

@@ -706,13 +706,13 @@ public class UserNearByWithGames extends AppCompatActivity {
     void sendMessageRequestForPlayingGame(List<BluetoothDevice> deviceList, String gameName) {
 
 
-        for (BluetoothDevice bluetoothDevice : deviceList) {
-            GameEventConnectThread thread = new GameEventConnectThread(bluetoothDevice, 1);
-            thread.start();
-            thread.setGame(name, gameName);
+//        for (BluetoothDevice bluetoothDevice : deviceList) {
+//            GameEventConnectThread thread = new GameEventConnectThread(bluetoothDevice, 1);
+//            thread.start();
+//            thread.setGame(name, gameName);
 
 
-        }
+//        }
 
 
     }

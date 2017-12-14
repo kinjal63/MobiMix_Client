@@ -10,6 +10,9 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.MessageHandler;
 
@@ -66,13 +69,22 @@ public class MobiMixService extends Service {
 
     // Database sync initilization
     private void initJobScheular() {
-        ComponentName componentName = new ComponentName(MobiMixApplication.getInstance().getContext(), DBSyncService.class);
-        JobInfo.Builder builder = new JobInfo.Builder(0, componentName);
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-        builder.setMinimumLatency(1000);
-
-        JobScheduler jobSchedular = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        jobSchedular.schedule(builder.build());
+//        ComponentName componentName = new ComponentName(MobiMixApplication.getInstance().getContext(), DBSyncService.class);
+//        JobInfo.Builder builder = new JobInfo.Builder(0, componentName);
+//        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
+//        builder.setMinimumLatency(1000);
+//
+//        JobScheduler jobSchedular = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+//        jobSchedular.schedule(builder.build());
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                NetworkManager networkManager_ = NetworkManager.getInstance();
+                if(networkManager_.isNetworkConnected()) {
+                    networkManager_.sendRequestTofetchNearbyPlayers();
+                }
+            }
+        }, 1000, 30000);
     }
 
     @Override

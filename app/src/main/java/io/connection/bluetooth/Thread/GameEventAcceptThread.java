@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import io.connection.bluetooth.Thread.module.ReadGameEventData;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.core.EventData;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
@@ -23,13 +24,13 @@ public class GameEventAcceptThread extends Thread {
     private final BluetoothServerSocket serverSocket;
     private static final String TAG = "GameEventAcceptThread";
     private BluetoothSocket socket = null;
-    private Context mContext;
     private MessageHandler handler;
 
-    public GameEventAcceptThread(Context context, BluetoothAdapter adapter, MessageHandler handler) {
+    public GameEventAcceptThread(Context context, BluetoothAdapter adapter) {
+        handler = BluetoothService.getInstance().handler();
+
         MY_UUID_SECURE = UUID.fromString(ApplicationSharedPreferences.getInstance(context).getValue(Constants.PREF_MY_UUID));
         BluetoothServerSocket tmp = null;
-        mContext = context;
         try {
             tmp = adapter
                     .listenUsingRfcommWithServiceRecord(
