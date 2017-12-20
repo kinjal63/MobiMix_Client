@@ -13,23 +13,19 @@ import io.connection.bluetooth.Thread.module.ReadGameEventData;
 import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.core.EventData;
 import io.connection.bluetooth.core.MobiMix;
-import io.connection.bluetooth.utils.ApplicationSharedPreferences;
-import io.connection.bluetooth.utils.Constants;
 
 /**
  * Created by kinjal on 07/12/17.
  */
 public class GameEventAcceptThread extends Thread {
-    private UUID MY_UUID_SECURE;
+    public static final UUID MY_UUID_SECURE =
+            UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
     private final BluetoothServerSocket serverSocket;
     private static final String TAG = "GameEventAcceptThread";
     private BluetoothSocket socket = null;
     private MessageHandler handler;
 
-    public GameEventAcceptThread(Context context, BluetoothAdapter adapter) {
-        handler = BluetoothService.getInstance().handler();
-
-        MY_UUID_SECURE = UUID.fromString(ApplicationSharedPreferences.getInstance(context).getValue(Constants.PREF_MY_UUID));
+    public GameEventAcceptThread(BluetoothAdapter adapter) {
         BluetoothServerSocket tmp = null;
         try {
             tmp = adapter
@@ -51,6 +47,9 @@ public class GameEventAcceptThread extends Thread {
                     Log.d(TAG, "run: " + socket.getRemoteDevice().getName() + "  " +
                             socket.getRemoteDevice().getAddress());
 
+                    handler = BluetoothService.getInstance().handler();
+                    handler.setBluetoothSocket(socket);
+
                     EventData eventData = new EventData();
                     eventData.event_ = MobiMix.GameEvent.EVENT_CONNECTION_ESTABLISHED_ACK;
                     handler.sendEvent(eventData);
@@ -62,7 +61,6 @@ public class GameEventAcceptThread extends Thread {
                 e.printStackTrace();
                 Log.d(TAG, "run: " + e.getMessage());
             }
-
         }
     }
 }

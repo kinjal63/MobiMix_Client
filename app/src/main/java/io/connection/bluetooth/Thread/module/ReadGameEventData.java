@@ -35,6 +35,9 @@ public class ReadGameEventData extends Thread {
     public void run() {
         String message;
         JSONObject object;
+
+        this.handler.setBluetoothSocket(bluetoothSocket);
+
         try {
             in = bluetoothSocket.getInputStream();
             while (!disable) {

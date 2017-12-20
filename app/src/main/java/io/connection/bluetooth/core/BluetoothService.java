@@ -2,6 +2,7 @@ package io.connection.bluetooth.core;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -21,6 +22,7 @@ import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.ConnectedThread;
+import io.connection.bluetooth.Thread.GameEventAcceptThread;
 import io.connection.bluetooth.Thread.GameEventConnectThread;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
@@ -55,6 +57,7 @@ public class BluetoothService {
     private Modules module;
     private String className;
     private MessageHandler handler;
+    private BluetoothSocket bluetoothSocket;
 
     BluetoothService() {
 
@@ -95,8 +98,10 @@ public class BluetoothService {
         return bluetoothService;
     }
 
-    public void init(MessageHandler handler_) {
-        this.handler = handler_;
+    public void init() {
+        handler = new MessageHandler(context);
+
+//        this.handler = handler_;
         this.context = MobiMixApplication.getInstance().getContext();
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -294,15 +299,15 @@ public class BluetoothService {
 
     public void sendBluetoothRequestToUser(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
         if (players.size() > 0) {
-            MBNearbyPlayer player = players.get(0);
-            connect(player.getEmail(), player.getBluetoothUUID(), new DeviceConnectionListener() {
+            final MBNearbyPlayer player = players.get(0);
+            connect(player.getEmail(), new DeviceConnectionListener() {
                 @Override
                 public void onDeviceConnected(boolean isConnected) {
                     GameRequest gameRequest = new GameRequest();
                     gameRequest.setGameId(gameInfo.getGameId());
                     gameRequest.setGameName(gameInfo.getGameName());
                     gameRequest.setGamePackageName(gameInfo.getGamePackageName());
-                    gameRequest.setConnectionType(2);
+                    gameRequest.setConnectionType(1);
                     gameRequest.setRemoteUserId(ApplicationSharedPreferences.getInstance(context).
                             getValue("user_id"));
                     gameRequest.setRemoteUserName(ApplicationSharedPreferences.getInstance(context).
@@ -310,8 +315,7 @@ public class BluetoothService {
                     gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(context).
                             getValue("email"));
 
-                    MobiMixCache.putGameInCache(ApplicationSharedPreferences.getInstance(context).
-                            getValue("user_id"), gameRequest);
+                    MobiMixCache.putGameInCache(player.getPlayerId(), gameRequest);
 //                    UtilsHandler.addGameInStack(gameRequest);
                     // remove 1st player from list as it is connected
                     players.remove(0);
@@ -323,12 +327,12 @@ public class BluetoothService {
         }
     }
 
-    private void connect(String deviceName, String bluetoothUUID, DeviceConnectionListener connectionListener) {
+    private void connect(String deviceName, DeviceConnectionListener connectionListener) {
         BluetoothRemoteDevice remoteDevice = getBluetoothDevice(deviceName);
-        UUID deviceUUID = UUID.fromString(bluetoothUUID);
+        UUID deviceUUID = GameEventAcceptThread.MY_UUID_SECURE;
 
         // Start Bluetooth Connection thread to connect with bluetooth device
-        GameEventConnectThread gameEventConnectThread = new GameEventConnectThread(remoteDevice.getDevice(), deviceUUID);
+        GameEventConnectThread gameEventConnectThread = new GameEventConnectThread(remoteDevice.getDevice(), deviceUUID, connectionListener);
         gameEventConnectThread.start();
     }
 }

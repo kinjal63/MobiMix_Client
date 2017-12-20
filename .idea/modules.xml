@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MobiMix_Client.iml" filepath="$PROJECT_DIR$/MobiMix_Client.iml" />
+      <module fileurl="file://D:\Projects\MobiMix\Git_Code\Client_Code\New_Code\MobiMix_Client.iml" filepath="D:\Projects\MobiMix\Git_Code\Client_Code\New_Code\MobiMix_Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/New_Code.iml" filepath="$PROJECT_DIR$/New_Code.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/imagecrop/imagecrop.iml" filepath="$PROJECT_DIR$/imagecrop/imagecrop.iml" />

@@ -25,7 +25,7 @@ public class NotificationUtil {
     }
 
     public static void sendChatNotification(Intent intent, String message, String userName) {
-        if(!ApplicationSharedPreferences.getInstance(mContext).getBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN)) {
+        if (!ApplicationSharedPreferences.getInstance(mContext).getBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN)) {
             PendingIntent pendingIntent = PendingIntent.getActivity(mContext,
                     0, intent, PendingIntent.FLAG_ONE_SHOT);
 
@@ -43,6 +43,8 @@ public class NotificationUtil {
     }
 
     public static void generateNotificationForGameRequest(GameRequest gameRequest) {
+        String radioType = gameRequest.getConnectionType() == 1 ? "Bluetooth" : "Wifi-Direct";
+
         Intent intent = new Intent(mContext, DialogActivity.class);
         intent.putExtra("game_request", gameRequest);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -52,8 +54,8 @@ public class NotificationUtil {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.mipmap.ic_logo)
-                .setContentTitle("Wifi Direct connection")
-                .setContentText("Do you want to make wifi direct connection with " + gameRequest.getRemoteUserName())
+                .setContentTitle(radioType + " connection")
+                .setContentText("Do you want to make " + radioType + " connection with " + gameRequest.getRemoteUserName())
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);

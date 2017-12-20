@@ -59,6 +59,7 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
             final BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
             if (remoteDevice != null) {
+                System.out.println("Bluetooth device found->" + remoteDevice.getName());
 //                Log.d(TAG, "onReceive: " + remoteDevice.getAddress().trim());
 //
 //                User userAvailable = new User();

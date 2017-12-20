@@ -45,8 +45,8 @@ public class DBAsyncOperation extends Thread {
             case MobiMix.DBRequest.DB_FIND_NEARBY_PLAYERS:
 //                List<MBUserAvailability> us = daoSession.getMBUserAvailabilityDao().loadAll();
                 QueryBuilder<MBNearbyPlayer> q1 = daoSession.getMBNearbyPlayerDao().queryBuilder();
-                q1.join(MBUserAvailability.class, MBUserAvailabilityDao.Properties.PlayerId).
-                        where(MBUserAvailabilityDao.Properties.IsEngaged.eq(0));
+//                q1.join(MBUserAvailability.class, MBUserAvailabilityDao.Properties.PlayerId).
+//                        where(MBUserAvailabilityDao.Properties.IsEngaged.eq(0));
                 List<MBNearbyPlayer> lstPlayers = q1.list();
 
                 ((IActionReadListener)this.iActionCRUDListener).onReadOperation(0, lstPlayers);

@@ -11,7 +11,7 @@ public class Constants {
     // public static UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     public static UUID uuid = UUID.fromString("6f50463f-e73f-48ca-a5f6-d2080cd24363");
     //public static final String endPointAddress = "http://transfer-teqnihome.rhcloud.com/";
-    public static final String endPointAddress = "http://192.168.0.106:8080/";
+    public static final String endPointAddress = "http://192.168.0.104:8080/";
     // public static final String endPointAddress = "http://192.168.43.123:8080/";
     public static final String TOKEN = "push_token";
     public static final String TOKEN_KEY = "token";   

@@ -67,6 +67,13 @@ public class DialogActivity extends Activity{
         }
     }
 
+    @Override
+    protected void onPause() {
+        finish();
+        super.onPause();
+    }
+
+
     private void showBluetoothDialog(final GameRequest gameRequest) {
         final String bluetoothName = gameRequest.getBluetoothAddress();
         final String gamePackageName = gameRequest.getGamePackageName();

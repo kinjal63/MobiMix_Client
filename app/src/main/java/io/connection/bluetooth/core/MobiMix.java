@@ -34,13 +34,14 @@ public class MobiMix {
 
     public interface GameEvent {
         public static final int EVENT_CONNECTION_ESTABLISHED_ACK = 300;
-        public static final int EVENT_GAME_INFO_REQUEST = 301;
+        public static final int EVENT_GAME_INFO_REQUEST_ASK = 301;
+        public static final int EVENT_GAME_INFO_REQUEST = 302;
 //        public static final int EVENT_GAME_INFO_RESPONSE = 302;
-        public static final int EVENT_GAME_INFO_REQUEST_ACK = 303;
-        public static final int EVENT_GAME_LAUNCHED = 304;
-        public static final int EVENT_GAME_LAUNCHED_ACK = 305;
-        public static final int EVENT_GAME_UPDATE_TABLE_REQUEST = 306;
-        public static final int EVENT_GAME_UPDATE_TABLE_DATA = 307;
-        public static final int EVENT_GAME_UPDATE_TABLE_ACK = 308;
+        public static final int EVENT_GAME_INFO_REQUEST_ACK = 304;
+        public static final int EVENT_GAME_LAUNCHED = 305;
+        public static final int EVENT_GAME_LAUNCHED_ACK = 306;
+        public static final int EVENT_GAME_UPDATE_TABLE_REQUEST = 307;
+        public static final int EVENT_GAME_UPDATE_TABLE_DATA = 308;
+        public static final int EVENT_GAME_UPDATE_TABLE_ACK = 309;
     }
 }

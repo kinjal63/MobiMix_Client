@@ -1,5 +1,6 @@
 package io.connection.bluetooth.Thread;
 
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -10,6 +11,7 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.List;
 
 import io.connection.bluetooth.Domain.GameRequest;
@@ -41,6 +43,7 @@ import io.connection.bluetooth.utils.cache.MobiMixCache;
 public class MessageHandler {
     private Handler handler = null;
     private WifiSocketManager wifiSocketManager;
+    private BluetoothSocket bluetoothSocket;
 
     private Context context;
     private WifiDirectService wifiP2PService;
@@ -52,7 +55,7 @@ public class MessageHandler {
 
     public MessageHandler(Context context) {
         this.context = context;
-        this.wifiP2PService = WifiDirectService.getInstance(context);
+//        this.wifiP2PService = WifiDirectService.getInstance(context);
 
         this.bluetoothService = bluetoothService;
         //To receive message on different thread
@@ -68,6 +71,10 @@ public class MessageHandler {
                 MessageHandler.this.handleMessage(msg);
             }
         };
+    }
+
+    public void setBluetoothSocket(BluetoothSocket socket) {
+        this.bluetoothSocket = socket;
     }
 
     public WifiDirectService getWifiP2PService() {
@@ -122,7 +129,7 @@ public class MessageHandler {
     }
 
     private void handleObject(String message) {
-        System.out.println("Actual message received::" + message);
+        System.out.println("Message handled by actual message received::" + message);
 
         if (message.startsWith(Constants.NO_MODULE) ||
                 message.startsWith(Constants.CHAT_MODULE) ||
@@ -254,7 +261,7 @@ public class MessageHandler {
     }
 
     private void handleGameObject(Message message) {
-        LogUtils.printLog(TAG, "handleGameObject Event::" + message.arg1);
+        LogUtils.printLog(TAG, "Message handled by handleGameObject Event::" + message.arg1);
 
         JSONObject object = (JSONObject) message.obj;
         String userId = object.optString(GameConstants.USER_ID);
@@ -269,7 +276,14 @@ public class MessageHandler {
                 if(gameRequest != null) {
                     eventData.event_ = MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST;
                 }
+                else {
+                    eventData.event_ = MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST_ASK;
+                }
                 break;
+            case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST_ASK:
+                eventData.event_ = MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST;
+                break;
+
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED_ACK:
                 if (Integer.parseInt(MobiMixCache.getFromCache(CacheConstants.CACHE_IS_GROUP_OWNER).toString()) == 1) {
                     eventData.event_ = MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_DATA;
@@ -295,10 +309,12 @@ public class MessageHandler {
     }
 
     public void sendEvent(EventData eventData) {
+        System.out.println("Message send by handler : " + eventData.event_);
         JSONObject eventObj = null;
 
         switch (eventData.event_) {
             case MobiMix.GameEvent.EVENT_CONNECTION_ESTABLISHED_ACK:
+            case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST_ACK:
                 eventObj = MessageConstructor.constructObjectToSendAckEvent(eventData.event_);
                 break;
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
@@ -310,6 +326,7 @@ public class MessageHandler {
             case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
                 eventObj = MessageConstructor.constructObjectToSendGameRequestEvent(eventData);
                 break;
+            case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST_ASK:
             case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_REQUEST:
                 eventObj = MessageConstructor.constructObjectToRequestForEvent(eventData.event_);
                 break;
@@ -324,6 +341,14 @@ public class MessageHandler {
                 break;
             default:
                 break;
+        }
+        if(bluetoothSocket != null) {
+            try {
+                bluetoothSocket.getOutputStream().write(eventObj.toString().getBytes());
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         if (wifiSocketManager != null && eventObj != null) {
             wifiSocketManager.writeObject(eventObj);

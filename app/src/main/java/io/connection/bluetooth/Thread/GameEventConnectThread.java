@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.UUID;
 
 import io.connection.bluetooth.Thread.module.ReadGameEventData;
+import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.core.BluetoothService;
 
 /**
  * Created by songline on 07/12/16.
@@ -17,9 +19,11 @@ public class GameEventConnectThread extends Thread {
             UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a56");
 
     private BluetoothSocket mmSocket;
+    private DeviceConnectionListener deviceConnectionListener;
     private static final String TAG = "GameRequestConnThread";
 
-    public GameEventConnectThread(BluetoothDevice device, UUID deviceUUID) {
+    public GameEventConnectThread(BluetoothDevice device, UUID deviceUUID, DeviceConnectionListener connectionListener) {
+        this.deviceConnectionListener = connectionListener;
         BluetoothSocket tmp = null;
         try {
             tmp = device.createRfcommSocketToServiceRecord(deviceUUID);
@@ -34,6 +38,9 @@ public class GameEventConnectThread extends Thread {
         try {
             if (!mmSocket.isConnected())
                 mmSocket.connect();
+
+            if(deviceConnectionListener != null)
+                deviceConnectionListener.onDeviceConnected(true);
 
             ReadGameEventData gameData = new ReadGameEventData(mmSocket);
             gameData.start();
