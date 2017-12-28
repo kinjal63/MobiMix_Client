@@ -40,11 +40,11 @@ public class MobiMixService extends Service {
     private void initRadioService() {
 //        handler = new MessageHandler(context);
 
-        bluetoothService = BluetoothService.getInstance();
-        bluetoothService.init();
+//        bluetoothService = BluetoothService.getInstance();
+//        bluetoothService.init();
 
 //        wifiDirectService = WifiDirectService.getInstance(this);
-//        wifiDirectService.initialize(handler);
+//        wifiDirectService.initialize();
 
     }
 

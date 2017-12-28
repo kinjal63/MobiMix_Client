@@ -3,13 +3,10 @@ package io.connection.bluetooth.Thread;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
-
 import java.io.IOException;
 import java.util.UUID;
-
-import io.connection.bluetooth.Thread.module.ReadGameEventData;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
-import io.connection.bluetooth.core.BluetoothService;
+import io.connection.bluetooth.socketmanager.BluetoothSocketManager;
 
 /**
  * Created by songline on 07/12/16.
@@ -19,6 +16,7 @@ public class GameEventConnectThread extends Thread {
             UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a56");
 
     private BluetoothSocket mmSocket;
+    private BluetoothSocketManager bluetoothSocketManager;
     private DeviceConnectionListener deviceConnectionListener;
     private static final String TAG = "GameRequestConnThread";
 
@@ -42,8 +40,8 @@ public class GameEventConnectThread extends Thread {
             if(deviceConnectionListener != null)
                 deviceConnectionListener.onDeviceConnected(true);
 
-            ReadGameEventData gameData = new ReadGameEventData(mmSocket);
-            gameData.start();
+            bluetoothSocketManager = new BluetoothSocketManager(mmSocket);
+            new Thread(bluetoothSocketManager).start();
         } catch (Exception e) {
             e.printStackTrace();
             try {

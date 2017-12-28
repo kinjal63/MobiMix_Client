@@ -91,11 +91,12 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void reinitialize() {
-        initialize(messageHandler);
+        messageHandler = null;
+        initialize();
     }
 
-    public void initialize(MessageHandler handler_) {
-        messageHandler = handler_;
+    public void initialize() {
+        this.messageHandler = new MessageHandler(mContext);
 
         WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         if (!wifiManager.isWifiEnabled()) {
@@ -307,7 +308,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             if (nearByDeviceCallback != null) {
                 nearByDeviceCallback.onDevicesAvailable(wifiP2PDeviceList);
             }
-            NetworkManager.getInstance().deleteUserIfNotFoundInVicinity();
+            NetworkManager.getInstance().setAvailabilityForWifiDirectDevices();
         }
     };
 
@@ -407,58 +408,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
     }
 
-    public WifiP2pManager getWifiP2PManager() {
-        return this.manager;
-    }
-
-    public WifiP2pManager.Channel getWifiP2PChannel() {
-        return this.channel;
-    }
-
-    public MessageHandler getMessageHandler() {
-        return this.messageHandler;
-    }
-
-    public Modules getModule() {
-        return this.module;
-    }
-
-    public String getClassName() {
-        return this.className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public void setModule(Modules module) {
-        this.module = module;
-    }
-
-    public String getWifiDirectDeviceName() {
-        return this.wifiDirectDeviceName;
-    }
-
-    public String getRemoteDeviceAddress() {
-        return messageHandler.getRemoteDeviceAddress();
-    }
-
-    public HashSet<WifiP2PRemoteDevice> getWifiP2PDeviceList() {
-        return wifiP2PDeviceList;
-    }
-
-    public void setMessageHandler(MessageHandler messageHandler) {
-        this.messageHandler = messageHandler;
-    }
-
-    public void addConnectedDevice(WifiP2PRemoteDevice remoteDevice) {
-        this.connectedDeviceMap.put(remoteDevice.getDevice().deviceAddress, remoteDevice);
-    }
-
-    public void removeConnectedDevice(WifiP2PRemoteDevice device) {
-        this.connectedDeviceMap.remove(device.getDevice().deviceAddress);
-    }
-
     public void registerReceiver() {
         mContext.registerReceiver(mReceiver, mIntentFilter);
     }
@@ -518,8 +467,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             removeGroup();
             try {
                 Thread.sleep(2000);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -539,6 +487,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                             getValue("user_name"));
                     gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(mContext).
                             getValue("email"));
+                    gameRequest.setBluetoothAddress(ApplicationSharedPreferences.getInstance(mContext).
+                            getValue("email"));
 
                     MobiMixCache.putGameInCache(ApplicationSharedPreferences.getInstance(mContext).
                             getValue("user_id"), gameRequest);
@@ -551,5 +501,58 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 }
             });
         }
+    }
+
+
+    public WifiP2pManager getWifiP2PManager() {
+        return this.manager;
+    }
+
+    public WifiP2pManager.Channel getWifiP2PChannel() {
+        return this.channel;
+    }
+
+    public MessageHandler getMessageHandler() {
+        return this.messageHandler;
+    }
+
+    public Modules getModule() {
+        return this.module;
+    }
+
+    public String getClassName() {
+        return this.className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public void setModule(Modules module) {
+        this.module = module;
+    }
+
+    public String getWifiDirectDeviceName() {
+        return this.wifiDirectDeviceName;
+    }
+
+    public String getRemoteDeviceAddress() {
+        return messageHandler.getRemoteDeviceAddress();
+    }
+
+    public HashSet<WifiP2PRemoteDevice> getWifiP2PDeviceList() {
+        return wifiP2PDeviceList;
+    }
+
+    public void setMessageHandler(MessageHandler messageHandler) {
+        this.messageHandler = messageHandler;
+    }
+
+    public void addConnectedDevice(WifiP2PRemoteDevice remoteDevice) {
+        this.connectedDeviceMap.put(remoteDevice.getDevice().deviceAddress, remoteDevice);
+    }
+
+    public void removeConnectedDevice(WifiP2PRemoteDevice device) {
+        this.connectedDeviceMap.remove(device.getDevice().deviceAddress);
     }
 }

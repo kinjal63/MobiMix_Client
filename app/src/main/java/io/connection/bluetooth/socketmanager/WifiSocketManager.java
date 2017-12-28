@@ -30,11 +30,10 @@ public class WifiSocketManager implements Runnable {
     private MessageHandler handler;
     private InputStream is;
     private OutputStream os;
-    private boolean disable = false;
 
     private WifiP2PRemoteDevice remoteDevice;
     private String remoteHostAddress;
-    private String obj = "ThreadSync";
+    private String obj = "WifiSocket";
 
     private String TAG = "SocketManager";
 

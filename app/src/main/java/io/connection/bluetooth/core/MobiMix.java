@@ -33,6 +33,7 @@ public class MobiMix {
     }
 
     public interface GameEvent {
+        public static final int EVENT_GAME_START = -300;
         public static final int EVENT_CONNECTION_ESTABLISHED_ACK = 300;
         public static final int EVENT_GAME_INFO_REQUEST_ASK = 301;
         public static final int EVENT_GAME_INFO_REQUEST = 302;

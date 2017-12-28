@@ -72,7 +72,7 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
 ////                    public void onResponceSuccess(Call<User> call, Response<User> response) {
 ////                        User user = response.body();
                         BluetoothRemoteDevice device = new BluetoothRemoteDevice(remoteDevice, remoteDevice.getName());
-                        bluetoothService.setRemoteBluetoothDevice(device);
+                        bluetoothService.addRemoteBluetoothDevice(device);
 //                    }
 //
 //                    @Override
@@ -97,7 +97,7 @@ public class BluetoothDeviceReceiver extends BroadcastReceiver {
                     @Override
                     public void onResponseSuccess(User u) {
                         BluetoothRemoteDevice remoteDevice = new BluetoothRemoteDevice(device, u.getName());
-                        bluetoothService.setRemoteBluetoothDevice(remoteDevice);
+                        bluetoothService.addRemoteBluetoothDevice(remoteDevice);
                     }
 
                     @Override

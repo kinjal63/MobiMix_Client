@@ -11,6 +11,7 @@ import org.greenrobot.greendao.query.WhereCondition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -114,8 +115,7 @@ public class DatabaseManager {
     }
 
     // Update tables by scanning nearby users
-    public synchronized void deleteUsersIfNotFoundInVicinity() {
-        List<MBNearbyPlayer> players = MobiMixApplication.getInstance().getDaoSession().getMBNearbyPlayerDao().loadAll();
+    public synchronized void setAvailabilityForWifiDirectDevices() {
         HashSet<WifiP2PRemoteDevice> devices = WifiDirectService.getInstance(context).getWifiP2PDeviceList();
 
         List<String> emailIds = new ArrayList<>();
@@ -163,6 +163,23 @@ public class DatabaseManager {
 //                .buildDelete();
 //        dbPlayerGames.executeDeleteWithoutDetachingEntities();
 
+    }
+
+    public synchronized void setAvailabilityForBluetoothDevice(String deviceName) {
+        String myDevice = ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).getValue("email");
+
+        DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
+        QueryBuilder<MBNearbyPlayer> qb = daoSession.getMBNearbyPlayerDao().queryBuilder();
+        List<MBNearbyPlayer> playersToUpdate = qb.where(MBNearbyPlayerDao.Properties.Email.in(myDevice, deviceName)).list();
+
+        for (MBNearbyPlayer player : playersToUpdate) {
+            MBUserAvailability userAvailabilityObj = daoSession.getMBUserAvailabilityDao().queryBuilder().
+                    where(MBUserAvailabilityDao.Properties.PlayerId.eq(player.getPlayerId())).unique();
+            if(userAvailabilityObj != null) {
+                userAvailabilityObj.setIsEngaged(0);
+                daoSession.getMBUserAvailabilityDao().update(userAvailabilityObj);
+            }
+        }
     }
 
     public synchronized void findPlayers(DBParams params, final IDatabaseActionListener iDatabaseActionListener) {

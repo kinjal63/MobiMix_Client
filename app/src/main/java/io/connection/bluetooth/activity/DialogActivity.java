@@ -75,33 +75,20 @@ public class DialogActivity extends Activity{
 
 
     private void showBluetoothDialog(final GameRequest gameRequest) {
-        final String bluetoothName = gameRequest.getBluetoothAddress();
-        final String gamePackageName = gameRequest.getGamePackageName();
-
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Bluetooth Connection Invite");
         alertDialogBuilder
-                .setMessage("Do you want to make bluetooth connection with " + bluetoothName)
+                .setMessage("Do you want to make bluetooth connection with " + gameRequest.getRemoteUserName()
+                            + " to play game " + gameRequest.getGameName())
                 .setCancelable(false)
                 .setIcon(R.drawable.bluetooth)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         if(Utils.getBluetoothAdapter() != null) {
-                            mBluetoothDeviceFoundReceiver.pairWithDevice(bluetoothName, new BluetoothPairCallback() {
-                                @Override
-                                public void devicePaired(boolean isPaired) {
-                                    if(isPaired) {
-                                        BluetoothService.getInstance().updateConnectionInfo(gameRequest, true, 1, new IUpdateListener() {
-                                            @Override
-                                            public void onUpdated() {
-                                                UtilsHandler.launchGame(gameRequest.getGamePackageName());
-                                            }
-                                        });
-                                        finish();
-                                    }
-                                }
-                            });
+                            sendGameLaunchEventToRemoteUser(gameRequest);
+
                             bluetoothAdapter.startDiscovery();
+                            finish();
                         }
                     }
                 })
@@ -120,9 +107,6 @@ public class DialogActivity extends Activity{
     private void showWifiDialog(final GameRequest gameRequest) {
         final String remoteUserName = gameRequest.getRemoteUserName();
         final String gameName = gameRequest.getGameName();
-        final String gamePackageName = gameRequest.getGamePackageName();
-        final String remoteUserId = gameRequest.getRemoteUserId();
-
         final WifiDirectService wifiDirectService = WifiDirectService.getInstance(DialogActivity.this);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -134,12 +118,8 @@ public class DialogActivity extends Activity{
                 .setIcon(R.drawable.wifidirect)
                 .setPositiveButton("Yes",new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
-                        MobiMixCache.putGameInCache(remoteUserId, gameRequest);
-
-                        EventData eventData = new EventData(MobiMix.GameEvent.EVENT_GAME_LAUNCHED);
-                        GUIManager.getObject().sendEvent(eventData);
-
-                        UtilsHandler.launchGame(gamePackageName);
+                        sendGameLaunchEventToRemoteUser(gameRequest);
+                        finish();
 
 //                        boolean isDeviceFound = false;
 //
@@ -218,6 +198,16 @@ public class DialogActivity extends Activity{
         AlertDialog alertDialog = alertDialogBuilder.create();
 
         alertDialog.show();
+    }
+
+    private void sendGameLaunchEventToRemoteUser(GameRequest gameRequest) {
+        MobiMixCache.putGameInCache(gameRequest.getRemoteUserId(), gameRequest);
+        UtilsHandler.launchGame(gameRequest.getGamePackageName());
+
+        // Send Game launch event to remote user
+        EventData eventData = new EventData(MobiMix.GameEvent.EVENT_GAME_LAUNCHED);
+        eventData.userId_ = gameRequest.getRemoteUserId();
+        GUIManager.getObject().sendEvent(eventData);
     }
 
     private void connectWithDevice(String deviceAddress, final GameRequest gameRequest) {

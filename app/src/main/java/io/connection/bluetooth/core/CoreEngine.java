@@ -17,7 +17,7 @@ public class CoreEngine {
     }
 
     public static void sendEventToHandler(EventData eventData) {
-        MessageHandler messageHandler = WifiDirectService.getInstance(MobiMixApplication.getInstance().getContext()).getMessageHandler();
+        MessageHandler messageHandler = BluetoothService.getInstance().handler();
         if( messageHandler != null ) {
             messageHandler.sendEvent(eventData);
         }

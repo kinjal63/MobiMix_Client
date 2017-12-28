@@ -18,6 +18,7 @@ public class GameConstants {
     public static final String GAME_CONNECTION_TYPE = "game_connection_type";
     public static final String GAME_REQUEST_SENDER_ID = "sender_id";
     public static final String GAME_REQUEST_CONNECTION_TYPE = "connection_type";
+    public static final String GAME_REQUEST_DEVICE_NAME = "device_name";
 
     public static final String GROUP_OWNER_USER_ID = "group_owner_user_id";
     public static final String CONNECTED_USER_NAME = "connected_user_name";

@@ -35,19 +35,15 @@ public class DBAsyncOperation extends Thread {
         this.iActionCRUDListener = iActionCRUD;
     }
 
-    public DBAsyncOperation() {
-    }
-
     @Override
     public void run() {
         DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
         switch (this.params.event_) {
             case MobiMix.DBRequest.DB_FIND_NEARBY_PLAYERS:
-//                List<MBUserAvailability> us = daoSession.getMBUserAvailabilityDao().loadAll();
                 QueryBuilder<MBNearbyPlayer> q1 = daoSession.getMBNearbyPlayerDao().queryBuilder();
-//                q1.join(MBUserAvailability.class, MBUserAvailabilityDao.Properties.PlayerId).
-//                        where(MBUserAvailabilityDao.Properties.IsEngaged.eq(0));
                 List<MBNearbyPlayer> lstPlayers = q1.list();
+
+                List<MBGameParticipants> lstGameParticipants = daoSession.getMBGameParticipantsDao().loadAll();
 
                 ((IActionReadListener)this.iActionCRUDListener).onReadOperation(0, lstPlayers);
                 break;
@@ -94,6 +90,8 @@ public class DBAsyncOperation extends Thread {
                     gameParticipants.setConnectionType(connectionType);
                     gameParticipants.setMaxPlayers(maxPlayers);
                     gameParticipants.setUpdatedAt(new Date());
+
+                    daoSession.getMBGameParticipantsDao().insertOrReplace(gameParticipants);
                 }
             break;
             default:

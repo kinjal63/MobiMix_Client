@@ -60,9 +60,14 @@ public class NetworkManager {
         wsManager_.checkIfUserAvailable(user, listener);
     }
 
-    public void deleteUserIfNotFoundInVicinity() {
-        DatabaseManager.getInstance().deleteUsersIfNotFoundInVicinity();
+    public void setAvailabilityForWifiDirectDevices() {
+        DatabaseManager.getInstance().setAvailabilityForWifiDirectDevices();
     }
+
+    public void setAvailabilityForBluetoothDevice(String deviceName) {
+        DatabaseManager.getInstance().setAvailabilityForBluetoothDevice(deviceName);
+    }
+
     // GUI to update after fetching data from DB
     public void getNearByPlayersFromDB(DBParams params, IDatabaseActionListener dbActionListener) {
         DatabaseManager.getInstance().findPlayers(params, dbActionListener);

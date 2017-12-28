@@ -17,10 +17,11 @@ import io.connection.bluetooth.utils.cache.MobiMixCache;
 public class MessageConstructor {
     public static JSONObject constructObjectToSendAckEvent(int event) {
         JSONObject jsonObject = new JSONObject();
+        String userId = ApplicationSharedPreferences.getInstance(
+                MobiMixApplication.getInstance().getContext()).getValue("user_id");
         try {
             jsonObject.put(GameConstants.GAME_EVENT, event);
-            jsonObject.put(GameConstants.USER_ID, ApplicationSharedPreferences.getInstance
-                    (MobiMixApplication.getInstance().getContext()).getValue("user_id"));
+            jsonObject.put(GameConstants.USER_ID, userId);
         }
         catch (JSONException e) {
             jsonObject = null;
@@ -31,10 +32,11 @@ public class MessageConstructor {
 
     public static JSONObject constructObjectToRequestForEvent(int event) {
         JSONObject jsonObject = new JSONObject();
+        String userId = ApplicationSharedPreferences.getInstance(
+                MobiMixApplication.getInstance().getContext()).getValue("user_id");
         try {
             jsonObject.put(GameConstants.GAME_EVENT, event);
-            jsonObject.put(GameConstants.USER_ID, ApplicationSharedPreferences.getInstance
-                    (MobiMixApplication.getInstance().getContext()).getValue("user_id"));
+            jsonObject.put(GameConstants.USER_ID, userId);
         }
         catch (JSONException e) {
             jsonObject = null;
@@ -48,7 +50,10 @@ public class MessageConstructor {
         JSONObject jsonObject = null;
         if(gameRequest != null) {
             jsonObject = new JSONObject();
+            String userId = ApplicationSharedPreferences.getInstance(
+                    MobiMixApplication.getInstance().getContext()).getValue("user_id");
             try {
+                jsonObject.put(GameConstants.USER_ID, userId);
                 jsonObject.put(GameConstants.GAME_EVENT, MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST);
                 jsonObject.put(GameConstants.GAME_ID, (int) gameRequest.getGameId());
                 jsonObject.put(GameConstants.GAME_NAME, gameRequest.getGameName());
@@ -56,6 +61,7 @@ public class MessageConstructor {
                 jsonObject.put(GameConstants.GAME_REQUEST_SENDER_ID, gameRequest.getRemoteUserId());
                 jsonObject.put(GameConstants.GAME_REQUEST_SENDER_NAME, gameRequest.getRemoteUserName());
                 jsonObject.put(GameConstants.GAME_REQUEST_CONNECTION_TYPE, gameRequest.getConnectionType());
+                jsonObject.put(GameConstants.GAME_REQUEST_DEVICE_NAME, gameRequest.getBluetoothAddress());
             } catch (JSONException e) {
                 jsonObject = null;
                 e.printStackTrace();
@@ -98,6 +104,7 @@ public class MessageConstructor {
             jsonObject.put(GameConstants.GAME_EVENT, eventData.event_);
             jsonObject.put(GameConstants.GAME_ID, gameRequest.getGameId());
             jsonObject.put(GameConstants.GAME_CONNECTION_TYPE, gameRequest.getConnectionType());
+            jsonObject.put(GameConstants.USER_ID, userId);
         }
         catch (JSONException e) {
             e.printStackTrace();

@@ -112,6 +112,8 @@ public class GUIManager {
                             gameRequest.setRemoteUserName(jsonObject.optString(GameConstants.GAME_REQUEST_SENDER_NAME));
                             gameRequest.setRemoteUserId(jsonObject.optString(GameConstants.GAME_REQUEST_SENDER_ID));
                             gameRequest.setConnectionType(jsonObject.optInt(GameConstants.GAME_REQUEST_CONNECTION_TYPE));
+                            gameRequest.setWifiAddress(jsonObject.optString(GameConstants.GAME_REQUEST_DEVICE_NAME));
+                            gameRequest.setBluetoothAddress(jsonObject.optString(GameConstants.GAME_REQUEST_DEVICE_NAME));
 
                             NotificationUtil.generateNotificationForGameRequest(gameRequest);
                         }

@@ -11,7 +11,7 @@ public class Constants {
     // public static UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     public static UUID uuid = UUID.fromString("6f50463f-e73f-48ca-a5f6-d2080cd24363");
     //public static final String endPointAddress = "http://transfer-teqnihome.rhcloud.com/";
-    public static final String endPointAddress = "http://192.168.0.104:8080/";
+    public static final String endPointAddress = "http://192.168.0.106:8080/";
     // public static final String endPointAddress = "http://192.168.43.123:8080/";
     public static final String TOKEN = "push_token";
     public static final String TOKEN_KEY = "token";   
@@ -36,7 +36,8 @@ public class Constants {
 
     public static final int GROUP_OWNER_PORT = 5050;
     public static final int SOCKET_TIMEOUT = 5000;
-    public static final int FIRSTMESSAGEXCHANGE = 0x400 + 1;
+    public static final int FIRSTMESSAGEXCHANGE = 0x500 + 1;
+    public static final int FIRSTMESSAGEXCHANGE_BLUETOOTH = 0x400 + 1;
     public static final int MESSAGE_READ = 0x400 + 2;
     public static final int MODULE_READ = 0x400 + 3;
     public static final int INIT_MODULE = 0x400 + 4;

@@ -35,6 +35,7 @@ import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.UtilsHandler;
+import io.connection.bluetooth.utils.cache.CacheConstants;
 import io.connection.bluetooth.utils.cache.MobiMixCache;
 
 /**
@@ -99,7 +100,7 @@ public class BluetoothService {
     }
 
     public void init() {
-        handler = new MessageHandler(context);
+        this.handler = new MessageHandler(context);
 
 //        this.handler = handler_;
         this.context = MobiMixApplication.getInstance().getContext();
@@ -191,14 +192,14 @@ public class BluetoothService {
         }
     }
 
-    public void setRemoteBluetoothDevice(BluetoothRemoteDevice device) {
+    public void addRemoteBluetoothDevice(BluetoothRemoteDevice device) {
         if( !bluetoothDeviceMap.containsKey(device.getDevice().getAddress()) ) {
-//            bluetoothDeviceMap.put(device.getDevice().getAddress(), device);
             bluetoothDeviceMap.put(device.getDevice().getName(), device);
         }
         if( nearbyDeviceFoundAction != null ) {
             nearbyDeviceFoundAction.onBluetoothDeviceAvailable(device);
         }
+        NetworkManager.getInstance().setAvailabilityForBluetoothDevice(device.getName());
     }
 
     public void addSocketConnectionForAddress(String deviceAddress) {
@@ -298,6 +299,9 @@ public class BluetoothService {
     }
 
     public void sendBluetoothRequestToUser(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
+        if(handler != null)
+            handler.closeBluetoothSocket();
+
         if (players.size() > 0) {
             final MBNearbyPlayer player = players.get(0);
             connect(player.getEmail(), new DeviceConnectionListener() {
@@ -314,8 +318,11 @@ public class BluetoothService {
                             getValue("user_name"));
                     gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(context).
                             getValue("email"));
+                    gameRequest.setBluetoothAddress(ApplicationSharedPreferences.getInstance(context).
+                            getValue("email"));
 
                     MobiMixCache.putGameInCache(player.getPlayerId(), gameRequest);
+                    MobiMixCache.putInCache(CacheConstants.CACHE_IS_GROUP_OWNER, 1);
 //                    UtilsHandler.addGameInStack(gameRequest);
                     // remove 1st player from list as it is connected
                     players.remove(0);
