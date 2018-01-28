@@ -1,38 +1,31 @@
 package io.connection.bluetooth.activity.gui;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.app.ActivityManager;
 import android.content.Context;
-import android.content.Intent;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.app.NotificationCompat;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.Socket;
 import java.util.List;
 
 import io.connection.bluetooth.Database.DBParams;
-import io.connection.bluetooth.Database.DatabaseManager;
 import io.connection.bluetooth.Database.action.IDatabaseActionListener;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobiMixApplication;
-import io.connection.bluetooth.R;
-import io.connection.bluetooth.activity.DialogActivity;
 import io.connection.bluetooth.activity.IDBResponse;
 import io.connection.bluetooth.core.CoreEngine;
 import io.connection.bluetooth.core.EventData;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.NetworkManager;
-import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.utils.GameConstants;
 import io.connection.bluetooth.utils.NotificationUtil;
 import io.connection.bluetooth.utils.UtilsHandler;
 import io.connection.bluetooth.utils.cache.MobiMixCache;
+
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 
 /**
  * Created by Kinjal on 10/13/2017.
@@ -109,7 +102,7 @@ public class GUIManager {
                             gameRequest.setGameName(jsonObject.optString(GameConstants.GAME_NAME));
                             gameRequest.setGameId(jsonObject.optLong(GameConstants.GAME_ID));
                             gameRequest.setGamePackageName(jsonObject.optString(GameConstants.GAME_PACKAGE_NAME));
-                            gameRequest.setRemoteUserName(jsonObject.optString(GameConstants.GAME_REQUEST_SENDER_NAME));
+                            gameRequest.setRequesterUserName(jsonObject.optString(GameConstants.GAME_REQUEST_SENDER_NAME));
                             gameRequest.setRemoteUserId(jsonObject.optString(GameConstants.GAME_REQUEST_SENDER_ID));
                             gameRequest.setConnectionType(jsonObject.optInt(GameConstants.GAME_REQUEST_CONNECTION_TYPE));
                             gameRequest.setWifiAddress(jsonObject.optString(GameConstants.GAME_REQUEST_DEVICE_NAME));
@@ -122,18 +115,32 @@ public class GUIManager {
                         if (jsonObject != null) {
                             DBParams params = new DBParams();
                             params.object_ = jsonObject;
+                            params.event_ = MobiMix.DBRequest.DB_UPDATE_GAME_TABLE;
                             NetworkManager.getInstance().updateGameTable(params);
                         }
                         break;
                     case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
-                        if (jsonObject != null) {
-                            GameRequest game = MobiMixCache.getGameFromCache(jsonObject.optString(GameConstants.USER_ID));
-                            if (game != null) {
-                                UtilsHandler.launchGame(game.getGamePackageName());
+                        GameRequest game = MobiMixCache.getCurrentGameRequestFromCache();
+                        if (game != null) {
+                            boolean isForeGround = false;
+                            try {
+                                isForeGround = new ForegroundCheckTask(context_).execute(game.getGamePackageName()).get();
+                                if (!isForeGround) {
+                                    UtilsHandler.launchGame(game.getGamePackageName());
+                                }
 
                                 // Send Ack for game launch
-                                EventData eventData = new EventData(MobiMix.GameEvent.EVENT_GAME_LAUNCHED_ACK);
-                                CoreEngine.sendEventToHandler(eventData);
+                                EventData eventData1 = new EventData(MobiMix.GameEvent.EVENT_GAME_LAUNCHED_ACK);
+                                CoreEngine.sendEventToHandler(eventData1);
+
+                                List<Socket> clients = MobiMixCache.getClientSockets();
+                                for(Socket client : clients) {
+                                    EventData eventData2 = new EventData(MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_DATA);
+                                    CoreEngine.sendEventToHandler(eventData2);
+                                }
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
                         break;

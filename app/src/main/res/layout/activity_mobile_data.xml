@@ -11,38 +11,38 @@
         android:layout_marginTop="50dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="India Usage"/>
+        android:text="Start Tracking Data Usage"/>
 
-    <Button
+    <!--<Button
         android:id="@+id/us_usage_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="US Usage"/>
+        android:layout_height="wrap_content"-->
+        <!--android:text="US Usage"/>-->
 
-    <Button
-        android:id="@+id/uk_usage_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="UK Usage"/>
+    <!--<Button-->
+        <!--android:id="@+id/uk_usage_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="UK Usage"/>-->
 
-    <Button
-        android:id="@+id/France_usage_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="France Usage"/>
+    <!--<Button-->
+        <!--android:id="@+id/France_usage_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="France Usage"/>-->
 
-    <Button
-        android:id="@+id/collect_usage_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Collect Data"/>
+    <!--<Button-->
+        <!--android:id="@+id/collect_usage_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Collect Data"/>-->
 
-    <Button
-        android:id="@+id/apps_button"
-        android:layout_marginTop="50dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/holo_blue_light"
-        android:text="Get Call logs"/>
+    <!--<Button-->
+        <!--android:id="@+id/apps_button"-->
+        <!--android:layout_marginTop="50dp"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="@android:color/holo_blue_light"-->
+        <!--android:text="Get Call logs"/>-->
 
 </LinearLayout>

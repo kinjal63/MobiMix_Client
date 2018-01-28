@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.cache.MobiMixCache;
 
 /**
  * Created by Kinjal on 3/28/2017.
@@ -23,7 +24,6 @@ public class WifiP2PServerHandler extends Thread {
     private InetAddress ipAddress;
     private Socket clientSocket;
     private WifiSocketManager wifiSocketManager;
-
     private String TAG = "WifiP2PServerHandler";
 
     public WifiP2PServerHandler(MessageHandler mHandler) throws IOException {
@@ -48,7 +48,11 @@ public class WifiP2PServerHandler extends Thread {
                     clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
                     ipAddress = clientSocket.getInetAddress();
 
-                    wifiSocketManager = new WifiSocketManager(clientSocket, mHandler);
+//                    MobiMixCache.addClientSocket(clientSocket);
+                    if(wifiSocketManager == null) {
+                        wifiSocketManager = new WifiSocketManager(clientSocket, mHandler);
+                    }
+                    wifiSocketManager.addClientSocket(clientSocket);
 
                     wifiSocketManager.setRemoteDeviceHostAddress(ipAddress.getHostName());
                     pool.execute(wifiSocketManager);

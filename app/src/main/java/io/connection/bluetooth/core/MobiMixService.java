@@ -15,6 +15,7 @@ import java.util.TimerTask;
 
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.activity.MobileDataUsageActivity;
 
 /**
  * Created by KP49107 on 28-03-2017.
@@ -38,14 +39,15 @@ public class MobiMixService extends Service {
     }
 
     private void initRadioService() {
-//        handler = new MessageHandler(context);
+        bluetoothService = BluetoothService.getInstance();
+        bluetoothService.init();
 
-//        bluetoothService = BluetoothService.getInstance();
-//        bluetoothService.init();
+        wifiDirectService = WifiDirectService.getInstance(this);
+        wifiDirectService.initialize();
 
-//        wifiDirectService = WifiDirectService.getInstance(this);
-//        wifiDirectService.initialize();
-
+        handler = new MessageHandler(context, wifiDirectService);
+        wifiDirectService.setMessageHandler(handler);
+        bluetoothService.setHandler(handler);
     }
 
     @Override
@@ -69,13 +71,22 @@ public class MobiMixService extends Service {
 
     // Database sync initilization
     private void initJobScheular() {
-        ComponentName componentName = new ComponentName(MobiMixApplication.getInstance().getContext(), DBSyncService.class);
-        JobInfo.Builder builder = new JobInfo.Builder(0, componentName);
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-        builder.setMinimumLatency(1000);
+        ComponentName component1 = new ComponentName(MobiMixApplication.getInstance().getContext(), DBSyncService.class);
+        JobInfo.Builder builder1 = new JobInfo.Builder(0, component1);
+        builder1.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
+        builder1.setMinimumLatency(60000);
+        builder1.setPeriodic(10000);
+        JobScheduler schedular1 = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        schedular1.schedule(builder1.build());
 
-        JobScheduler jobSchedular = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        jobSchedular.schedule(builder.build());
+        ComponentName component2 = new ComponentName(MobiMixApplication.getInstance().getContext(), GPSTracker.class);
+        JobInfo.Builder builder2 = new JobInfo.Builder(0, component2);
+        builder2.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
+        builder2.setMinimumLatency(30000);
+        builder2.setPeriodic(30000);
+        JobScheduler schedular2 = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        schedular2.schedule(builder2.build());
+
 //        new Timer().schedule(new TimerTask() {
 //            @Override
 //            public void run() {

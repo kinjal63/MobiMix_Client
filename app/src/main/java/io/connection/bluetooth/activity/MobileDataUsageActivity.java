@@ -1,7 +1,10 @@
 package io.connection.bluetooth.activity;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
@@ -15,17 +18,19 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.core.DBSyncService;
+import io.connection.bluetooth.core.GPSTracker;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GPSTrackerUtil;
-import io.connection.bluetooth.utils.Utils;
 
 /**
  * Created by Kinjal on 11/14/2016.
  */
 public class MobileDataUsageActivity extends Activity {
-    private Button indiaButton, usButton, ukButton, franceButton, collectButton, timeButton, getAppsButtons, findPlayersButton;
+    private Button dataUsageButton;
     public static String country = "IN";
     private Handler mHandler;
     private GPSTrackerUtil gpsTracker;
@@ -35,64 +40,71 @@ public class MobileDataUsageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mobile_data);
 
-        indiaButton = (Button) this.findViewById(R.id.india_usage_button);
-        usButton = (Button) this.findViewById(R.id.us_usage_button);
-        ukButton = (Button) this.findViewById(R.id.uk_usage_button);
-        franceButton = (Button) this.findViewById(R.id.France_usage_button);
-        collectButton = (Button) this.findViewById(R.id.collect_usage_button);
+        dataUsageButton = (Button) this.findViewById(R.id.india_usage_button);
+        ApplicationSharedPreferences.getInstance(this).addBooleanValue(Constants.PREF_IS_DATA_USAGE_TRACKING_ON, true);
 
-        getAppsButtons = (Button) this.findViewById(R.id.apps_button);
-
-        indiaButton.setOnClickListener(new View.OnClickListener() {
+//        usButton = (Button) this.findViewById(R.id.us_usage_button);
+//        ukButton = (Button) this.findViewById(R.id.uk_usage_button);
+//        franceButton = (Button) this.findViewById(R.id.France_usage_button);
+//        collectButton = (Button) this.findViewById(R.id.collect_usage_button);
+//
+//        getAppsButtons = (Button) this.findViewById(R.id.apps_button);
+//
+        dataUsageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Utils.country = "IN";
+                ComponentName componentName = new ComponentName(MobiMixApplication.getInstance().getContext(), GPSTracker.class);
+                JobInfo.Builder builder = new JobInfo.Builder(0, componentName);
+                builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
+                builder.setMinimumLatency(30000);
+                builder.setPeriodic(30000);
+                JobScheduler jobSchedular = (JobScheduler)MobileDataUsageActivity.this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+                jobSchedular.schedule(builder.build());
             }
         });
-
-        usButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Utils.country = "US";
-            }
-        });
-
-        ukButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Utils.country = "UK";
-            }
-        });
-
-        franceButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Utils.country = "FR";
-            }
-        });
-
-        collectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                aggregateCalllogDuration();
-            }
-        });
-
-        getAppsButtons.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MobileDataUsageActivity.this, CallLogActivity.class);
-                intent.putExtra("simno", 1);
-                startActivity(intent);
-            }
-        });
+//
+//        usButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Utils.country = "US";
+//            }
+//        });
+//
+//        ukButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Utils.country = "UK";
+//            }
+//        });
+//
+//        franceButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Utils.country = "FR";
+//            }
+//        });
+//
+//        collectButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                aggregateCalllogDuration();
+//            }
+//        });
+//
+//        getAppsButtons.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent intent = new Intent(MobileDataUsageActivity.this, CallLogActivity.class);
+//                intent.putExtra("simno", 1);
+//                startActivity(intent);
+//            }
+//        });
     }
 
     private void aggregateCalllogDuration() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-
                 try {
                     URL url = new URL(Constants.endPointAddress + "aggregateCallDuration");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();

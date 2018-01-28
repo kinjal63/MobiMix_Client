@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
@@ -18,8 +19,6 @@ import io.connection.bluetooth.MobiMixApplication;
  */
 public class UtilsHandler {
     private static ProgressDialog progressDialog = null;
-    private static Stack<GameRequest> stackGameRequest = new Stack<>();
-    private static Stack<MBNearbyPlayer> stackGamePlayers = new Stack<>();
 
     public static void runOnUiThread(Runnable runnable){
         Handler UIHandler = new Handler(
@@ -52,26 +51,5 @@ public class UtilsHandler {
                 getLaunchIntentForPackage(gamePackageName);
         MobiMixApplication.getInstance().getContext().startActivity(launchIntent);
     }
-
-    public static void addGameInStack(GameRequest gameRequest) {
-        stackGameRequest.push(gameRequest);
-    }
-
-    public static Stack getGamesFromStack() {
-        return stackGameRequest;
-    }
-
-    public static GameRequest removeGameFromStack() {
-        return stackGameRequest.pop();
-    }
-
-    public static void addPlayersInQueue(List<MBNearbyPlayer> players) {
-        stackGamePlayers.addAll(players);
-    }
-
-    public static MBNearbyPlayer removePlayerFromStack() {
-        return stackGamePlayers.pop();
-    }
-
 }
 

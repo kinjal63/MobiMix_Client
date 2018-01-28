@@ -551,7 +551,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().closeSocket();
+                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().closeWifiSocket();
             }
         }, 1000);
     }

@@ -27,8 +27,8 @@ public class MBUserAvailability implements Serializable {
     @Property(nameInDb = "player_id")
     @Unique
     private String playerId;
-
     @ToOne(joinProperty = "playerId")
+
     private MBNearbyPlayer player;
 
     @Property(nameInDb = "is_engaged")

@@ -15,6 +15,7 @@ public class MobiMix {
         public static final int DB_FIND_NEARBY_PLAYERS = 101;
         public static final int DB_FIND_MUTUAL_GAMES = 102;
         public static final int DB_UPDATE_GAME_TABLE = 103;
+        public static final int DB_FIND_GAME_FROM_ID = 104;
     }
 
     public interface DBResponse {
@@ -33,16 +34,22 @@ public class MobiMix {
     }
 
     public interface GameEvent {
-        public static final int EVENT_GAME_START = -300;
         public static final int EVENT_CONNECTION_ESTABLISHED_ACK = 300;
         public static final int EVENT_GAME_INFO_REQUEST_ASK = 301;
         public static final int EVENT_GAME_INFO_REQUEST = 302;
-//        public static final int EVENT_GAME_INFO_RESPONSE = 302;
+        //        public static final int EVENT_GAME_INFO_RESPONSE = 302;
         public static final int EVENT_GAME_INFO_REQUEST_ACK = 304;
         public static final int EVENT_GAME_LAUNCHED = 305;
         public static final int EVENT_GAME_LAUNCHED_ACK = 306;
         public static final int EVENT_GAME_UPDATE_TABLE_REQUEST = 307;
         public static final int EVENT_GAME_UPDATE_TABLE_DATA = 308;
         public static final int EVENT_GAME_UPDATE_TABLE_ACK = 309;
+        public static final int EVENT_GAME_QUEUED_USER_ASK = 310;
+        public static final int EVENT_GAME_QUEUED_USER = 311;
+        //set an event to send game request to queued users
+        public static final int EVENT_GAME_REQUEST_TO_QUEUED_USERS = 312;
+
+        // Bluetooth events
+        public static final int EVENT_GAME_START = -300;
     }
 }

@@ -106,7 +106,7 @@ public class ReadBusinessCard {
                     }
                 });
 
-//                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeSocket();
+//                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeWifiSocket();
 
             } catch (Exception e) {
                 try {
@@ -125,7 +125,7 @@ public class ReadBusinessCard {
                     dos.writeUTF("NowClosing");
 
                     Thread.sleep(1000);
-                    handler.closeSocket();
+                    handler.closeWifiSocket();
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }

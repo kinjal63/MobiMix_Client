@@ -1,9 +1,14 @@
 package io.connection.bluetooth.Database;
 
+import android.database.Cursor;
+import android.net.Uri;
+
+import org.greenrobot.greendao.query.Query;
 import org.greenrobot.greendao.query.QueryBuilder;
 import org.greenrobot.greendao.query.WhereCondition;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -12,14 +17,14 @@ import io.connection.bluetooth.Database.action.IActionReadListener;
 import io.connection.bluetooth.Database.entity.DaoSession;
 import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBGameParticipants;
+import io.connection.bluetooth.Database.entity.MBGameParticipantsDao;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayerDao;
 import io.connection.bluetooth.Database.entity.MBPlayerGames;
 import io.connection.bluetooth.Database.entity.MBPlayerGamesDao;
 import io.connection.bluetooth.Database.entity.MBUserAvailability;
-import io.connection.bluetooth.Database.entity.MBUserAvailabilityDao;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.core.MobiMix;
-import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GameConstants;
 
 /**
@@ -41,9 +46,10 @@ public class DBAsyncOperation extends Thread {
         switch (this.params.event_) {
             case MobiMix.DBRequest.DB_FIND_NEARBY_PLAYERS:
                 QueryBuilder<MBNearbyPlayer> q1 = daoSession.getMBNearbyPlayerDao().queryBuilder();
+                q1.where(new WhereCondition.StringCondition("T.is_engaged=0"));
                 List<MBNearbyPlayer> lstPlayers = q1.list();
 
-                List<MBGameParticipants> lstGameParticipants = daoSession.getMBGameParticipantsDao().loadAll();
+                List<MBGameParticipants> l = daoSession.getMBGameParticipantsDao().loadAll();
 
                 ((IActionReadListener)this.iActionCRUDListener).onReadOperation(0, lstPlayers);
                 break;
@@ -68,6 +74,9 @@ public class DBAsyncOperation extends Thread {
                     List<MBGameInfo> playerGames = q2.list();
                     ((IActionReadListener) this.iActionCRUDListener).onReadOperation(0, playerGames);
                 }
+                else {
+                    ((IActionReadListener) this.iActionCRUDListener).onReadOperation(0, null);
+                }
                 break;
             case MobiMix.DBRequest.DB_UPDATE_GAME_TABLE:
                 if(this.params.object_ != null) {
@@ -79,14 +88,28 @@ public class DBAsyncOperation extends Thread {
                     int connectionType = object.optInt(GameConstants.GAME_CONNECTION_TYPE);
                     int maxPlayers = object.optInt(GameConstants.GAME_MAX_PLAYERS);
 
+                    int chkConnectionType = connectionType == 1 ? 2: 1;
+                    Query<MBGameParticipants> query = daoSession.getMBGameParticipantsDao().queryRawCreate("where connection_type=? and game_id=?",
+                            chkConnectionType, gameId);
+                    List<MBGameParticipants> currentEntries = query.list();
+                    if(currentEntries.size() > 0) {
+                        daoSession.getMBGameParticipantsDao().deleteInTx(currentEntries);
+                    }
+
                     MBNearbyPlayer groupOwnerPlayer = daoSession.getMBNearbyPlayerDao().load(groupOwnerUserId);
                     MBNearbyPlayer connectedPlayer = daoSession.getMBNearbyPlayerDao().load(connectedUserId);
                     MBGameInfo gameInfo = daoSession.getMBGameInfoDao().load(gameId);
 
                     MBGameParticipants gameParticipants = new MBGameParticipants();
                     gameParticipants.setConnectedPlayer(connectedPlayer);
+                    gameParticipants.setConnnectedPlayerId(connectedPlayer.getPlayerId());
+
                     gameParticipants.setGroupOwnerPlayer(groupOwnerPlayer);
+                    gameParticipants.setPlayerId(groupOwnerPlayer.getPlayerId());
+
                     gameParticipants.setGameInfo(gameInfo);
+                    gameParticipants.setGameId(gameInfo.getGameId());
+
                     gameParticipants.setConnectionType(connectionType);
                     gameParticipants.setMaxPlayers(maxPlayers);
                     gameParticipants.setUpdatedAt(new Date());
@@ -94,6 +117,25 @@ public class DBAsyncOperation extends Thread {
                     daoSession.getMBGameParticipantsDao().insertOrReplace(gameParticipants);
                 }
             break;
+            case MobiMix.DBRequest.DB_FIND_GAME_FROM_ID:
+                if(this.params.object_ != null) {
+                    JSONObject object = params.object_;
+                    long gameId = object.optLong(GameConstants.GAME_ID);
+                    MBGameInfo gameInfo = MobiMixApplication.getInstance().getDaoSession().getMBGameInfoDao().load(gameId);
+
+                    if(gameInfo != null) {
+                        List<MBGameInfo> gameInfoList = new ArrayList<MBGameInfo>();
+                        gameInfoList.add(gameInfo);
+                        ((IActionReadListener) this.iActionCRUDListener).onReadOperation(0, gameInfoList);
+                    }
+                    else {
+                        ((IActionReadListener) this.iActionCRUDListener).onReadOperation(DBError.GAME_NOT_FOUND.errorCode, null);
+                    }
+                }
+                else {
+                    ((IActionReadListener) this.iActionCRUDListener).onReadOperation(DBError.INCORRECT_INPUT.errorCode, null);
+                }
+                break;
             default:
                 break;
         }

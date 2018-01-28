@@ -169,7 +169,7 @@ public class ReadFiles {
                 dos.writeUTF("NowClosing");
 
                 Thread.sleep(1000);
-                handler.closeSocket();
+                handler.closeWifiSocket();
             } catch (Exception ee) {
                 ee.printStackTrace();
             }

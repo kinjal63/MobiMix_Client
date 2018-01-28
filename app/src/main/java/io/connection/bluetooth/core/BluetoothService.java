@@ -34,6 +34,7 @@ import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.BluetoothDeviceReceiver;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 import io.connection.bluetooth.utils.cache.CacheConstants;
 import io.connection.bluetooth.utils.cache.MobiMixCache;
@@ -100,7 +101,7 @@ public class BluetoothService {
     }
 
     public void init() {
-        this.handler = new MessageHandler(context);
+//        this.handler = new MessageHandler(context, this);
 
 //        this.handler = handler_;
         this.context = MobiMixApplication.getInstance().getContext();
@@ -328,7 +329,7 @@ public class BluetoothService {
                     players.remove(0);
 
                     // add all players except 1st in queue
-                    UtilsHandler.addPlayersInQueue(players);
+                    MobiMixCache.addPlayersInQueueCache(players);
                 }
             });
         }
@@ -339,7 +340,21 @@ public class BluetoothService {
         UUID deviceUUID = GameEventAcceptThread.MY_UUID_SECURE;
 
         // Start Bluetooth Connection thread to connect with bluetooth device
+        if(remoteDevice == null) {
+//            Utils.showErrorDialog(MobiMixApplication.getInstance().getContext(), "Device is not found");
+            return;
+        }
         GameEventConnectThread gameEventConnectThread = new GameEventConnectThread(remoteDevice.getDevice(), deviceUUID, connectionListener);
         gameEventConnectThread.start();
+    }
+
+    public void handleEvent(int event) {
+        switch (event) {
+            case MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_QUEUED_USERS:
+                // send game request to queued playes
+                break;
+            default:
+                break;
+        }
     }
 }

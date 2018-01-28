@@ -1,6 +1,7 @@
 package io.connection.bluetooth.Database.entity;
 
 import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Index;
 import org.greenrobot.greendao.annotation.Keep;
 import org.greenrobot.greendao.annotation.Property;
@@ -18,6 +19,7 @@ import org.greenrobot.greendao.DaoException;
 @Entity(nameInDb = "mb_game_participants")
 public class MBGameParticipants implements Serializable {
     private static final long serialVersionUID = 1L;
+    @Id
     private Long id;
 
     @Property(nameInDb = "game_id")
@@ -42,6 +44,7 @@ public class MBGameParticipants implements Serializable {
     private MBNearbyPlayer connectedPlayer;
 
     @Property(nameInDb = "connection_type")
+    @Unique
     private Integer connectionType;
 
     @Property(nameInDb = "max_players")

@@ -125,6 +125,7 @@ public class SignupActivity extends Fragment implements DatePickerDialog.OnDateS
                         public void onResponse(Call<User> call, Response<User> response) {
                             if (response.isSuccessful()) {
                                 sharedPref = context.getSharedPreferences("myPref", Context.MODE_PRIVATE);
+                                ApplicationSharedPreferences.getInstance(context).addValue("user_name", response.body().getName());
                                 ApplicationSharedPreferences.getInstance(context).addValue("user_id", response.body().getId());
                                 ApplicationSharedPreferences.getInstance(context).addValue("email", response.body().getEmail());
                                 ApplicationSharedPreferences.getInstance(context).addValue(Constants.PREF_MY_UUID, uuId);

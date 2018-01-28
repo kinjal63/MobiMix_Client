@@ -78,7 +78,7 @@ public class DialogActivity extends Activity{
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Bluetooth Connection Invite");
         alertDialogBuilder
-                .setMessage("Do you want to make bluetooth connection with " + gameRequest.getRemoteUserName()
+                .setMessage("Do you want to make bluetooth connection with " + gameRequest.getRequesterUserName()
                             + " to play game " + gameRequest.getGameName())
                 .setCancelable(false)
                 .setIcon(R.drawable.bluetooth)
@@ -105,7 +105,7 @@ public class DialogActivity extends Activity{
     }
 
     private void showWifiDialog(final GameRequest gameRequest) {
-        final String remoteUserName = gameRequest.getRemoteUserName();
+        final String remoteUserName = gameRequest.getRequesterUserName();
         final String gameName = gameRequest.getGameName();
         final WifiDirectService wifiDirectService = WifiDirectService.getInstance(DialogActivity.this);
 

@@ -30,7 +30,6 @@ import io.connection.bluetooth.core.MobiMix;
 public class MobiMixProvider extends ContentProvider {
     static final String PROVIDER_NAME = "com.mobimix.provider";
     static final String URL = "content://" + PROVIDER_NAME; // + "/mobimix";
-    static final Uri CONTENT_URI = Uri.parse(URL);
 
     static final UriMatcher uriMatcher;
     private static HashMap<String, String> values;
@@ -39,9 +38,14 @@ public class MobiMixProvider extends ContentProvider {
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(PROVIDER_NAME, "mobimix", DBUri.URI_NEARBY_PLAYERS.ordinal());
-        uriMatcher.addURI(PROVIDER_NAME, "mobimix/*", DBUri.URI_NEARBY_PLAYERS.ordinal());
-        uriMatcher.addURI(PROVIDER_NAME, "mobimix/#", DBUri.URI_NEARBY_PLAYERS_BY_ID.ordinal());
+        uriMatcher.addURI(PROVIDER_NAME, "mb_nearby_players", DBUri.URI_NEARBY_PLAYERS.ordinal());
+        uriMatcher.addURI(PROVIDER_NAME, "mb_nearby_players/*", DBUri.URI_NEARBY_PLAYERS.ordinal());
+        uriMatcher.addURI(PROVIDER_NAME, "mb_nearby_players/#", DBUri.URI_NEARBY_PLAYERS_BY_ID.ordinal());
+        uriMatcher.addURI(PROVIDER_NAME, "mb_nearby_players/#", DBUri.URI_NEARBY_PLAYERS_BY_ID.ordinal());
+
+        uriMatcher.addURI(PROVIDER_NAME, "mb_game_participants", DBUri.URI_GAME_PARTICIPANTS.ordinal());
+        uriMatcher.addURI(PROVIDER_NAME, "mb_game_participants/*", DBUri.URI_GAME_PARTICIPANTS.ordinal());
+        uriMatcher.addURI(PROVIDER_NAME, "mb_game_participants/#", DBUri.URI_GAME_PARTICIPANTS_BY_ID.ordinal());
     }
 
     @Override
@@ -57,6 +61,10 @@ public class MobiMixProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
+        if(db == null) {
+            Database database = MobiMixApplication.getInstance().getDaoSession().getDatabase();
+            db = ((StandardDatabase)database).getSQLiteDatabase();
+        }
         long rowId = 0;
         switch (uriMatcher.match(uri)) {
             case 1:
@@ -75,15 +83,27 @@ public class MobiMixProvider extends ContentProvider {
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder, CancellationSignal cancellationSignal) {
-        String tableName = null;
-        switch (uriMatcher.match(uri)) {
-            case 1:
-                tableName = "mb_nearby_players";
-                break;
+        String sql = null;
+        if(db == null) {
+            Database database = MobiMixApplication.getInstance().getDaoSession().getDatabase();
+            db = ((StandardDatabase)database).getSQLiteDatabase();
+        }
+
+        DBUri dbUri = DBUri.getDBUri(uriMatcher.match(uri));
+        switch (dbUri) {
+            case URI_GAME_PARTICIPANTS:
+                sql = "select mgp.connection_type as connection_type,\n" +
+                        "(select player_name from mb_nearby_players where email=?) as user_name,\n" +
+                        "(select email from mb_nearby_players where player_id=mgp.player_id) as group_owner_device_name, \n" +
+                        "group_concat(mnp.player_name) as game_participants \n" +
+                        "from mb_nearby_players mnp \n" +
+                        "join mb_game_participants mgp on (mnp.player_id=mgp.player_id or mnp.player_id=mgp.connected_player_id) \n" +
+                        "join mb_game_info mgi on mgp.game_id=mgi.game_id \n" +
+                        "where mgi.game_package_name = ? group by mgi.game_id";
             default:
                 break;
         }
-        Cursor c = db.query(tableName, projection, selection, selectionArgs, null, null, sortOrder);
+        Cursor c = db.rawQuery(sql, selectionArgs);
         c.setNotificationUri(getContext().getContentResolver(), uri);
         return c;
     }

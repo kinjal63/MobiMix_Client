@@ -14,11 +14,13 @@ import java.util.concurrent.ExecutorService;
 
 import io.connection.bluetooth.Api.WSManager;
 import io.connection.bluetooth.Api.async.IAPIResponse;
+import io.connection.bluetooth.Api.async.IResponseHandler;
 import io.connection.bluetooth.Api.response.entity.NearByPlayer;
 import io.connection.bluetooth.Api.response.entity.NearByPlayerResponse;
 import io.connection.bluetooth.Database.DBParams;
 import io.connection.bluetooth.Database.DatabaseManager;
 import io.connection.bluetooth.Database.action.IDatabaseActionListener;
+import io.connection.bluetooth.Domain.DataUsageModel;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.MobiMixApplication;
@@ -48,8 +50,12 @@ public class NetworkManager {
         return networkManager_;
     }
 
-    public void sendRequestTofetchNearbyPlayers() {
-        wsManager_.getNearbyUsers();
+    public void sendRequestTofetchNearbyPlayers(IResponseHandler handler) {
+        wsManager_.getNearbyUsers(handler);
+    }
+
+    public void sendDataUsageToServer(DataUsageModel dataUsageModel, IResponseHandler handler) {
+        wsManager_.sendDataUsage(dataUsageModel, handler);
     }
 
     public void updateConnectionInfo(GameConnectionInfo connectionInfo, IUpdateListener listener) {

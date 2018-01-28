@@ -26,6 +26,8 @@ import java.util.Locale;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.DialogActionListener;
+import io.connection.bluetooth.utils.cache.CacheConstants;
+import io.connection.bluetooth.utils.cache.MobiMixCache;
 
 import static android.Manifest.permission.ACCESS_NETWORK_STATE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -178,5 +180,9 @@ public class Utils {
 //            } catch(Exception e) {
 //                Log.e("TESTE", "Error ensuring BT discoverability", e);
 //            }
+    }
+
+    public static boolean isGroupOwner() {
+        return Integer.parseInt(MobiMixCache.getFromCache(CacheConstants.CACHE_IS_GROUP_OWNER).toString()) == 1;
     }
 }

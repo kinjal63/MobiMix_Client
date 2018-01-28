@@ -2,6 +2,8 @@ package io.connection.bluetooth.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -39,6 +41,9 @@ public class PlayerListActivity extends Activity implements IDBResponse {
     private LinearLayout llCurrentGame;
     private TextView txtCurrentGame;
 
+    final String PROVIDER_NAME = "com.mobimix.provider";
+    final String URI = "content://" + PROVIDER_NAME;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +75,19 @@ public class PlayerListActivity extends Activity implements IDBResponse {
         });
 
         getNearByPlayers();
+
+        Uri contentUri = Uri.parse(URI + "/mb_game_participants");
+        String[] selectionArgs = new String[]{"redmi@gmail.com", "srk.syracuse.gameofcards"};
+
+        Cursor c = getContentResolver().query(contentUri, null, null, selectionArgs, null);
+        if(c.getCount() > 0) {
+            c.moveToFirst();
+            String groupOwnerDeviceName = c.getString(c.getColumnIndex("group_owner_device_name"));
+            int connectionType = c.getInt(c.getColumnIndex("connection_type"));
+            String gameParticipants = c.getString(c.getColumnIndex("game_participants"));
+            String userName = c.getString(c.getColumnIndex("user_name"));
+            System.out.println("End");
+        }
     }
 
     @Override

@@ -1,6 +1,5 @@
 package io.connection.bluetooth.Thread;
 
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -9,11 +8,12 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.List;
 
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.QueueManager;
@@ -30,12 +30,12 @@ import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.socketmanager.BluetoothSocketManager;
 import io.connection.bluetooth.socketmanager.SocketHeartBeat;
 import io.connection.bluetooth.socketmanager.WifiSocketManager;
-import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GameConstants;
 import io.connection.bluetooth.utils.LogUtils;
 import io.connection.bluetooth.utils.MessageConstructor;
 import io.connection.bluetooth.utils.NotificationUtil;
+import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.cache.CacheConstants;
 import io.connection.bluetooth.utils.cache.MobiMixCache;
 
@@ -54,9 +54,9 @@ public class MessageHandler {
     private boolean isSocketConnected = false;
     private String TAG = "MessageHandler";
 
-    public MessageHandler(Context context) {
+    public MessageHandler(Context context, WifiDirectService wifiP2PService) {
         this.context = context;
-//        this.wifiP2PService = WifiDirectService.getInstance(context);
+        this.wifiP2PService = wifiP2PService;
         //To receive message on different thread
         startHandler();
     }
@@ -100,7 +100,7 @@ public class MessageHandler {
 
                 break;
             case Constants.FIRSTMESSAGEXCHANGE_BLUETOOTH:
-                closeSocket();
+                closeWifiSocket();
                 wifiSocketManager = null;
 
                 final Object o = msg.obj;
@@ -172,7 +172,7 @@ public class MessageHandler {
             readData();
 
         } else if (message.startsWith("NowClosing")) {
-            closeSocket();
+            closeWifiSocket();
             wifiP2PService.setModule(Modules.NONE);
         } else {
             int module = wifiP2PService.getModule().ordinal();
@@ -232,7 +232,7 @@ public class MessageHandler {
     }
 
     public void socketClosed() {
-        closeSocket();
+        closeWifiSocket();
 
         isSocketConnected = false;
     }
@@ -264,7 +264,7 @@ public class MessageHandler {
             bluetoothSocketManager.closeSocket();
     }
 
-    public void closeSocket() {
+    public void closeWifiSocket() {
         if (heartbeat != null && !heartbeat.isInterrupted()) {
             heartbeat.interrupt();
         }
@@ -276,7 +276,7 @@ public class MessageHandler {
             wifiP2PService.closeConnection();
             wifiP2PService.removeGroup();
 
-            wifiP2PService.removeConnectedDevice(wifiSocketManager.getRemoteDevice());
+            wifiP2PService.removeConnectedDevice();
             wifiP2PService.notifyUserForClosedSocket();
         }
 
@@ -308,10 +308,14 @@ public class MessageHandler {
 
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED_ACK:
                 if (Integer.parseInt(MobiMixCache.getFromCache(CacheConstants.CACHE_IS_GROUP_OWNER).toString()) == 1) {
-                    eventData.event_ = MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_DATA;
+                    eventData.event_ = MobiMix.GameEvent.EVENT_GAME_QUEUED_USER_ASK;
+//                    eventData.event_ = MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_DATA;
                 } else {
                     eventData.event_ = MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_REQUEST;
                 }
+                break;
+            case MobiMix.GameEvent.EVENT_GAME_QUEUED_USER_ASK:
+                eventData.event_ = MobiMix.GameEvent.EVENT_GAME_QUEUED_USER;
                 break;
             case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_REQUEST:
                 eventData.event_ = MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_DATA;
@@ -320,7 +324,18 @@ public class MessageHandler {
                 eventData.event_ = MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST_ACK;
                 CoreEngine.sendEventToGUI(message);
                 break;
+            case MobiMix.GameEvent.EVENT_GAME_QUEUED_USER:
+                sendEventToRadioService(eventData);
+                break;
             case MobiMix.GameEvent.EVENT_GAME_LAUNCHED:
+                CoreEngine.sendEventToGUI(message);
+                // checks in queue, if there is any user to send request it will send
+                if(Utils.isGroupOwner()) {
+                    eventData.event_ = MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_QUEUED_USERS;
+                    eventData.object_ = object;
+                    sendEventToRadioService(eventData);
+                }
+                break;
             case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_DATA:
                 CoreEngine.sendEventToGUI(message);
                 break;
@@ -350,6 +365,12 @@ public class MessageHandler {
             case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST:
                 eventObj = MessageConstructor.constructObjectToSendGameRequestEvent(eventData);
                 break;
+            case MobiMix.GameEvent.EVENT_GAME_QUEUED_USER_ASK:
+                eventObj = MessageConstructor.constructObjectToRequestForEvent(eventData.event_);
+                break;
+            case MobiMix.GameEvent.EVENT_GAME_QUEUED_USER:
+                eventObj = MessageConstructor.constructObjectToSendQueuedUserEvent(eventData);
+                break;
             case MobiMix.GameEvent.EVENT_GAME_INFO_REQUEST_ASK:
             case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_REQUEST:
                 eventObj = MessageConstructor.constructObjectToRequestForEvent(eventData.event_);
@@ -371,6 +392,43 @@ public class MessageHandler {
         }
         if (wifiSocketManager != null && eventObj != null) {
             wifiSocketManager.writeObject(eventObj);
+        }
+    }
+
+    private void sendEventToRadioService(EventData eventData) {
+        int event = eventData.event_;
+        JSONObject object = eventData.object_;
+        try {
+            switch (event) {
+                case MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_QUEUED_USERS:
+                    if(object != null && object.getInt(GameConstants.GAME_CONNECTION_TYPE) == 1) {
+                        BluetoothService.getInstance().handleEvent(event);
+                    }
+                    else if (object != null && object.getInt(GameConstants.GAME_CONNECTION_TYPE) == 2) {
+                        WifiDirectService.getInstance(context).handleEvent(event);
+                    }
+                    break;
+                case MobiMix.GameEvent.EVENT_GAME_QUEUED_USER:
+                    if(object != null) {
+                        List<MBNearbyPlayer> players = (List<MBNearbyPlayer>)object.opt(GameConstants.GAME_PLAYERS_IN_QUEUE);
+                        if(players != null && players.size() > 0) {
+                            MobiMixCache.addPlayersInQueueCache(players);
+                            int connectionType = MobiMixCache.getCurrentGameRequestFromCache().getConnectionType();
+                            if(connectionType == 1) {
+                                BluetoothService.getInstance().handleEvent(event);
+                            }
+                            else if(connectionType == 2) {
+                                WifiDirectService.getInstance(context).handleEvent(event);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }

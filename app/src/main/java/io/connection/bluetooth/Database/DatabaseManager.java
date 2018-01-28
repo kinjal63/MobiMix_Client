@@ -117,6 +117,12 @@ public class DatabaseManager {
     // Update tables by scanning nearby users
     public synchronized void setAvailabilityForWifiDirectDevices() {
         HashSet<WifiP2PRemoteDevice> devices = WifiDirectService.getInstance(context).getWifiP2PDeviceList();
+        DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
+
+        List<MBUserAvailability> existingPlayers = daoSession.getMBUserAvailabilityDao().loadAll();
+        for(MBUserAvailability player: existingPlayers) {
+            player.setIsEngaged(1);
+        }
 
         List<String> emailIds = new ArrayList<>();
         emailIds.add(ApplicationSharedPreferences.getInstance(MobiMixApplication.getInstance().getContext()).getValue("email"));
@@ -124,7 +130,6 @@ public class DatabaseManager {
             emailIds.add(device.getName());
         }
 
-        DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
         QueryBuilder<MBNearbyPlayer> qb = daoSession.getMBNearbyPlayerDao().queryBuilder();
         List<MBNearbyPlayer> playersToUpdate = qb.where(MBNearbyPlayerDao.Properties.Email.in(emailIds)).list();
 
@@ -210,6 +215,17 @@ public class DatabaseManager {
             public void onUpdateAction(int error) {
                 if (error == 0) {
                     Log.d("DatabaseManager", "Game table is updated successfully");
+                }
+            }
+        });
+    }
+
+    public synchronized void getGameFromId(DBParams params) {
+        doAsync(params, new IActionUpdateListener() {
+            @Override
+            public void onUpdateAction(int error) {
+                if (error == 0) {
+                    Log.d("DatabaseManager", "Game ID is returned");
                 }
             }
         });

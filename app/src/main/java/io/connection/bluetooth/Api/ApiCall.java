@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import io.connection.bluetooth.Api.response.entity.NearByPlayerResponse;
+import io.connection.bluetooth.Domain.DataUsageModel;
 import io.connection.bluetooth.Domain.DeviceDetails;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameProfile;
@@ -82,5 +83,8 @@ public interface ApiCall {
 
     @POST("findPlayers")
     Call<ResponseBody> findPlayers(@Query("userId") String userId);
+
+    @POST("addDataUsage")
+    Call<ResponseBody> senDataUsage(@Body DataUsageModel dataUsageModel);
 }
 

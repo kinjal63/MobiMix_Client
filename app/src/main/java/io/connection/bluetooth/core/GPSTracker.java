@@ -8,6 +8,8 @@ import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.job.JobParameters;
+import android.app.job.JobService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,6 +26,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -32,6 +35,8 @@ import java.util.HashSet;
 
 import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
+import io.connection.bluetooth.Api.async.IResponseHandler;
+import io.connection.bluetooth.Domain.DataUsageModel;
 import io.connection.bluetooth.Domain.User;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.activity.UserNearByWithGames;
@@ -42,7 +47,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class GPSTracker extends Service implements LocationListener {
+public class GPSTracker extends JobService implements LocationListener {
     SharedPreferences preferences;
     ApiCall apiCall;
 
@@ -69,7 +74,7 @@ public class GPSTracker extends Service implements LocationListener {
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
-
+    private JobParameters params;
 
     public Location getLocation() {
         try {
@@ -222,6 +227,12 @@ public class GPSTracker extends Service implements LocationListener {
     public void onLocationChanged(Location location) {
 
         // Code Here for Update Location;
+        this.location = location;
+
+        if(ApplicationSharedPreferences.getInstance(this).getBooleanValue(Constants.PREF_IS_DATA_USAGE_TRACKING_ON)) {
+
+        }
+
         preferences = this.getSharedPreferences(Constants.LOGIN, Context.MODE_PRIVATE);
         String userId = ApplicationSharedPreferences.getInstance(this).getValue("user_id");
 
@@ -239,42 +250,7 @@ public class GPSTracker extends Service implements LocationListener {
                         public void onResponse(Call<HashSet> call, Response<HashSet> response) {
                             if (response.code() == 200 && response.body() != null && sendNotification(preferences)) {
 
-                                System.out.println(" --> " + Arrays.toString(response.body().toArray()));
 
-                                HashSet hashSet = response.body();
-                                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(mContext).setAutoCancel(true);
-                                TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
-                                NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle(mBuilder);
-                                Intent resultIntent = new Intent(mContext, UserNearByWithGames.class);
-
-                                if (hashSet.size() > 0) {
-                                    for (Object game : hashSet)
-                                        style.addLine(game.toString());
-                                    style.addLine("");
-                                    style.setBigContentTitle("See Below Common Games");
-                                    // mBuilder.setContentText("We Found That " + response.body() + " User With Similar Game Interest. Click Me for Find Them");
-                                    mBuilder.setContentTitle("User Found With Common Game Interest ...");
-                                    stackBuilder.addParentStack(UserNearByWithGames.class);
-                                    // Adds the Intent that starts the Activity to the top of the stack
-                                    stackBuilder.addNextIntent(resultIntent);
-                                    PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-                                    mBuilder.setContentIntent(resultPendingIntent);
-                                    Bitmap largeIcon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_logo);
-                                    mBuilder.setLargeIcon(largeIcon);
-                                    mBuilder.setColor(getResources().getColor(R.color.black));
-                                    mBuilder.setSmallIcon(R.drawable.ic_game_profile);
-                                    mBuilder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
-                                    mBuilder.setLights(Color.BLUE, 3000, 3000);
-                                    Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                                    mBuilder.setSound(uri);
-                                    mBuilder.setStyle(style);
-                                    NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                                    // notificationID allows you to update the notification later on.
-                                    mNotificationManager.cancel(hashSet.size());
-                                    // mBuilder.setPriority(Notification.PRIORITY_HIGH);
-                                    mNotificationManager.notify(hashSet.size(), mBuilder.build());
-
-                                }
                             }
                         }
 
@@ -307,15 +283,40 @@ public class GPSTracker extends Service implements LocationListener {
     public void onStatusChanged(String provider, int status, Bundle extras) {
     }
 
-    @Override
-    public IBinder onBind(Intent arg0) {
-        return null;
-    }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return Service.START_STICKY;
+    }
+
+    @Override
+    public boolean onStartJob(JobParameters jobParameters) {
+        this.params = jobParameters;
+        sendDataUsageInfo();
+        return true;
+    }
+
+    private void sendDataUsageInfo() {
+        TelephonyManager telephonyManager =((TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE));
+        String operatorName = telephonyManager.getNetworkOperatorName();
+
+        NetworkManager networkManager_ = NetworkManager.getInstance();
+        if(networkManager_.isNetworkConnected()) {
+            DataUsageModel dataUsageInfo = new DataUsageModel();
+
+            dataUsageInfo.setUserId(ApplicationSharedPreferences.getInstance(this).getValue("user_id"));
+            dataUsageInfo.setNetworkOperatorId(operatorName);
+            dataUsageInfo.setLatitude(location.getLatitude());
+            dataUsageInfo.setLongitude(location.getLongitude());
+            dataUsageInfo.setTimeStamp(System.currentTimeMillis());
+
+            networkManager_.sendDataUsageToServer(dataUsageInfo, new IResponseHandler() {
+                @Override
+                public void onResponse() {
+                    jobFinished(params, true);
+                }
+            });
+        }
     }
 
     @Override

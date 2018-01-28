@@ -19,8 +19,11 @@ public class GameRequest implements Parcelable {
     @SerializedName("remote_user_id")
     private String remoteUserId;
 
+    @SerializedName("requester_user_id")
+    private String requesterUserId;
+
     @SerializedName("remote_user_name")
-    private String remoteUserName;
+    private String requesterUserName;
 
     @SerializedName("game_id")
     private long gameId;
@@ -61,12 +64,20 @@ public class GameRequest implements Parcelable {
         this.remoteUserId = remoteUserId;
     }
 
-    public String getRemoteUserName() {
-        return remoteUserName;
+    public String getRequesterUserName() {
+        return requesterUserName;
     }
 
-    public void setRemoteUserName(String remoteUserName) {
-        this.remoteUserName = remoteUserName;
+    public void setRequesterUserName(String requesterUserName) {
+        this.requesterUserName = requesterUserName;
+    }
+
+    public String getRequesterUserId() {
+        return requesterUserId;
+    }
+
+    public void setRequesterUserId(String requesterUserId) {
+        this.requesterUserId = requesterUserId;
     }
 
     public long getGameId() {
@@ -110,6 +121,11 @@ public class GameRequest implements Parcelable {
     }
 
     @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return this.clone();
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
@@ -121,7 +137,7 @@ public class GameRequest implements Parcelable {
         bundle.putString("game_name", this.gameName);
         bundle.putString("game_package_name", this.gamePackageName);
         bundle.putString("remote_user_id", this.remoteUserId);
-        bundle.putString("remote_user_name", this.remoteUserName);
+        bundle.putString("requester_user_name", this.requesterUserName);
         bundle.putString("bluetooth_address", this.bluetoothAddress);
         bundle.putString("wifi_address", this.wifiAddress);
         bundle.putInt("notification_type", this.notificationType);
@@ -138,7 +154,7 @@ public class GameRequest implements Parcelable {
             gameRequest.setGameName(bundle.getString("game_name"));
             gameRequest.setGamePackageName(bundle.getString("game_package_name"));
             gameRequest.setRemoteUserId(bundle.getString("remote_user_id"));
-            gameRequest.setRemoteUserName(bundle.getString("remote_user_name"));
+            gameRequest.setRequesterUserName(bundle.getString("requester_user_name"));
             gameRequest.setBluetoothAddress(bundle.getString("bluetooth_address"));
             gameRequest.setWifiAddress(bundle.getString("wifi_address"));
             gameRequest.setNotificationType(bundle.getInt("notification_type"));

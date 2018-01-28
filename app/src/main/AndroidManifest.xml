@@ -245,9 +245,10 @@
 
         <provider
             android:name=".Database.MobiMixProvider"
-            android:authorities="io.connection.bluetooth"
+            android:authorities="com.mobimix.provider"
             android:exported="true"
-            android:multiprocess="true" >
+            android:multiprocess="true"
+            android:grantUriPermissions="true">
         </provider>
 
     </application>

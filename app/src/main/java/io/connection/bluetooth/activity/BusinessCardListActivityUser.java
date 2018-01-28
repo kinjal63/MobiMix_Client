@@ -281,7 +281,7 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                WifiDirectService.getInstance(BusinessCardListActivityUser.this).getMessageHandler().closeSocket();
+                WifiDirectService.getInstance(BusinessCardListActivityUser.this).getMessageHandler().closeWifiSocket();
             }
         }, 1000);
     }

@@ -25,4 +25,5 @@ public class GameConstants {
     public static final String USER_ID = "user_id";
     public static final String CONNECTED_USER_ID = "connected_user_id";
     public static final String GAME_MAX_PLAYERS = "game_max_players";
+    public static final String GAME_PLAYERS_IN_QUEUE = "game_players_in_queue";
 }
