@@ -36,10 +36,6 @@ public class MobiMixCache {
         return cacheGameMap.get(user);
     }
 
-    public static String[] getGameUsers() {
-        return (String[])cacheGameMap.keySet().toArray();
-    }
-
     public static void putGameInCache(String user, GameRequest gameRequest) {
         setCurrentGameRequestInCache(gameRequest);
         cacheGameMap.put(user, gameRequest);

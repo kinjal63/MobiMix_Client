@@ -1,5 +1,8 @@
 package io.connection.bluetooth.socketmanager.modules;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,7 +22,7 @@ import io.connection.bluetooth.utils.GameConstants;
 public class ReadGameData {
     private Socket socket;
     private boolean disable = false;
-    private InputStream is;
+    private ObjectInputStream ois;
     private MessageHandler handler;
 
     public ReadGameData(Socket socket, MessageHandler handler) {
@@ -28,29 +31,27 @@ public class ReadGameData {
     }
 
     public void readGameEvent() {
-        String message;
         JSONObject object;
         try {
-            is = socket.getInputStream();
+            ois = new ObjectInputStream(socket.getInputStream());
             while (!disable) {
-                if (is != null) {
+                if (ois != null) {
                     try {
-                        byte[] buffer = new byte[2048];
-                        int bytes = is.read(buffer);
-                        if (bytes == -1) {
+                        String eventObj = (String)ois.readObject();
+                        if (eventObj == null) {
                             break;
                         }
-                        message = new String(buffer);
-                        object = new JSONObject(message);
 
-                        System.out.println("Getting message" + message);
+                        System.out.println("Getting message" + eventObj);
+
+                        object = new JSONObject(eventObj);
 
                         int arg1 = object.optInt(GameConstants.GAME_EVENT, 0);
                         if(arg1 != 0) {
                             handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, arg1, -1, object).sendToTarget();
                         }
                     }
-                    catch (JSONException e) {
+                    catch (ClassNotFoundException | JSONException e) {
                         e.printStackTrace();
                     }
                 }
@@ -58,7 +59,8 @@ public class ReadGameData {
         }
         catch (IOException e) {
             e.printStackTrace();
-            handler.socketClosed();
+            handler.closeSocket();
+            disable = true;
         }
     }
 }

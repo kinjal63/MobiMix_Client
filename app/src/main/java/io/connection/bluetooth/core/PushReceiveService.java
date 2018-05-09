@@ -82,7 +82,7 @@ public class PushReceiveService extends FirebaseMessagingService {
 //                    String wifiDirectName = jsonObject.optString("wifi_address");
                     launchGameAndUpdateConnectionInfo(request);
                 } else if (request.getNotificationType() == 4) {
-                    generateNearByUserNotification("User " + request.getRemoteUserName() + " is nearby");
+                    generateNearByUserNotification("User " + request.getRequesterUserName() + " is nearby");
                 }
                 else if (request.getNotificationType() == 5) {
                     launchGame(request);
@@ -170,7 +170,7 @@ public class PushReceiveService extends FirebaseMessagingService {
         notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_logo)
                 .setContentTitle("Wifi Direct connection")
-                .setContentText("Do you want to make wifi direct connection with " + gameRequest.getRemoteUserName())
+                .setContentText("Do you want to make wifi direct connection with " + gameRequest.getRequesterUserName())
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);
@@ -191,7 +191,7 @@ public class PushReceiveService extends FirebaseMessagingService {
             notificationBuilder = new NotificationCompat.Builder(this)
                     .setSmallIcon(R.mipmap.ic_logo)
                     .setContentTitle("Bluetooth connection")
-                    .setContentText("Do you want to make bluetooth Connection with " + gameRequest.getRemoteUserName())
+                    .setContentText("Do you want to make bluetooth Connection with " + gameRequest.getRequesterUserName())
                     .setAutoCancel(true)
                     .setSound(defaultSoundUri)
                     .setContentIntent(pendingIntent);

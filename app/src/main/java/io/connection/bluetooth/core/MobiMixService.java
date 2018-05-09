@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.connection.bluetooth.Api.async.IResponseHandler;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.activity.MobileDataUsageActivity;
@@ -74,7 +75,6 @@ public class MobiMixService extends Service {
         ComponentName component1 = new ComponentName(MobiMixApplication.getInstance().getContext(), DBSyncService.class);
         JobInfo.Builder builder1 = new JobInfo.Builder(0, component1);
         builder1.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-        builder1.setMinimumLatency(60000);
         builder1.setPeriodic(10000);
         JobScheduler schedular1 = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         schedular1.schedule(builder1.build());
@@ -82,20 +82,24 @@ public class MobiMixService extends Service {
         ComponentName component2 = new ComponentName(MobiMixApplication.getInstance().getContext(), GPSTracker.class);
         JobInfo.Builder builder2 = new JobInfo.Builder(0, component2);
         builder2.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-        builder2.setMinimumLatency(30000);
         builder2.setPeriodic(30000);
         JobScheduler schedular2 = (JobScheduler)this.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         schedular2.schedule(builder2.build());
 
-//        new Timer().schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                NetworkManager networkManager_ = NetworkManager.getInstance();
-//                if(networkManager_.isNetworkConnected()) {
-//                    networkManager_.sendRequestTofetchNearbyPlayers();
-//                }
-//            }
-//        }, 1000, 30000);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                NetworkManager networkManager_ = NetworkManager.getInstance();
+                if(networkManager_.isNetworkConnected()) {
+                    networkManager_.sendRequestTofetchNearbyPlayers(new IResponseHandler() {
+                        @Override
+                        public void onResponse() {
+
+                        }
+                    });
+                }
+            }
+        }, 1000, 30000);
     }
 
     @Override

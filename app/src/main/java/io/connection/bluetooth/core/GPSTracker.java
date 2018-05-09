@@ -23,7 +23,6 @@ import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.telephony.TelephonyManager;
@@ -296,18 +295,26 @@ public class GPSTracker extends JobService implements LocationListener {
         return true;
     }
 
+    @Override
+    public boolean onStopJob(JobParameters jobParameters) {
+        return false;
+    }
+
     private void sendDataUsageInfo() {
         TelephonyManager telephonyManager =((TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE));
         String operatorName = telephonyManager.getNetworkOperatorName();
 
         NetworkManager networkManager_ = NetworkManager.getInstance();
+        double latitude = location != null ? location.getLatitude() : 0;
+        double longitude = location != null ? location.getLongitude() : 0;
+
         if(networkManager_.isNetworkConnected()) {
             DataUsageModel dataUsageInfo = new DataUsageModel();
 
             dataUsageInfo.setUserId(ApplicationSharedPreferences.getInstance(this).getValue("user_id"));
             dataUsageInfo.setNetworkOperatorId(operatorName);
-            dataUsageInfo.setLatitude(location.getLatitude());
-            dataUsageInfo.setLongitude(location.getLongitude());
+            dataUsageInfo.setLatitude(latitude);
+            dataUsageInfo.setLongitude(longitude);
             dataUsageInfo.setTimeStamp(System.currentTimeMillis());
 
             networkManager_.sendDataUsageToServer(dataUsageInfo, new IResponseHandler() {

@@ -14,23 +14,18 @@ import android.widget.TextView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
-import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.core.BluetoothService;
-import io.connection.bluetooth.core.WifiDirectService;
-import io.connection.bluetooth.request.ReqGameInvite;
-import io.connection.bluetooth.utils.ApplicationSharedPreferences;
-import io.connection.bluetooth.utils.Utils;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.connection.bluetooth.activity.gui.GUIManager;
+import io.connection.bluetooth.core.EventData;
+import io.connection.bluetooth.core.MobiMix;
+import io.connection.bluetooth.enums.RadioType;
 
 /**
  * Created by Kinjal on 11/24/2016.
@@ -96,7 +91,7 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        sendBluetoothConnectionInvite(gameInfo);
+                        sendConnectionInvite(gameInfo, RadioType.BLUETOOTH);
                         dialogInterface.dismiss();
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -120,8 +115,8 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        sendWifiConnectionInvite(gameInfo);
                         dialogInterface.dismiss();
+                        sendConnectionInvite(gameInfo, RadioType.WIFI_DIRECT);
                     }
                 }).setNegativeButton("No", new DialogInterface.OnClickListener() {
                     @Override
@@ -140,59 +135,22 @@ public class GameAdapter extends RecyclerView.Adapter<GameAdapter.MyViewHolder> 
         return gameList.size();
     }
 
-    private void sendBluetoothConnectionInvite(MBGameInfo gameInfo) {
-        BluetoothService.getInstance().sendBluetoothRequestToUser(selectedPlayers, gameInfo);
+    private void sendConnectionInvite(MBGameInfo gameInfo, RadioType radioType) {
+        EventData eventData = new EventData(MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_USERS);
+        eventData.radioType_ = radioType;
 
-//        Utils.makeDeviceDiscoverable(context);
-//
-//        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
-//                remoteUserIds, 1);
-//        gameInvite.setGamePackageName(gamePackageName);
-//        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().getService().sendConnectionInvite(gameInvite);
-//
-//        req1.enqueue(new Callback<ResponseBody>() {
-//            @Override
-//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                try {
-//                    String data = response.body().string();
-//                    System.out.println(data);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ResponseBody> call, Throwable t) {
-//                t.printStackTrace();
-//            }
-//        });
-    }
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("mb_selected_players", selectedPlayers);
+            jsonObject.put("mb_game_info", gameInfo);
+            jsonObject.put("mb_request_queue", false);
 
-    private void sendWifiConnectionInvite(MBGameInfo gameInfo) {
-        WifiDirectService.getInstance(context).sendWifiDirectRequestToUser(selectedPlayers, gameInfo);
-
-//        WifiDirectService.getInstance(context).initiateDiscovery();
-////
-//        ReqGameInvite gameInvite = new ReqGameInvite(ApplicationSharedPreferences.getInstance(context).getValue("user_id"),
-//                remoteUserIds, 2);
-//        gameInvite.setGamePackageName(gamePackageName);
-//        retrofit2.Call<okhttp3.ResponseBody> req1 = MobiMixApplication.getInstance().getService().sendConnectionInvite(gameInvite);
-//
-//        req1.enqueue(new Callback<ResponseBody>() {
-//            @Override
-//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                try {
-//                    String data = response.body().string();
-//                    System.out.println(data);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ResponseBody> call, Throwable t) {
-//                t.printStackTrace();
-//            }
-//        });
+            eventData.object_ = jsonObject;
+            GUIManager.getObject().sendEvent(eventData);
+        }
+        catch (JSONException e) {
+            eventData = null;
+            e.printStackTrace();
+        }
     }
 }

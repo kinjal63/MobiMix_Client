@@ -226,7 +226,8 @@
             </intent-filter>
         </service>
 
-        <service android:name=".core.GPSTracker">
+        <service android:name=".core.GPSTracker"
+            android:permission="android.permission.BIND_JOB_SERVICE">
 
         </service>
 

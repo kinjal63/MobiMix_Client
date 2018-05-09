@@ -315,7 +315,7 @@ public class BluetoothService {
                     gameRequest.setConnectionType(1);
                     gameRequest.setRemoteUserId(ApplicationSharedPreferences.getInstance(context).
                             getValue("user_id"));
-                    gameRequest.setRemoteUserName(ApplicationSharedPreferences.getInstance(context).
+                    gameRequest.setRequesterUserName(ApplicationSharedPreferences.getInstance(context).
                             getValue("user_name"));
                     gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(context).
                             getValue("email"));
@@ -348,8 +348,8 @@ public class BluetoothService {
         gameEventConnectThread.start();
     }
 
-    public void handleEvent(int event) {
-        switch (event) {
+    public void handleEvent(EventData eventData) {
+        switch (eventData.event_) {
             case MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_QUEUED_USERS:
                 // send game request to queued playes
                 break;

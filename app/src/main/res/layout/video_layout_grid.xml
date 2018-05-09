@@ -70,7 +70,7 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:background="@drawable/xml_checkbox_background"
-        android:theme="@+style/MyCheckBox" />
+        android:theme="@style/MyCheckBox" />
 
     <!-- Rightend Arrow -->
     <!-- <ImageView android:layout_width="wrap_content"

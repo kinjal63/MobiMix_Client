@@ -2,9 +2,11 @@ package io.connection.bluetooth.activity;
 
 import android.Manifest;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -30,8 +32,15 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URI;
 
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.imagecrop.CropImageIntentBuilder;
@@ -192,10 +201,14 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
             if (requestCode == AVATAR_REQUEST_CODE) {
 //               Bitmap bitmap =  data.getExtras().getParcelable("data");
                 Log.d(TAG, "onActivityResult: " + tempFile.toString());
+                Uri uri = null;
                 //Log.d(TAG, "onActivityResult: "+data.getData());
                 if (data != null && data.getData() != null) {
                     tempFile = new File(data.getData().getPath());
-
+                    uri = data.getData();
+                }
+                else {
+                    uri = Uri.fromFile(tempFile);
                 }
 
                 tempFileForGalleryPicture = new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth/BusinessCard", tempFile.getName());
@@ -203,7 +216,7 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
                 );
 
                 // Log.d(TAG, "onActivityResult: "+picUri + "     "+bitmap.getByteCount());
-                performCrop();
+                performCrop(uri);
                 // ImageView picView = (ImageView) findViewById(R.id.card_avatar);
                 //picView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 //picView.setImageBitmap(bitmap);
@@ -211,26 +224,73 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
             } else if (requestCode == PIC_CROP) {
                 ImageView picView = (ImageView) findViewById(R.id.card_avatar);
                 // picView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                picView.setImageBitmap(BitmapFactory.decodeFile(tempFileForGalleryPicture.getAbsolutePath()));
-
+                picView.setImageURI(data.getData());
+                saveFile(data.getData());
+//                picView.setImageBitmap(BitmapFactory.decodeFile(tempFileForGalleryPicture.getAbsolutePath()));
             }
         }
     }
 
+    public static String getPath(Context context, Uri uri ) {
+        String result = null;
+        String[] proj = { MediaStore.Images.Media.DATA };
+        Cursor cursor = context.getContentResolver( ).query( uri, proj, null, null, null );
+        if(cursor != null){
+            if ( cursor.moveToFirst( ) ) {
+                int column_index = cursor.getColumnIndexOrThrow( proj[0] );
+                result = cursor.getString( column_index );
+            }
+            cursor.close( );
+        }
+        if(result == null) {
+            result = "Not found";
+        }
+        return result;
+    }
 
-    private void performCrop() {
+    private void saveFile(Uri sourceUri) {
+        String sourceFilename = getPath( this.getApplicationContext( ), sourceUri );
+        tempFileForGalleryPicture = new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth/BusinessCard", tempFile.getName());
+
+        BufferedInputStream bis = null;
+        BufferedOutputStream bos = null;
+
         try {
+            if(!tempFileForGalleryPicture.exists()) {
+                tempFileForGalleryPicture.createNewFile();
+            }
+            bis = new BufferedInputStream(new FileInputStream(sourceFilename));
+            bos = new BufferedOutputStream(new FileOutputStream(tempFileForGalleryPicture, false));
+            byte[] buf = new byte[1024];
+            bis.read(buf);
+            do {
+                bos.write(buf);
+            } while(bis.read(buf) != -1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bis != null) bis.close();
+                if (bos != null) bos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-
-            Uri croppedImage = Uri.fromFile(tempFile);
-
-            cropImage = new CropImageIntentBuilder(200, 200, Uri.fromFile(tempFileForGalleryPicture));
-            cropImage.setOutlineColor(0xFF03A9F4);
-            cropImage.setSourceImage(croppedImage);
-            if (Build.VERSION.SDK_INT >= 21)
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
+    private void performCrop(Uri uri) {
+        try {
+//            cropImage = new CropImageIntentBuilder(200, 200, Uri.fromFile(tempFileForGalleryPicture));
+//            cropImage.setOutlineColor(0xFF03A9F4);
+//            cropImage.setSourceImage(croppedImage);
+            if (Build.VERSION.SDK_INT >= 21) {
+                if(checkFileStoragePermission())
+                    cropImage(uri);
+                else
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1111);
+            }
             else
-                startActivityForResult(cropImage.getIntent(this), PIC_CROP);
+                cropImage(uri);
         } catch (ActivityNotFoundException anfe) {
             //display an error message
             anfe.printStackTrace();
@@ -247,6 +307,34 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startActivityForResult(cropImage.getIntent(this), PIC_CROP);
                 }
+        }
+    }
+
+    private boolean checkFileStoragePermission() {
+        String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+        int res = MobiMixApplication.getInstance().getContext().checkCallingOrSelfPermission(permission);
+        return (res == PackageManager.PERMISSION_GRANTED);
+    }
+
+    private void cropImage(Uri fileUri) {
+        try {
+            Intent cropIntent = new Intent("com.android.camera.action.CROP");
+
+            cropIntent.setDataAndType(fileUri, "image/*");
+            cropIntent.putExtra("crop", "true");
+            cropIntent.putExtra("aspectX", 1);
+            cropIntent.putExtra("aspectY", 1);
+            cropIntent.putExtra("outputX", 200);
+            cropIntent.putExtra("outputY", 200);
+            cropIntent.putExtra("return-data", true);
+            startActivityForResult(cropIntent, PIC_CROP);
+        }
+        // respond to users whose devices do not support the crop action
+        catch (ActivityNotFoundException anfe) {
+            // display an error message
+            String errorMessage = "Whoops - your device doesn't support the crop action!";
+            Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
+            toast.show();
         }
     }
 
@@ -271,16 +359,14 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
             card_email.setVisibility(View.GONE);
 
         Log.d(TAG, "setDisableMode:  path " + path);
-        editor.putString("picture", path);
         editor.putString("name", card_name.getText().toString());
         editor.putString("email", card_email.getText().toString());
         editor.putString("phone", card_phone.getText().toString());
+        editor.putString("picture", path);
         editor.putString("device_id", Settings.Secure.getString(this.getContentResolver(),
                 Settings.Secure.ANDROID_ID));
         editor.putBoolean("isdataAvailable", true);
         editor.commit();
-
-
     }
 
     public void setEnableMode() {
@@ -306,7 +392,7 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
                 Intent pickIntent = new Intent();
                 pickIntent.setType("image/*");
-                pickIntent.setAction(Intent.ACTION_GET_CONTENT);
+                pickIntent.setAction(Intent.ACTION_PICK);
                 // pickIntent.addCategory(Intent.CATEGORY_OPENABLE);
                 pickIntent.putExtra(MediaStore.EXTRA_OUTPUT, Environment.getExternalStorageDirectory());
                 tempFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), System.nanoTime() + ".jpg");
@@ -326,14 +412,10 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
 
             }
         });
-
     }
 
-
     public boolean isBusinessCardCreated() {
-
         return preferences.getBoolean("isdataAvailable", false);
-
     }
 
 }

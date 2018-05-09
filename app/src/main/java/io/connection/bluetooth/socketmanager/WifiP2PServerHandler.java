@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.utils.Constants;
-import io.connection.bluetooth.utils.cache.MobiMixCache;
 
 /**
  * Created by Kinjal on 3/28/2017.
@@ -28,11 +28,15 @@ public class WifiP2PServerHandler extends Thread {
 
     public WifiP2PServerHandler(MessageHandler mHandler) throws IOException {
         try {
-            mSocket = new ServerSocket(Constants.GROUP_OWNER_PORT);
+            mSocket = new ServerSocket(); // <-- create an unbound socket first
+            mSocket.setReuseAddress(true);
+            mSocket.bind(new InetSocketAddress(Constants.GROUP_OWNER_PORT));
+
             this.mHandler = mHandler;
             Log.d("GroupOwnerSocketHandler", "Socket Started");
         } catch (IOException e) {
             Log.e(TAG, "IOException during open ServerSockets with port 5050", e);
+            mSocket.bind(null);
             pool.shutdownNow();
             throw e;
         }
@@ -44,28 +48,29 @@ public class WifiP2PServerHandler extends Thread {
             try {
                 // A blocking operation. Initiate a ChatManager instance when
                 // there is a new connection
-                if(mSocket!=null && !mSocket.isClosed()) {
-                    clientSocket = mSocket.accept(); //because now i'm connected with the client/peer device
+                if (mSocket != null && !mSocket.isClosed()) {
+                    clientSocket = mSocket.accept();
+                    //because now i'm connected with the client/peer device
                     ipAddress = clientSocket.getInetAddress();
 
 //                    MobiMixCache.addClientSocket(clientSocket);
-                    if(wifiSocketManager == null) {
-                        wifiSocketManager = new WifiSocketManager(clientSocket, mHandler);
+                    if (wifiSocketManager == null) {
+                        wifiSocketManager = new WifiSocketManager(clientSocket, mHandler, true);
+
+                        wifiSocketManager.setRemoteDeviceHostAddress(ipAddress.getHostName());
+                        pool.execute(wifiSocketManager);
                     }
                     wifiSocketManager.addClientSocket(clientSocket);
 
-                    wifiSocketManager.setRemoteDeviceHostAddress(ipAddress.getHostName());
-                    pool.execute(wifiSocketManager);
-
                     System.out.println("Hostname by server side :" + clientSocket.getInetAddress().getHostName()
-                    + ",Host Address by server side :" + clientSocket.getInetAddress().getHostAddress());
+                            + ",Host Address by server side :" + clientSocket.getInetAddress().getHostAddress());
                 }
             } catch (IOException e) {
                 //if there is an exception, after closing socket and pool, the execution stops with a "break".
                 try {
                     if (mSocket != null && !mSocket.isClosed()) {
                         mSocket.close();
-                        wifiSocketManager.socketClosed();
+                        wifiSocketManager.closeSocket();
                     }
                 } catch (IOException ioe) {
                     Log.e(TAG, "IOException during close Socket", ioe);
@@ -89,14 +94,14 @@ public class WifiP2PServerHandler extends Thread {
      * Method to close the group owner sockets and kill this entire thread.
      */
     public void closeSocketAndKillThisThread() {
-        if(mSocket!=null && !mSocket.isClosed()) {
+        if (mSocket != null && !mSocket.isClosed()) {
             try {
                 mSocket.close();
             } catch (IOException e) {
                 Log.e(TAG, "IOException during close Socket", e);
             }
             pool.shutdown();
-            Log.d(TAG,"Stopping ServerSocketHandler");
+            Log.d(TAG, "Stopping ServerSocketHandler");
         }
     }
 

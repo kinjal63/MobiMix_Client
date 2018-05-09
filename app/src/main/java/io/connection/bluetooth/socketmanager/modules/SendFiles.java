@@ -69,7 +69,6 @@ public class SendFiles extends Thread {
                         //uriFile = Uri.fromFile(f);
                         Log.d(TAG, "sendFile: " + f.length());
 
-
                         dos.writeLong(filelength);
                         final String fileName = f.getName();
                         dos.writeUTF(fileName);

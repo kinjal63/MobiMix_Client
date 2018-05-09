@@ -4,7 +4,9 @@ import android.app.SearchManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,12 +21,24 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
+import io.connection.bluetooth.Database.DBParams;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
+import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.actionlisteners.ISocketEventListener;
+import io.connection.bluetooth.activity.gui.GUIManager;
+import io.connection.bluetooth.core.IWifiDisconnectionListener;
+import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.Thread.ConnectedBusinessThread;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
@@ -36,13 +50,17 @@ import io.connection.bluetooth.adapter.BluetoothDeviceAdapter;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by songline on 07/09/16.
  */
-public class BusinessCardListActivityUser extends BaseActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
+public class BusinessCardListActivityUser extends BaseActivity implements SearchView.OnQueryTextListener,
+        DeviceClickListener, IDBResponse {
     private static final String TAG = "BusinessCardListActivit";
     BluetoothAdapter bluetoothAdapter;
     private Toolbar toolbar;
@@ -58,7 +76,7 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
     private Context mContext;
     private SearchView searchView;
 
-    private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
+    private ArrayList<MBNearbyPlayer> listUsers = new ArrayList<>();
     private ArrayList<BluetoothRemoteDevice> listBluetoothDevices = new ArrayList<>();
     private NetworkType networkType;
 
@@ -85,6 +103,11 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
             networkType = NetworkType.WIFI_DIRECT;
             initWifiDirect();
         }
+
+        getNearByPlayers();
+
+//        bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listUsers);
+//        bluetoothDeviceAdapter.setDeviceClickListener(this);
 
         deviceLayout = (RecyclerView) findViewById(R.id.list_business);
         setDeviceLayout(deviceLayout);
@@ -119,6 +142,13 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
 
     }
 
+    private void getNearByPlayers() {
+        DBParams params = new DBParams();
+        params.event_ = MobiMix.DBRequest.DB_FIND_NEARBY_PLAYERS;
+        params.userId_ = ApplicationSharedPreferences.getInstance(this).getValue("user_id");
+        GUIManager.getObject().getNearbyPlayers(params, this);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -151,44 +181,44 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
 
         bluetoothService.setClassName(BusinessCardListActivityUser.class.getSimpleName());
 
-        listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
+//        listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
         bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
         bluetoothDeviceAdapter.setDeviceClickListener(this);
 
-        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
-            @Override
-            public void onBluetoothDeviceAvailable(BluetoothRemoteDevice device) {
-                listBluetoothDevices.add(device);
-
-                ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
-
-                UtilsHandler.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        bluetoothDeviceAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        });
+//        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
+//            @Override
+//            public void onBluetoothDeviceAvailable(BluetoothRemoteDevice device) {
+//                listBluetoothDevices.add(device);
+//
+//                ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
+//
+//                UtilsHandler.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        bluetoothDeviceAdapter.notifyDataSetChanged();
+//                    }
+//                });
+//            }
+//        });
     }
 
     private void initWifiDirect() {
         networkType = NetworkType.WIFI_DIRECT;
 
-        listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
-        wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
+        WifiDirectService.getInstance(this).setClassName(BusinessCardListActivityUser.class.getSimpleName());
+
+        wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listUsers);
         wifiDeviceAdapter.setDeviceClickListener(this);
 
-        WifiDirectService.getInstance(this).setClassName(BusinessCardListActivityUser.class.getSimpleName());
-        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
-            @Override
-            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
-                listWifiP2PDevices.clear();
-                listWifiP2PDevices.addAll(devices);
-
-                wifiDeviceAdapter.notifyDataSetChanged();
-            }
-        });
+//        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
+//            @Override
+//            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
+//                listWifiP2PDevices.clear();
+//                listWifiP2PDevices.addAll(devices);
+//
+//                wifiDeviceAdapter.notifyDataSetChanged();
+//            }
+//        });
     }
 
     public void setDeviceLayout(RecyclerView deviceLayout) {
@@ -224,46 +254,72 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
                 Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + p2pDevice.deviceName, Toast.LENGTH_SHORT).show();
             }
         });
-        WifiDirectService.getInstance(this).getMessageHandler().sendBusinessCard();
+
+        SharedPreferences prefs = ImageCache.getContext().getSharedPreferences("businesscard", Context.MODE_PRIVATE);
+        String socketAddr = prefs.getString("socket_address", "");
+
+        WifiDirectService.getInstance(this).getMessageHandler().sendBusinessCard(socketAddr, Modules.BUSINESS_CARD);
     }
 
     private void setSocketListeners() {
-        WifiDirectService.getInstance(this).setSocketConnectionListener(new SocketConnectionListener() {
+        GUIManager.getObject().setSocketEventListener(new ISocketEventListener() {
             @Override
-            public void socketConnected(final boolean isClient, final String remoteDeviceAddress) {
+            public void socketInitialized(String remoteSocketAddress) {
                 sendBusinessCard();
-                WifiDirectService.getInstance(BusinessCardListActivityUser.this).setSocketConnectionListener(null);
             }
 
             @Override
-            public void socketClosed() {
-
+            public void socketDiconnected() {
+                if (!BusinessCardListActivityUser.this.isFinishing() || !BusinessCardListActivityUser.this.isDestroyed()) {
+                    Toast.makeText(BusinessCardListActivityUser.this, "Device is not connected, please try again.", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
 
     @Override
-    public void onWifiDeviceClick(WifiP2PRemoteDevice device) {
-        p2pDevice = device.getDevice();
+    public void onWifiDeviceClick(final MBNearbyPlayer device) {
+        UtilsHandler.showProgressDialog("Removing previous connection and reconnecting with " + device.getPlayerName());
 
-        if( !WifiDirectService.getInstance(this).isSocketConnectedWithHost(p2pDevice.deviceName) ) {
-            Toast.makeText(this, "Connecting to " + p2pDevice.deviceName, Toast.LENGTH_SHORT).show();
-
-            WifiDirectService.getInstance(this).connectWithWifiAddress(p2pDevice.deviceAddress, new DeviceConnectionListener() {
+        WifiP2pDevice localDevice = LocalP2PDevice.getInstance().getLocalDevice();
+        if (localDevice.status == WifiP2pDevice.CONNECTED) {
+            WifiDirectService.getInstance(this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
                 @Override
-                public void onDeviceConnected(boolean isConnected) {
+                public void connectionRemoved(boolean isDisconnected) {
+                    if (isDisconnected) {
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        UtilsHandler.dismissProgressDialog();
 
-                    if (isConnected) {
-                        setSocketListeners();
-                    } else {
-                        Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + p2pDevice.deviceName, Toast.LENGTH_SHORT);
+                        WifiDirectService.getInstance(BusinessCardListActivityUser.this).connect(device.getEmail(), new DeviceConnectionListener() {
+                            @Override
+                            public void onDeviceConnected(boolean isConnected) {
+                                if (isConnected) {
+                                    setSocketListeners();
+                                } else {
+                                    Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + device.getPlayerName(), Toast.LENGTH_SHORT);
+                                }
+                            }
+                        });
                     }
                 }
             });
         }
         else {
-            Toast.makeText(this, "Connected to " + p2pDevice.deviceName, Toast.LENGTH_SHORT).show();
-            sendBusinessCard();
+            WifiDirectService.getInstance(BusinessCardListActivityUser.this).connect(device.getEmail(), new DeviceConnectionListener() {
+                @Override
+                public void onDeviceConnected(boolean isConnected) {
+                    UtilsHandler.dismissProgressDialog();
+                    if (isConnected) {
+                        setSocketListeners();
+                    } else {
+                        Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + device.getPlayerName(), Toast.LENGTH_SHORT);
+                    }
+                }
+            });
         }
     }
 
@@ -276,14 +332,20 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
         NotificationManagerCompat.from(this).cancelAll();
     }
 
-    private void closeWifiP2PSocketsIfAny() {
-        WifiDirectService.getInstance(this).getMessageHandler().sendMessage(new String("NowClosing").getBytes());
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                WifiDirectService.getInstance(BusinessCardListActivityUser.this).getMessageHandler().closeWifiSocket();
-            }
-        }, 1000);
+    @Override
+    public void onDataAvailable(int resCode, List<?> data) {
+        if (resCode == MobiMix.DBResponse.DB_RES_FIND_NEARBY_PLAYERS) {
+            List<MBNearbyPlayer> players = (List<MBNearbyPlayer>) data;
+
+            this.listUsers.clear();
+            this.listUsers.addAll(players);
+
+            wifiDeviceAdapter.notifyDataSetChanged();
+        }
     }
 
+    @Override
+    public void onDataFailure() {
+        Utils.showErrorDialog(this, "Players could not be retrived, Please try after some time.");
+    }
 }

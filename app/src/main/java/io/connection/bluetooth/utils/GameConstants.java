@@ -25,5 +25,13 @@ public class GameConstants {
     public static final String USER_ID = "user_id";
     public static final String CONNECTED_USER_ID = "connected_user_id";
     public static final String GAME_MAX_PLAYERS = "game_max_players";
-    public static final String GAME_PLAYERS_IN_QUEUE = "game_players_in_queue";
+    public static final String GAME_PLAYERS_IN_QUEUE = "mb_queued_players";
+    public static final String GAME_UPDATE_TABLE_DATA = "mb_update_table_data";
+    public static final String GAME_PARTICIPANTS = "mb_game_participants";
+    public static final String GAME_CONNECTED_USER_IDS = "mb_game_connected_user_ids";
+    public static final String GAME_GROUP_OWNER_USER_ID = "mb_game_group_owner_id";
+
+    // Multi socket connection
+    public static final String CLIENT_SOCKET_ADDRESS = "client_socket_address";
+    public static final String CHAT_MESSAGE = "mb_chat_message";
 }

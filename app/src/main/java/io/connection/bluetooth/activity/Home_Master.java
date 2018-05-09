@@ -46,6 +46,7 @@ import io.connection.bluetooth.Thread.AcceptBusinessThread;
 import io.connection.bluetooth.Thread.AcceptThread;
 import io.connection.bluetooth.Thread.GameEventAcceptThread;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
@@ -381,6 +382,8 @@ public class Home_Master extends BaseActivity implements View.OnClickListener {
 
     @Override
     protected void onDestroy() {
+        //Close connection if any
+        WifiDirectService.getInstance(this).closeConnection();
         super.onDestroy();
     }
 }

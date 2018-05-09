@@ -42,14 +42,14 @@ public class WifiP2PClientHandler extends Thread {
     private void tryToConnect() throws InterruptedException {
         mSocket = new Socket();
         try {
-            mSocket.bind(null);
             mSocket.connect(new InetSocketAddress(mAddress.getHostAddress(), Constants.GROUP_OWNER_PORT));
 
             System.out.println("Hostname by client side :" + mSocket.getInetAddress().getHostName()
                     + ",Host Address by client side :" + mSocket.getInetAddress().getHostAddress());
 
-            wifiSocketManager = new WifiSocketManager(mSocket, mHandler);
+            wifiSocketManager = new WifiSocketManager(mSocket, mHandler, false);
             wifiSocketManager.setRemoteDeviceHostAddress(mAddress.getHostName());
+
             new Thread(wifiSocketManager).start();
         }
         catch (IOException e) {

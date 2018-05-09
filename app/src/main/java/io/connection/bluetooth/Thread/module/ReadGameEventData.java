@@ -66,7 +66,7 @@ public class ReadGameEventData extends Thread {
         catch (IOException e) {
             e.printStackTrace();
             disable = false;
-            handler.socketClosed();
+            handler.closeSocket();
             Thread.currentThread().interrupt();
         }
     }

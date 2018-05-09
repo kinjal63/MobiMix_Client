@@ -1,7 +1,7 @@
 package io.connection.bluetooth.actionlisteners;
 
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
-import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 
 /**
  * Created by Kinjal on 4/22/2017.
@@ -9,5 +9,5 @@ import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 
 public interface DeviceClickListener {
     void onBluetoothDeviceClick(BluetoothRemoteDevice... device);
-    void onWifiDeviceClick(WifiP2PRemoteDevice device);
+    void onWifiDeviceClick(MBNearbyPlayer device);
 }

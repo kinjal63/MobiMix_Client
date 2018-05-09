@@ -38,8 +38,7 @@ public class ForegroundCheckTask extends AsyncTask<String, Void, Boolean> {
             }
             return false;
         }
-    }
 
     // Use like this:
-    boolean foregroud = new ForegroundCheckTask().execute(context).get();
+//    boolean foregroud = new ForegroundCheckTask().execute(context).get();
 }

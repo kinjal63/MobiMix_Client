@@ -4,6 +4,9 @@ import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.Intent;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import io.connection.bluetooth.Api.async.IResponseHandler;
 
 /**
@@ -11,6 +14,7 @@ import io.connection.bluetooth.Api.async.IResponseHandler;
  */
 public class DBSyncService extends JobService {
     JobParameters params = null;
+    Timer timer = null;
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {

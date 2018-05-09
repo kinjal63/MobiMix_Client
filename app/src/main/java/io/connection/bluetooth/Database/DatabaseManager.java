@@ -108,6 +108,8 @@ public class DatabaseManager {
 
             MobiMixApplication.getInstance().getDaoSession().getMBUserAvailabilityDao().insertOrReplace(userAvailability);
         }
+
+        setAvailabilityForWifiDirectDevices();
     }
 
     public synchronized void update(Object object, String whereKeyClause, String value) {
@@ -213,8 +215,43 @@ public class DatabaseManager {
         doAsync(params, new IActionUpdateListener() {
             @Override
             public void onUpdateAction(int error) {
-                if (error == 0) {
+                if (error == 0){
                     Log.d("DatabaseManager", "Game table is updated successfully");
+                }
+            }
+        });
+    }
+
+    public synchronized void deleteGameParticipants(DBParams params) {
+        doAsync(params, new IActionUpdateListener() {
+            @Override
+            public void onUpdateAction(int error) {
+                if (error == 0){
+                    Log.d("DatabaseManager", "Game table is updated successfully");
+                }
+            }
+        });
+    }
+
+    public synchronized void updateGameTableInBatch(DBParams params, final IDatabaseActionListener listener) {
+        doAsync(params, new IActionUpdateListener() {
+            @Override
+            public void onUpdateAction(int error) {
+                if (error == 0) {
+                    listener.onDataUpdated();
+                    Log.d("DatabaseManager", "Game table is updated successfully");
+                }
+            }
+        });
+    }
+
+    public synchronized  void getGameTableData(DBParams params, final IDatabaseActionListener iDatabaseActionListener) {
+        doAsync(params, new IActionReadListener() {
+            @Override
+            public void onReadOperation(int error, List<?> objects) {
+                if (error == 0) {
+                    Log.d("DatabaseManager", "Game table is read successfully");
+                    iDatabaseActionListener.onDataReceived(objects);
                 }
             }
         });

@@ -136,6 +136,7 @@ public class PlayerListActivity extends Activity implements IDBResponse {
                     myGameInfo.setIsEngaged(player.getIsEngaged());
                     myGameInfo.setGroupOwnerId(player.getGroupOwnerUserId());
                     myGameInfo.setAllowedPlayersCount(player.getMaxPlayers());
+
                     continue;
                 }
                 this.userList.add(player);

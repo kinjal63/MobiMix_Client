@@ -59,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/xml_checkbox_background"
-            android:theme="@+style/MyCheckBox" />
+            android:theme="@style/MyCheckBox" />
     </LinearLayout>
 
     <TextView
@@ -87,7 +87,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/xml_checkbox_background"
-            android:theme="@+style/MyCheckBox" />
+            android:theme="@style/MyCheckBox" />
     </LinearLayout>
 
     <TextView

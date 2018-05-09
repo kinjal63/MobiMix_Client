@@ -4,9 +4,8 @@
     android:layout_height="wrap_content"
     android:id="@+id/cardview_nearbygame"
     android:layout_marginBottom="5dp"
-    android:layout_marginTop="5dp"
-    android:background="@color/common_action_bar_splitter"
-    >
+    android:layout_marginTop="5dp">
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,7 +17,7 @@
             android:background="@drawable/xml_checkbox_background"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            android:theme="@+style/nearByCheckBox"/>
+            android:theme="@style/nearByCheckBox"/>
 
    <io.connection.bluetooth.activity.CircularImageView
         android:id="@+id/user_nearby_image"

@@ -11,7 +11,7 @@ public class Constants {
     // public static UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     public static UUID uuid = UUID.fromString("6f50463f-e73f-48ca-a5f6-d2080cd24363");
     //public static final String endPointAddress = "http://transfer-teqnihome.rhcloud.com/";
-    public static final String endPointAddress = "http://192.168.0.100:8080/";
+    public static final String endPointAddress = "http://192.168.43.28:8080/";
     // public static final String endPointAddress = "http://192.168.43.123:8080/";
     public static final String TOKEN = "push_token";
     public static final String TOKEN_KEY = "token";   
@@ -44,6 +44,8 @@ public class Constants {
     public static final int GAME_REQUEST_ACCEPTED = 0x400 + 5;
     public static final int MESSAGE_READ_GAME = 0x400 + 6;
     public static final int MESSAGE_HEARBEAT = 0x400 + 7;
+    public static final int MESSAGE_READ_CHAT = 0x400 + 8;
+    public static final int MESSAGE_READ_BUSINESS_CARD = 0x400 + 9;
 
     public static final int THREAD_COUNT = 20; //maximum number of clients that this GO can manage
     public static final int THREAD_POOL_EXECUTOR_KEEP_ALIVE_TIME = 10;

@@ -7,6 +7,9 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -15,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.List;
 
 import io.connection.bluetooth.Thread.MessageHandler;
@@ -24,7 +28,7 @@ import io.connection.bluetooth.utils.Constants;
 /**
  * Created by KP49107 on 12-04-2017.
  */
-public class SendBusinessCard {
+public class SendBusinessCard extends Thread {
     private final Socket mSocket;
     private MessageHandler handler;
     private String TAG = SendBusinessCard.class.getSimpleName();
@@ -32,6 +36,11 @@ public class SendBusinessCard {
     public SendBusinessCard(Socket socket, MessageHandler handler) {
         mSocket = socket;
         this.handler = handler;
+    }
+
+    @Override
+    public void run() {
+        sendCard();
     }
 
     public void sendCard() {
@@ -48,31 +57,36 @@ public class SendBusinessCard {
         byte[] buffer = new byte[8 * bufferSize];
 
         try {
-            DataOutputStream dos = new DataOutputStream(mSocket.getOutputStream());
+
+            DataObjectOutputStream oos = new DataObjectOutputStream(mSocket.getOutputStream());
             try {
-
                 File f = new File(file.getPath());
-                long filelength = f.length();
-                //uriFile = Uri.fromFile(f);
-                Log.d(TAG, "sendFile: " + f.length());
-                dos.writeUTF(name);
-                dos.writeUTF(email);
-                dos.writeUTF(phone);
-                final String fileName = f.getName();
-                dos.writeUTF(fileName);
-                dos.writeUTF(deviceId);
-                dos.writeInt((int) filelength);
-
                 FileInputStream fis = new FileInputStream(f);
-                int total = 0;
-                int counting = 0;
+                fis.read(buffer);
 
-                while (fis.read(buffer) > 0) {
-                    dos.write(buffer);
-                    Log.d(TAG, "doInBackground: " + filelength + "   " + total + "  counting " + counting);
+                long filelength = f.length();
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("name", name);
+                    jsonObject.put("email", email);
+                    jsonObject.put("phone", phone);
+                    jsonObject.put("picture", picture);
+                    jsonObject.put("pictureData", new String(buffer));
+                    jsonObject.put("device_id", deviceId);
                 }
-                dos.flush();
+                catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                oos.writeObject(jsonObject.toString());
+
+//                FileInputStream fis = new FileInputStream(f);
+//                fis.read(buffer);
+//                while (fis.read(buffer) > 0) {
+//                    oos.write(buffer);
+//                }
                 fis.close();
+                oos.flush();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -98,7 +112,7 @@ public class SendBusinessCard {
                 inBuffer = dis.readUTF().getBytes();
                 dis.close();
 
-                System.out.println("Getting message" + new String(buffer));
+                System.out.println("Getting message" + new String(inBuffer));
                 handler.getHandler().obtainMessage(Constants.MESSAGE_READ, 0, -1, inBuffer).sendToTarget();
             }
         }

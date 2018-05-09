@@ -55,7 +55,7 @@ public class NotificationUtil {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.mipmap.ic_logo)
                 .setContentTitle(radioType + " connection")
-                .setContentText("Do you want to make " + radioType + " connection with " + gameRequest.getRemoteUserName())
+                .setContentText("Do you want to make " + radioType + " connection with " + gameRequest.getRequesterUserName())
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);

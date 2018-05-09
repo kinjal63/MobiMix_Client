@@ -10,10 +10,14 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -25,6 +29,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.connection.bluetooth.Database.DBParams;
+import io.connection.bluetooth.Database.action.IDatabaseActionListener;
 import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
@@ -32,18 +38,22 @@ import io.connection.bluetooth.Domain.GameInfo;
 import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.Domain.User;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.DialogActionListener;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.activity.gui.GUIManager;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.receiver.WiFiDirectBroadcastReceiver;
 import io.connection.bluetooth.socketmanager.WifiP2PClientHandler;
 import io.connection.bluetooth.socketmanager.WifiP2PServerHandler;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.GameConstants;
+import io.connection.bluetooth.utils.MessageConstructor;
 import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 import io.connection.bluetooth.utils.cache.CacheConstants;
@@ -75,6 +85,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private SocketConnectionListener socketConnectionListener;
 
     private String TAG = "WifiDirectService";
+    final private String socket = "Socket";
 
     public static WifiDirectService getInstance(Context context) {
         mContext = context;
@@ -224,6 +235,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
             @Override
             public void onFailure(int reason) {
+                System.out.println("Failure reason code:" + reason);
                 UtilsHandler.dismissProgressDialog();
                 Toast.makeText(mContext, "Connect failed. Retry.",
                         Toast.LENGTH_SHORT).show();
@@ -246,6 +258,11 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 Log.d(TAG, "Connected as group owner");
                 try {
                     Log.d(TAG, "socketHandler!=null? = " + (socketHandler != null));
+                    // Close connection if already exists
+                    if(socketHandler != null && socketHandler.isAlive()) {
+                        ((WifiP2PServerHandler)socketHandler).closeSocketAndKillThisThread();
+                    }
+
                     socketHandler = new WifiP2PServerHandler(messageHandler);
                     socketHandler.start();
 
@@ -266,10 +283,26 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void closeConnection() {
+//        setModule(Modules.NONE);
+
         if (socketHandler != null && socketHandler instanceof WifiP2PClientHandler) {
             ((WifiP2PClientHandler) socketHandler).closeSocketAndKillThisThread();
         } else if (socketHandler != null && socketHandler instanceof WifiP2PServerHandler) {
             ((WifiP2PServerHandler) socketHandler).closeSocketAndKillThisThread();
+        }
+
+        messageHandler.closeWifiSocket();
+
+        // Send Connection close event to GUIManager,
+        Message msg = new Message();
+        msg.what = MobiMix.GameEvent.EVENT_GAME_CONNECTION_CLOSED;
+        CoreEngine.sendEventToGUI(msg);
+
+        MobiMixCache.clearFromCache();
+
+        System.out.println("Closing connection");
+        synchronized (socket) {
+            socket.notify();
         }
     }
 
@@ -346,8 +379,18 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                         @Override
                         public void onSuccess() {
                             Log.d(TAG, "removeGroup onSuccess -");
+                            // close connection
+//                            messageHandler.closeWifiSocket();
+
+//                            synchronized (socket) {
+//                                try {
+//                                    socket.wait(5000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+
                             wifiDiconnectionListener.connectionRemoved(true);
-                            initiateDiscovery();
                         }
 
                         @Override
@@ -374,7 +417,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                         @Override
                         public void onSuccess() {
                             Log.d(TAG, "removeGroup onSuccess -");
-                            initiateDiscovery();
                         }
 
                         @Override
@@ -389,9 +431,10 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void closeSocket() {
-        if (messageHandler != null) {
-            messageHandler.socketClosed();
-        }
+        closeConnection();
+//        if (messageHandler != null) {
+//            messageHandler.closeSocket();
+//        }
     }
 
     public void updateConnectionInfo(final GameRequest gameRequest, final boolean isNeedToNotify, final IUpdateListener iUpdateListener) {
@@ -481,43 +524,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         }
     }
 
-    public void sendWifiDirectRequestToUser(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo,
-                                            final boolean isRequestToQueuedPlayers) {
-        WifiP2pDevice localDevice = LocalP2PDevice.getInstance().getLocalDevice();
-        if (!isRequestToQueuedPlayers && localDevice.status == WifiP2pDevice.CONNECTED /*&& !localDevice.isGroupOwner()*/) {
-            Utils.showAlertMessage(mContext, "Remove Connection", "Are you sure you want to drop existing wifidirect connection " +
-                    "and connect with " + players.get(0).getPlayerName() + "?", new DialogActionListener() {
-                @Override
-                public void dialogPositiveButtonPerformed() {
-                    MobiMixCache.clearFromCache();
-                    removeConnectionAndReConnect(new IWifiDisconnectionListener() {
-                        @Override
-                        public void connectionRemoved(boolean isDisconnected) {
-                            if(isDisconnected) {
-                                if (players.size() > 0) {
-                                    connectWithPlayer(players, gameInfo);
-                                }
-                            }
-                            else {
-                                Toast.makeText(mContext, "Failed to remove existing wifidirect connection. Please try again.", Toast.LENGTH_SHORT);
-                            }
-                        }
-                    });
-                }
-                @Override
-                public void dialogNegativeButtonPerformed() {
-
-                }
-            });
-        }
-        else if(!isRequestToQueuedPlayers && localDevice.status != WifiP2pDevice.CONNECTED){
-            connectWithPlayer(players, gameInfo);
-        }
-        else if(isRequestToQueuedPlayers) {
-            connectWithQueuedPlayers(players);
-        }
-    }
-
     private void connectWithQueuedPlayers(final List<MBNearbyPlayer> queuedPlayers) {
         for(final MBNearbyPlayer player : queuedPlayers) {
             connect(player.getEmail(), new DeviceConnectionListener() {
@@ -536,12 +542,60 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     private void connectWithPlayer(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
+        WifiP2pDevice localDevice = LocalP2PDevice.getInstance().getLocalDevice();
+
+        if (localDevice.status == WifiP2pDevice.CONNECTED /*&& !localDevice.isGroupOwner()*/) {
+            Utils.showAlertMessage(MobiMixApplication.getInstance().getActivity(), "Remove Connection", "Are you sure you want to drop existing wifidirect connection " +
+                    "and connect with " + players.get(0).getPlayerName() + "?", new DialogActionListener() {
+                @Override
+                public void dialogPositiveButtonPerformed() {
+                    MobiMixCache.clearFromCache();
+                    removeConnectionAndReConnect(new IWifiDisconnectionListener() {
+                        @Override
+                        public void connectionRemoved(boolean isDisconnected) {
+                            if (isDisconnected) {
+                                try {
+                                    new Handler().postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (players.size() > 0) {
+                                                establishConnection(players, gameInfo);
+                                            }
+                                        }
+                                    }, 5000);
+//                                    Thread.sleep(5000);
+                                }
+                                catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            } else {
+                                Toast.makeText(mContext, "Failed to remove existing wifidirect connection. Please try again.", Toast.LENGTH_SHORT);
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void dialogNegativeButtonPerformed() {
+
+                }
+            });
+        }
+        else {
+            establishConnection(players, gameInfo);
+        }
+    }
+
+    private void establishConnection(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
         final MBNearbyPlayer player = players.get(0);
         connect(player.getEmail(), new DeviceConnectionListener() {
             @Override
             public void onDeviceConnected(boolean isConnected) {
                 String userId = ApplicationSharedPreferences.getInstance(mContext).
                         getValue("user_id");
+                String userName = ApplicationSharedPreferences.getInstance(mContext).
+                        getValue("user_name");
 
                 GameRequest gameRequest = new GameRequest();
                 gameRequest.setGameId(gameInfo.getGameId());
@@ -549,8 +603,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 gameRequest.setGamePackageName(gameInfo.getGamePackageName());
                 gameRequest.setConnectionType(2);
                 gameRequest.setRequesterUserId(userId);
-//                gameRequest.setRemoteUserId(player.getPlayerId());
-                gameRequest.setRequesterUserName(player.getPlayerName());
+                gameRequest.setRequesterUserName(userName);
                 gameRequest.setWifiAddress(ApplicationSharedPreferences.getInstance(mContext).
                         getValue("email"));
                 gameRequest.setBluetoothAddress(ApplicationSharedPreferences.getInstance(mContext).
@@ -566,22 +619,29 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         });
     }
 
-    private void connect(String deviceName, DeviceConnectionListener listener) {
+    public void connect(String deviceName, DeviceConnectionListener listener) {
         HashSet<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
         for (WifiP2PRemoteDevice remoteDevice : devices) {
-            if (remoteDevice.getDevice().deviceName.equalsIgnoreCase(deviceName)) {
+            if (remoteDevice.getDevice().deviceName.contains(deviceName)) {
                 connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, listener);
             }
         }
     }
 
-    public void handleEvent(int event) {
-        switch (event) {
-            case MobiMix.GameEvent.EVENT_GAME_QUEUED_USER:
+    public void handleEvent(final EventData eventData) {
+        JSONObject object = eventData.object_;
+        switch (eventData.event_) {
+            case MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_USERS:
             case MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_QUEUED_USERS:
-                List<MBNearbyPlayer> queuedPlayers = MobiMixCache.getQueuedPlayersFromCache();
-                if(queuedPlayers != null && queuedPlayers.size() > 0) {
-                    connectWithQueuedPlayers(queuedPlayers);
+                MBGameInfo mbGameInfo = (MBGameInfo)object.opt("mb_game_info");
+                List<MBNearbyPlayer> nearbyPlayers = (List<MBNearbyPlayer>)object.opt("mb_selected_players");
+                boolean isReqForQueuedPlayers = object.optBoolean("mb_request_queue");
+
+                if(isReqForQueuedPlayers) {
+                    connectWithQueuedPlayers(nearbyPlayers);
+                }
+                else {
+                    connectWithPlayer(nearbyPlayers, mbGameInfo);
                 }
                 break;
             default:
@@ -640,5 +700,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     public void removeConnectedDevice() {
         this.connectedDeviceMap.clear();
 //        this.connectedDeviceMap.remove(device.getDevice().deviceAddress);
+    }
+
+    public void sendEvent(EventData eventData) {
+        messageHandler.sendEvent(eventData);
     }
 }

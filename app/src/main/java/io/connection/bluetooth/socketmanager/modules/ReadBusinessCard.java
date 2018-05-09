@@ -4,11 +4,14 @@ import android.content.Intent;
 import android.os.Environment;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 
 import io.connection.bluetooth.Database.BusinessCard;
@@ -16,7 +19,9 @@ import io.connection.bluetooth.Database.DataBaseHelper;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.activity.BusinessCardReceivedList;
 import io.connection.bluetooth.activity.ImageCache;
+import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.enums.Modules;
+import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
@@ -46,19 +51,23 @@ public class ReadBusinessCard {
 
         while(!disable) {
             try {
-
                 Log.d(TAG, "Starting to read business card");
 
-                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
-                DataInputStream dis = new DataInputStream(bis);
+//                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
+//                DataInputStream dis = new DataInputStream(bis);
 
-                String name = dis.readUTF();
-                String email = dis.readUTF();
-                String phone = dis.readUTF();
-                String filename = dis.readUTF();
-                String deviceId = dis.readUTF();
+                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                String data = (String)ois.readObject();
+                JSONObject jObject = new JSONObject(data);
 
-                int fileLength = dis.readInt();
+                String name = jObject.optString("name");
+                String email = jObject.optString("email");
+                String phone = jObject.optString("phone");
+                String filename = jObject.optString("picture");
+                String fileData = jObject.optString("pictureData");
+                String deviceId = jObject.optString("device_id");
+
+                int fileLength = jObject.optInt("fileLength");
 
                 Log.d(TAG, "run:  Start   \n   " + name + " \n" + email + " \n" + phone + "\n " + filename + " \n" + fileLength + "\n   End");
 
@@ -70,7 +79,10 @@ public class ReadBusinessCard {
                     new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth/MediaFiles").mkdir();
                 }
 
-                files = new File(Environment.getExternalStorageDirectory() + "/TransferBluetooth/BusinessCard", filename);
+                files = new File(filename);
+                if(!files.exists()) {
+                    files.createNewFile();
+                }
 
                 BusinessCard businessCard = new BusinessCard();
                 businessCard.setName(name);
@@ -86,12 +98,13 @@ public class ReadBusinessCard {
                 int len = 0;
                 int remaining = fileLength;
 
-                while ((len = dis.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
-                    counting += len;
-                    remaining -= len;
-                    System.out.println("read " + counting + " bytes.");
-                    fos.write(buffer, 0, len);
-                }
+//                while ((len = ois.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
+//                    counting += len;
+//                    remaining -= len;
+//                    System.out.println("read " + counting + " bytes.");
+//                    fos.write(buffer, 0, len);
+//                }
+                fos.write(fileData.getBytes());
                 Log.d(TAG, "run: data inserted id  is  " + value);
 
                 fos.close();
@@ -109,20 +122,14 @@ public class ReadBusinessCard {
 //                WifiDirectService.getInstance(MobileMeasurementApplication.getInstance().getActivity()).closeWifiSocket();
 
             } catch (Exception e) {
-                try {
-                    disable = true;
-                    fos.close();
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-
                 e.printStackTrace();
-
             } finally {
                 try {
                     disable = true;
+                    fos.close();
+
                     DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                    dos.writeUTF("NowClosing");
+                    dos.writeUTF(MobiMix.ScoketEvents.EVENT_BUSINESSCARD_RECEIVED);
 
                     Thread.sleep(1000);
                     handler.closeWifiSocket();

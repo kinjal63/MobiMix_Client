@@ -2,13 +2,18 @@ package io.connection.bluetooth.socketmanager.modules;
 
 import android.os.Handler;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.GameConstants;
 
 /**
  * Created by Kinjal on 4/8/2017.
@@ -17,7 +22,7 @@ import io.connection.bluetooth.utils.Constants;
 public class ReadChatData {
     private Socket socket;
     private boolean disable = false;
-    private InputStream is;
+    private ObjectInputStream ois;
     private MessageHandler handler;
 
     public ReadChatData(Socket socket, MessageHandler handler) {
@@ -26,26 +31,26 @@ public class ReadChatData {
     }
 
     public void readChatData() {
-        byte[] buffer = new byte[1024];
-        int bytes;
+        JSONObject object = null;
 
         try {
-            is = socket.getInputStream();
+            ois = new ObjectInputStream(socket.getInputStream());
             while (!disable) {
-
-                if (is != null) {
-                    bytes = is.read(buffer);
-                    if (bytes == -1) {
+                if (ois != null) {
+                    String eventObj = (String)ois.readObject();
+                    if (eventObj == null) {
                         break;
                     }
+                    System.out.println("Getting message" + eventObj);
 
-                    System.out.println("Getting message" + new String(buffer));
-                    handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    object = new JSONObject(eventObj);
+                    handler.getHandler().obtainMessage(Constants.MESSAGE_READ_CHAT, -1, -1, object).sendToTarget();
                 }
             }
         }
-        catch (IOException e) {
+        catch (IOException | JSONException | ClassNotFoundException e) {
             e.printStackTrace();
+            disable = true;
         }
     }
 }

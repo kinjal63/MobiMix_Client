@@ -19,6 +19,7 @@ import io.connection.bluetooth.Api.response.entity.NearByPlayer;
 import io.connection.bluetooth.Api.response.entity.NearByPlayerResponse;
 import io.connection.bluetooth.Database.DBParams;
 import io.connection.bluetooth.Database.DatabaseManager;
+import io.connection.bluetooth.Database.action.IActionUpdateListener;
 import io.connection.bluetooth.Database.action.IDatabaseActionListener;
 import io.connection.bluetooth.Domain.DataUsageModel;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
@@ -85,6 +86,18 @@ public class NetworkManager {
 
     public void updateGameTable(DBParams params) {
         DatabaseManager.getInstance().updateGameTable(params);
+    }
+
+    public void deleteGameParticipants(DBParams params) {
+        DatabaseManager.getInstance().deleteGameParticipants(params);
+    }
+
+    public void updateGameTableInBatch(DBParams params, IDatabaseActionListener dbActionListener) {
+        DatabaseManager.getInstance().updateGameTableInBatch(params, dbActionListener);
+    }
+
+    public void getGameTableData(DBParams params, IDatabaseActionListener dbActionListner) {
+        DatabaseManager.getInstance().getGameTableData(params, dbActionListner);
     }
 
     // Check internet connectivity

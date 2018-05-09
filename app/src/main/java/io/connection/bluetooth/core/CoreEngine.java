@@ -1,5 +1,6 @@
 package io.connection.bluetooth.core;
 
+import android.content.Context;
 import android.os.Message;
 
 import org.json.JSONObject;
@@ -10,6 +11,8 @@ import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.activity.gui.GUIManager;
+import io.connection.bluetooth.enums.RadioType;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.GameConstants;
 
 /**
@@ -22,20 +25,19 @@ public class CoreEngine {
                 -1, -1, message.obj).sendToTarget();
     }
 
-//    public static void sendEventToRadioService(Message message) {
-//        JSONObject jsonObject = (JSONObject) message.obj;
-//        int gameConnectionType = jsonObject.optInt(GameConstants.GAME_CONNECTION_TYPE);
-//        long gameId = jsonObject.optLong(GameConstants.GAME_ID);
-//        if( gameConnectionType == 1 ) {
-//            BluetoothService.getInstance().sendBluetoothRequestToUser(
-//                    (List<MBNearbyPlayer>)jsonObject.opt(GameConstants.GAME_PLAYERS_IN_QUEUE));
-//        }
-//    }
-
     public static void sendEventToHandler(EventData eventData) {
         MessageHandler messageHandler = BluetoothService.getInstance().handler();
         if( messageHandler != null ) {
             messageHandler.sendEvent(eventData);
+        }
+    }
+
+    public static void sendEventToRadioService(EventData eventData) {
+        if(eventData.radioType_ == RadioType.WIFI_DIRECT) {
+            WifiDirectService.getInstance(MobiMixApplication.getInstance().getContext()).handleEvent(eventData);
+        }
+        else if(eventData.radioType_ == RadioType.BLUETOOTH) {
+            BluetoothService.getInstance().handleEvent(eventData);
         }
     }
 }

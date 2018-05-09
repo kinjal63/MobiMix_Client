@@ -120,71 +120,6 @@ public class DialogActivity extends Activity{
                     public void onClick(DialogInterface dialog,int id) {
                         sendGameLaunchEventToRemoteUser(gameRequest);
                         finish();
-
-//                        boolean isDeviceFound = false;
-//
-//                        wifiDirectService.setWifiDirectDeviceName(wifiDirectName);
-//                        List<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
-//                        for(WifiP2PRemoteDevice remoteDevice : devices) {
-//                            if( remoteDevice.getDevice().deviceName.equalsIgnoreCase(wifiDirectName) ) {
-//                                isDeviceFound = true;
-//
-//                                UtilsHandler.addGameInStack(gameRequest);
-//
-//                                wifiDirectService
-//                                        .connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, new DeviceConnectionListener() {
-//                                            @Override
-//                                            public void onDeviceConnected(boolean isConnected) {
-//                                                Toast.makeText(DialogActivity.this, "Wait a moment, Game is launching...", Toast.LENGTH_LONG).show();
-////                                                updateConnectionInfo(gameRequest);
-//                                                System.out.println("Updating connection info + before");
-////                                                WifiDirectService.getInstance(DialogActivity.this).updateConnectionInfo(gameRequest, true, new IUpdateListener() {
-////                                                    @Override
-////                                                    public void onUpdated() {
-////                                                        System.out.println("Updating connection info + Updated");
-////                                                        UtilsHandler.removeGameFromStack();
-////                                                        finish();
-////                                                    }
-////                                                });
-//                                            }
-//                                        });
-//                            }
-//                        }
-//
-//                        if(!isDeviceFound) {
-//                            Toast.makeText(DialogActivity.this, "Device " + wifiDirectName + " is not found", Toast.LENGTH_LONG).show();
-//                            finish();
-////                            wifiDirectService.getWifiP2PManager().requestConnectionInfo(wifiDirectService.getWifiP2PChannel(),
-////                                    new WifiP2pManager.ConnectionInfoListener() {
-////                                        @Override
-////                                        public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-////                                            if(wifiP2pInfo != null) {
-////                                                updateConnectionInfo(gameRequest);
-////                                            }
-////                                        }
-////                                    });
-////                            wifiDirectService.getWifiP2PManager().requestGroupInfo(wifiDirectService.getWifiP2PChannel(),
-////                                    new WifiP2pManager.GroupInfoListener() {
-////                                        @Override
-////                                        public void onGroupInfoAvailable(WifiP2pGroup wifiP2pGroup) {
-////                                            if (wifiP2pGroup != null) {
-////                                                if(wifiP2pGroup.getOwner().deviceName.equalsIgnoreCase(wifiDirectName)) {
-////                                                    connectWithDevice(wifiP2pGroup.getOwner().deviceAddress, gameRequest);
-////                                                }
-////                                                else {
-////                                                    Collection<WifiP2pDevice> devices = wifiP2pGroup.getClientList();
-////                                                    for (WifiP2pDevice device : devices) {
-////                                                        if (device.deviceName.equalsIgnoreCase(wifiDirectName)) {
-////                                                            connectWithDevice(device.deviceAddress, gameRequest);
-////                                                        }
-////                                                    }
-////                                                }
-////                                            }
-////                                        }
-////                                    });
-//                        }
-//                        WifiDirectService.getInstance(MobiMixApplication.getInstance().getActivity())
-//                                .initiateDiscovery();
                     }
                 })
                 .setNegativeButton("No",new DialogInterface.OnClickListener() {
@@ -196,17 +131,16 @@ public class DialogActivity extends Activity{
                     }
                 });
         AlertDialog alertDialog = alertDialogBuilder.create();
-
         alertDialog.show();
     }
 
     private void sendGameLaunchEventToRemoteUser(GameRequest gameRequest) {
-        MobiMixCache.putGameInCache(gameRequest.getRemoteUserId(), gameRequest);
-        UtilsHandler.launchGame(gameRequest.getGamePackageName());
+        MobiMixCache.putGameInCache(gameRequest.getRequesterUserId(), gameRequest);
+//        UtilsHandler.launchGame(gameRequest.getGamePackageName());
 
         // Send Game launch event to remote user
         EventData eventData = new EventData(MobiMix.GameEvent.EVENT_GAME_LAUNCHED);
-        eventData.userId_ = gameRequest.getRemoteUserId();
+        eventData.socketAddr_ = gameRequest.getSocketAddress();
         GUIManager.getObject().sendEvent(eventData);
     }
 

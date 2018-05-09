@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface IDatabaseActionListener {
     void onDataReceived(List<?> data);
+    void onDataUpdated();
     void onDataError();
 }

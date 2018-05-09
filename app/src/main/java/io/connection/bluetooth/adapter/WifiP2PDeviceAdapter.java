@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
@@ -24,10 +25,10 @@ import io.connection.bluetooth.enums.Modules;
  */
 public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdapter.ViewHolder>  {
     private Context mContext;
-    private List<WifiP2PRemoteDevice> devices;
+    private List<MBNearbyPlayer> devices;
     private DeviceClickListener clickListener;
 
-    public WifiP2PDeviceAdapter(Context mContext, List<WifiP2PRemoteDevice> devices) {
+    public WifiP2PDeviceAdapter(Context mContext, List<MBNearbyPlayer> devices) {
         this.mContext = mContext;
         this.devices = devices;
     }
@@ -38,7 +39,7 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
 
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private Context context;
-        private WifiP2PRemoteDevice device;
+        private MBNearbyPlayer device;
         private TextView nameTV;
 
         ViewHolder(View itemView, Context context, int type) {
@@ -52,7 +53,7 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
 
         @Override
         public void onClick(View v) {
-            device = (WifiP2PRemoteDevice) v.getTag();
+            device = (MBNearbyPlayer) v.getTag();
             ImageCache.setContext(context);
 
             WifiDirectService wifiP2PService = WifiDirectService.getInstance(context);
@@ -90,8 +91,8 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (holder.getItemViewType() == 0) {
-            WifiP2PRemoteDevice device = devices.get(position);
-            holder.nameTV.setText(device.getName());
+            MBNearbyPlayer device = devices.get(position);
+            holder.nameTV.setText(device.getPlayerName());
             holder.itemView.setTag(device);
         }
     }

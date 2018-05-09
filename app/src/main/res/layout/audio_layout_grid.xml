@@ -91,6 +91,6 @@
         android:background="@drawable/xml_checkbox_background"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:theme="@+style/MyCheckBox"/>
+        android:theme="@style/MyCheckBox"/>
 
 </RelativeLayout>

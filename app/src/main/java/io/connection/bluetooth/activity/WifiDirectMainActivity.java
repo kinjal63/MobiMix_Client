@@ -8,7 +8,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.TabLayout;
@@ -32,6 +31,7 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,17 +41,27 @@ import java.util.Set;
 
 import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
+import io.connection.bluetooth.Database.DBParams;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.actionlisteners.ISocketEventListener;
 import io.connection.bluetooth.actionlisteners.NearByDeviceFound;
-import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
+import io.connection.bluetooth.activity.gui.GUIManager;
 import io.connection.bluetooth.adapter.WifiP2PDeviceAdapter;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
+import io.connection.bluetooth.core.IWifiDisconnectionListener;
+import io.connection.bluetooth.core.MobiMix;
+import io.connection.bluetooth.core.WifiDirectService;
+import io.connection.bluetooth.enums.Modules;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Utils;
+import io.connection.bluetooth.utils.UtilsHandler;
 
-public class WifiDirectMainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
+public class WifiDirectMainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener,
+        DeviceClickListener, IDBResponse {
     private static final String TAG = "MainActivity";
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -60,7 +70,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
     RecyclerView deviceLayout;
     ApiCall apiCall;
     private SearchView searchView;
-    private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
+    private ArrayList<MBNearbyPlayer> listUsers = new ArrayList<>();
     private static BottomSheetBehavior mBottomSheetBehavior;
     Context mContext;
     Activity activity;
@@ -81,21 +91,21 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         deviceLayout = (RecyclerView) findViewById(R.id.footer);
 
         WifiDirectService.getInstance(this).initiateDiscovery();
-        listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
 
-        deviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
+        getNearByPlayers();
+        deviceAdapter = new WifiP2PDeviceAdapter(this, listUsers);
         deviceAdapter.setDeviceClickListener(this);
 
         WifiDirectService.getInstance(this).setClassName(WifiDirectMainActivity.class.getSimpleName());
-        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
-            @Override
-            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
-                listWifiP2PDevices.clear();
-                listWifiP2PDevices.addAll(devices);
-
-                deviceAdapter.notifyDataSetChanged();
-            }
-        });
+//        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
+//            @Override
+//            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
+//                listWifiP2PDevices.clear();
+//                listWifiP2PDevices.addAll(devices);
+//
+//                deviceAdapter.notifyDataSetChanged();
+//            }
+//        });
 
         setDeviceLayout(deviceLayout);
 
@@ -282,6 +292,13 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         return true;
     }
 
+    private void getNearByPlayers() {
+        DBParams params = new DBParams();
+        params.event_ = MobiMix.DBRequest.DB_FIND_NEARBY_PLAYERS;
+        params.userId_ = ApplicationSharedPreferences.getInstance(this).getValue("user_id");
+        GUIManager.getObject().getNearbyPlayers(params, this);
+    }
+
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new ImagesFragment(), "Images");
@@ -357,14 +374,14 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
     }
 
     @Override
-    public void onWifiDeviceClick(WifiP2PRemoteDevice remoteDevice) {
+    public void onWifiDeviceClick(final MBNearbyPlayer remoteDevice) {
         final Dialog dialog = new Dialog(WifiDirectMainActivity.this);
         dialog.setContentView(R.layout.final_dialog_box);
         dialog.setTitle("Transfer File ... ");
-        final WifiP2pDevice device = remoteDevice.getDevice();
+//        final WifiP2pDevice device = remoteDevice.getDevice();
 
         TextView textViewName = (TextView) dialog.getWindow().findViewById(R.id.sendmessgae);
-        textViewName.setText("Are You Sure Want to Send Below Files to  " + device.deviceName + " ?");
+        textViewName.setText("Are You Sure Want to Send Below Files to  " + remoteDevice.getPlayerName() + " ?");
 
         if (!ImageCache.canShowImage()) {
             LinearLayout layout = (LinearLayout) dialog.getWindow().findViewById(R.id.layout_image_final_checkbox);
@@ -413,7 +430,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
                 if (imageCheckbox.isChecked()) {
                     for (String check : ImageCache.getImageCheckBox().keySet()) {
                         if (ImageCache.getImageCheckBox(check)) {
-                            ImageCache.putUri(device.deviceAddress, Uri.parse(check));
+                            ImageCache.putUri(remoteDevice.getEmail(), Uri.parse(check));
                             ImageCache.setImageCheckBoxValue(check, false);
                         }
                     }
@@ -427,7 +444,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
                 if (audioCheckbox.isChecked()) {
                     for (String check : ImageCache.getAudioCheckBox().keySet()) {
                         if (ImageCache.getAudioCheckBox(check)) {
-                            ImageCache.putUri(device.deviceAddress, Uri.parse(check));
+                            ImageCache.putUri(remoteDevice.getEmail(), Uri.parse(check));
                             ImageCache.setAudioCheckBoxValue(check, false);
                         }
                     }
@@ -443,7 +460,7 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
                 if (videoCheckbox.isChecked()) {
                     for (String check : ImageCache.getVideoCheckBox().keySet()) {
                         if (ImageCache.getVideoCheckBox(check)) {
-                            ImageCache.putUri(device.deviceAddress, Uri.parse(check));
+                            ImageCache.putUri(remoteDevice.getEmail(), Uri.parse(check));
                             ImageCache.setVideoCheckBoxValue(check, false);
                         }
                     }
@@ -462,19 +479,19 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
 
                 ImageCache.setContext(WifiDirectMainActivity.this);
 
-                Log.d(TAG, "onClick:  size of file " + ImageCache.getUriList(device.deviceAddress));
+                Log.d(TAG, "onClick:  size of file " + ImageCache.getUriList(remoteDevice.getEmail()));
                 final List<Uri> listSendFiless = new ArrayList<Uri>();
-                for (Uri uri : ImageCache.getUriList(device.deviceAddress)) {
+                for (Uri uri : ImageCache.getUriList(remoteDevice.getEmail())) {
                     listSendFiless.add(uri);
                 }
 
-                SenderThread sender = new SenderThread(device, listSendFiless);
-                sender.start();
+                SenderThread sender = new SenderThread(remoteDevice, listSendFiless);
+                sender.connect();
 
                 // ConnectedThread connectedThread = new ConnectedThread(device, listSendFiless);
                 Log.d(TAG, "onDrag: Started Without sending Request");
                 // connectedThread.start();
-                ImageCache.getUriList(device.deviceAddress).clear();
+                ImageCache.getUriList(remoteDevice.getEmail()).clear();
 
                 NotificationManagerCompat.from(WifiDirectMainActivity.this).cancelAll();
                 dialog.dismiss();
@@ -494,43 +511,55 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         dialog.show();
     }
 
-    private class SenderThread extends Thread {
+    private class SenderThread {
         private List<Uri> filesToSend;
-        private WifiP2pDevice device;
+        private MBNearbyPlayer device;
 
-        SenderThread(WifiP2pDevice device, List<Uri> filesToSend) {
+        SenderThread(MBNearbyPlayer device, List<Uri> filesToSend) {
             this.filesToSend = filesToSend;
             this.device = device;
         }
 
-        @Override
-        public void run() {
-            if( !WifiDirectService.getInstance(WifiDirectMainActivity.this).isSocketConnectedWithHost(device.deviceName) ) {
-                WifiDirectService.getInstance(WifiDirectMainActivity.this).connectWithWifiAddress(device.deviceAddress, new DeviceConnectionListener() {
-                    @Override
-                    public void onDeviceConnected(boolean isConnected) {
-                        if (isConnected) {
-                            setSocketListeners(filesToSend);
-                        }
+        public void connect() {
+            UtilsHandler.showProgressDialog("Removing previous connection and reconnecting with " + device.getPlayerName());
+
+            WifiDirectService.getInstance(WifiDirectMainActivity.this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
+                @Override
+                public void connectionRemoved(boolean isDisconnected) {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                });
-            }
-            else {
-                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().sendFiles(filesToSend);
-            }
+                    UtilsHandler.dismissProgressDialog();
+
+                    WifiDirectService.getInstance(WifiDirectMainActivity.this).connect(device.getEmail(), new DeviceConnectionListener() {
+                        @Override
+                        public void onDeviceConnected(boolean isConnected) {
+                            if (isConnected) {
+                                setSocketListeners(filesToSend);
+                            } else {
+                                Toast.makeText(WifiDirectMainActivity.this, "Could not connect with " + device.getPlayerName(), Toast.LENGTH_SHORT);
+                            }
+                        }
+                    });
+                }
+            });
         }
     }
 
     private void setSocketListeners(final List<Uri> listSendFiless) {
-        WifiDirectService.getInstance(WifiDirectMainActivity.this).setSocketConnectionListener(new SocketConnectionListener() {
+        GUIManager.getObject().setSocketEventListener(new ISocketEventListener() {
             @Override
-            public void socketConnected(boolean isClient, String remoteDeviceAddress) {
-                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().sendFiles(listSendFiless);
+            public void socketInitialized(String remoteSocketAddress) {
+                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().sendFiles(remoteSocketAddress, Modules.FILE_SHARING, listSendFiless);
             }
 
             @Override
-            public void socketClosed() {
-
+            public void socketDiconnected() {
+                if (!WifiDirectMainActivity.this.isFinishing() || !WifiDirectMainActivity.this.isDestroyed()) {
+                    Toast.makeText(WifiDirectMainActivity.this, "Device is not connected, please try again.", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
@@ -543,17 +572,16 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        closeWifiP2PSocketsIfAny();
     }
 
     private void closeWifiP2PSocketsIfAny() {
-        WifiDirectService.getInstance(this).getMessageHandler().sendMessage(new String("NowClosing").getBytes());
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().closeWifiSocket();
-            }
-        }, 1000);
+//        WifiDirectService.getInstance(this).getMessageHandler().sendMessage(new String("NowClosing").getBytes());
+//        new Handler().postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                WifiDirectService.getInstance(WifiDirectMainActivity.this).getMessageHandler().closeWifiSocket();
+//            }
+//        }, 1000);
     }
 
     private void removeWifiP2PConnection() {
@@ -575,5 +603,22 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
                 getApplicationContext().deleteFile(file.getName());
             }
         }
+    }
+
+    @Override
+    public void onDataAvailable(int resCode, List<?> data) {
+        if (resCode == MobiMix.DBResponse.DB_RES_FIND_NEARBY_PLAYERS) {
+            List<MBNearbyPlayer> players = (List<MBNearbyPlayer>) data;
+
+            this.listUsers.clear();
+            this.listUsers.addAll(players);
+
+            deviceAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onDataFailure() {
+        Utils.showErrorDialog(this, "Players could not be retrived, Please try after some time.");
     }
 }

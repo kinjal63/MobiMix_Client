@@ -64,7 +64,6 @@ public class ReadFiles {
         try {
             if (context.checkCallingOrSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && context.checkCallingOrSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 
-
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
                 DataInputStream dis = new DataInputStream(bis);
                 int fileCount = dis.readInt();

@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/xml_checkbox_background"
             android:layout_alignParentRight="true"
-            android:theme="@+style/MyCheckBox"/>
+            android:theme="@style/MyCheckBox"/>
     </RelativeLayout>
 
     <ProgressBar

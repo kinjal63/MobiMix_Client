@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.core.BluetoothService;
 
 /**
@@ -22,6 +23,7 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         bluetoothService = BluetoothService.getInstance();
+        MobiMixApplication.getInstance().registerActivity(this);
         super.onCreate(savedInstanceState);
     }
 

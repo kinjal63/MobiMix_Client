@@ -5,6 +5,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Vector;
 
 /**
  * Created by KP49107 on 11-04-2017.
@@ -20,27 +21,33 @@ public class SocketHeartBeat extends Thread {
 
     @Override
     public void run() {
-        Socket socketToMonitor = wifiSocketManager.getConnectedSocket();
-        InetAddress address = socketToMonitor.getInetAddress();
+        Vector<Socket> socketsToMonitor = wifiSocketManager.getConnectedSocket();
 
         while (isSocketConnected) {
             try {
                 Thread.sleep(5000);
-                if (address.isReachable(2500)) {
-                    wifiSocketManager.sendHeartBeat();
-                    continue;
+                for(Socket socket : socketsToMonitor) {
+                    InetAddress address = socket.getInetAddress();
+                    if (address.isReachable(2500)) {
+                        wifiSocketManager.sendHeartBeat();
+                        continue;
+                    }
+                    else {
+                        System.out.println("Socket disconnected event is sent from SocketHearBeat");
+                        Log.d(TAG, "Remote device + " + address.getHostAddress() + " is not reachable");
+                        this.wifiSocketManager.closeSocket();
+                    }
                 }
-                isSocketConnected = false;
             } catch (IOException ie) {
                 ie.printStackTrace();
-                Log.d(TAG, "Remote device + " + address.getHostAddress() + " is not reachable");
             } catch (InterruptedException i) {
                 i.printStackTrace();
             }
             finally {
-                if(!isSocketConnected) {
-                    System.out.println("Socket disconnected event is sent from SocketHearBeat");
-                    this.wifiSocketManager.socketClosed();
+                isSocketConnected = false;
+                socketsToMonitor.clear();
+                if(!this.isInterrupted()) {
+                    this.interrupt();
                 }
             }
         }

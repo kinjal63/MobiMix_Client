@@ -16,6 +16,9 @@ public class MobiMix {
         public static final int DB_FIND_MUTUAL_GAMES = 102;
         public static final int DB_UPDATE_GAME_TABLE = 103;
         public static final int DB_FIND_GAME_FROM_ID = 104;
+        public static final int DB_READ_GAME_TABLES = 105;
+        public static final int DB_UPDATE_GAME_TABLE_BATCH = 106;
+        public static final int DB_DELETE_GAME_PARTICIPANTS = 107;
     }
 
     public interface DBResponse {
@@ -48,8 +51,21 @@ public class MobiMix {
         public static final int EVENT_GAME_QUEUED_USER = 311;
         //set an event to send game request to queued users
         public static final int EVENT_GAME_REQUEST_TO_QUEUED_USERS = 312;
+        public static final int EVENT_GAME_REQUEST_TO_USERS = 313;
+        public static final int EVENT_GAME_READ_TABLE_DATA = 314;
+        public static final int EVENT_GAME_QUEUED_USER_ACK = 315;
+
+        public static final int EVENT_GAME_CONNECTION_CLOSED = 350;
+
+        public static final int EVENT_SOCKET_INITIALIZED = 351;
+        public static final int EVENT_SOCKET_DISCONNECTED = 352;
 
         // Bluetooth events
         public static final int EVENT_GAME_START = -300;
+    }
+
+    public interface ScoketEvents {
+        public static final String EVENT_BUSINESSCARD_RECEIVED = "BusinessCard_Received";
+        public static final String EVENT_FILE_RECEIVED = "File_Received";
     }
 }

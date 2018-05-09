@@ -16,11 +16,19 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+import io.connection.bluetooth.Database.DBParams;
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.activity.gui.GUIManager;
+import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
@@ -31,12 +39,17 @@ import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
 import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.NetworkType;
+import io.connection.bluetooth.utils.ApplicationSharedPreferences;
+import io.connection.bluetooth.utils.Constants;
+import io.connection.bluetooth.utils.GameConstants;
+import io.connection.bluetooth.utils.Utils;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by songline on 26/08/16.
  */
-public class DeviceListActivityChat extends BaseActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
+public class DeviceListActivityChat extends BaseActivity implements SearchView.OnQueryTextListener,
+        DeviceClickListener, IDBResponse {
     private static final String TAG = "MainActivity";
 
     BluetoothDeviceAdapter bluetoothDeviceAdapter;
@@ -45,7 +58,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     RecyclerView deviceLayout;
     private ArrayList<BluetoothRemoteDevice> listBluetoothDevices = new ArrayList<>();
 
-    private ArrayList<WifiP2PRemoteDevice> listWifiP2PDevices = new ArrayList<>();
+    private ArrayList<MBNearbyPlayer> listUsers = new ArrayList<>();
 
     static Context mContext;
     private SearchView searchView;
@@ -65,6 +78,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
         mContext = this;
         ImageCache.setContext(mContext);
 
+
         if( getIntent().getStringExtra("networkType") != null &&
                 getIntent().getStringExtra("networkType").equalsIgnoreCase(NetworkType.BLUETOOTH.name()))
         {
@@ -75,6 +89,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
         {
             initWifiDirect();
         }
+        getNearByPlayers();
 
         deviceLayout = (RecyclerView) findViewById(R.id.list_chat);
         setDeviceLayout(deviceLayout);
@@ -127,12 +142,18 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
         }
     }
 
+    private void getNearByPlayers() {
+        DBParams params = new DBParams();
+        params.event_ = MobiMix.DBRequest.DB_FIND_NEARBY_PLAYERS;
+        params.userId_ = ApplicationSharedPreferences.getInstance(this).getValue("user_id");
+        GUIManager.getObject().getNearbyPlayers(params, this);
+    }
+
     private void initBluetooth() {
         networkType = NetworkType.BLUETOOTH;
 
         bluetoothService.setClassName(DeviceListActivityChat.class.getSimpleName());
 
-        listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
         bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
         bluetoothDeviceAdapter.setDeviceClickListener(this);
 
@@ -158,20 +179,19 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
 
         WifiDirectService.getInstance(this).setModule(Modules.CHAT);
 
-        listWifiP2PDevices.addAll(WifiDirectService.getInstance(this).getWifiP2PDeviceList());
-        wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listWifiP2PDevices);
+        wifiDeviceAdapter = new WifiP2PDeviceAdapter(this, listUsers);
         wifiDeviceAdapter.setDeviceClickListener(this);
 
         WifiDirectService.getInstance(this).setClassName(DeviceListActivityChat.class.getSimpleName());
-        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
-            @Override
-            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
-                listWifiP2PDevices.clear();
-                listWifiP2PDevices.addAll(devices);
-
-                wifiDeviceAdapter.notifyDataSetChanged();
-            }
-        });
+//        WifiDirectService.getInstance(this).setNearByDeviceFoundCallback(new NearByDeviceFound() {
+//            @Override
+//            public void onDevicesAvailable(Collection<WifiP2PRemoteDevice> devices) {
+//                listWifiP2PDevices.clear();
+//                listWifiP2PDevices.addAll(devices);
+//
+//                wifiDeviceAdapter.notifyDataSetChanged();
+//            }
+//        });
     }
 
     @Override
@@ -200,7 +220,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     }
 
     @Override
-    public void onWifiDeviceClick(WifiP2PRemoteDevice device) {
+    public void onWifiDeviceClick(MBNearbyPlayer device) {
         Intent intent = new Intent();
 
         intent.setClass(mContext, WifiP2PChatActivity.class);
@@ -225,14 +245,21 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
 //        closeWifiP2PSocketsIfAny();
     }
 
-    private void closeWifiP2PSocketsIfAny() {
-        WifiDirectService.getInstance(this).getMessageHandler().sendMessage(new String("NowClosing").getBytes());
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                WifiDirectService.getInstance(DeviceListActivityChat.this).getMessageHandler().socketClosed();
-            }
-        }, 1000);
+    @Override
+    public void onDataAvailable(int resCode, List<?> data) {
+        if (resCode == MobiMix.DBResponse.DB_RES_FIND_NEARBY_PLAYERS) {
+            List<MBNearbyPlayer> players = (List<MBNearbyPlayer>) data;
+
+            this.listUsers.clear();
+            this.listUsers.addAll(players);
+
+            wifiDeviceAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onDataFailure() {
+        Utils.showErrorDialog(this, "Players could not be retrived, Please try after some time.");
     }
 }
 

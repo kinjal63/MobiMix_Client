@@ -40,6 +40,9 @@ public class GameRequest implements Parcelable {
     @SerializedName("wifi_address")
     private String wifiAddress;
 
+    @SerializedName("socket_address")
+    private String socketAddress;
+
     public String getBluetoothAddress() {
         return bluetoothAddress;
     }
@@ -120,6 +123,14 @@ public class GameRequest implements Parcelable {
         this.gamePackageName = gamePackageName;
     }
 
+    public String getSocketAddress() {
+        return socketAddress;
+    }
+
+    public void setSocketAddress(String socketAddress) {
+        this.socketAddress = socketAddress;
+    }
+
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return this.clone();
@@ -142,6 +153,7 @@ public class GameRequest implements Parcelable {
         bundle.putString("wifi_address", this.wifiAddress);
         bundle.putInt("notification_type", this.notificationType);
         bundle.putInt("connection_type", this.connectionType);
+        bundle.putString("socket_address", this.socketAddress);
         dest.writeBundle(bundle);
     }
 
@@ -158,7 +170,7 @@ public class GameRequest implements Parcelable {
             gameRequest.setBluetoothAddress(bundle.getString("bluetooth_address"));
             gameRequest.setWifiAddress(bundle.getString("wifi_address"));
             gameRequest.setNotificationType(bundle.getInt("notification_type"));
-
+            gameRequest.setSocketAddress(bundle.getString("socket_address"));
             return gameRequest;
         }
 
