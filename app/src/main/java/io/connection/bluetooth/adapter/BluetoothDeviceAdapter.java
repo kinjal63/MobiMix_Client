@@ -17,15 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.R;
-import io.connection.bluetooth.core.BluetoothService;
-import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.activity.BusinessCardListActivityUser;
 import io.connection.bluetooth.activity.DeviceListActivityChat;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.activity.MainActivity;
-import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.enums.Modules;
 
 /**
@@ -33,13 +32,12 @@ import io.connection.bluetooth.enums.Modules;
  */
 public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDeviceAdapter.ViewHolder> implements Filterable {
     private Context mContext;
-    List<BluetoothRemoteDevice> devices = new ArrayList<>();
-    List<BluetoothRemoteDevice> selectedDevices = new ArrayList<>();
+    List<MBNearbyPlayer> devices = new ArrayList<>();
+    List<MBNearbyPlayer> selectedDevices = new ArrayList<>();
     FriendFilter friendFilter;
-    private ConnectedThread connectedThread;
     private DeviceClickListener clickListener;
 
-    public BluetoothDeviceAdapter(Context mContext, List<BluetoothRemoteDevice> devices) {
+    public BluetoothDeviceAdapter(Context mContext, List<MBNearbyPlayer> devices) {
         this.mContext = mContext;
         this.devices = devices;
     }
@@ -61,7 +59,7 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (holder.getItemViewType() == 0) {
-            holder.nameTV.setText(devices.get(position).getName());
+            holder.nameTV.setText(devices.get(position).getPlayerName());
             holder.chkSelectUser.setTag(devices.get(position));
         }
     }
@@ -79,7 +77,7 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
         return friendFilter;
     }
 
-    public List<BluetoothRemoteDevice> getBluetoothDevices() {
+    public List<MBNearbyPlayer> getBluetoothDevices() {
         return selectedDevices;
     }
 
@@ -89,15 +87,15 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
         protected FilterResults performFiltering(CharSequence constraint) {
 
             FilterResults filterResults = new FilterResults();
-            Map<BluetoothRemoteDevice, String> map = new HashMap<>();
+            Map<MBNearbyPlayer, String> map = new HashMap<>();
             if (constraint != null && constraint.length() > 0 && constraint.toString().trim().length() > 0) {
                 ArrayList<String> tempList = new ArrayList<String>();
                 int i = 0;
                 // search content in friend list
-                for (BluetoothRemoteDevice device : devices) {
-                    if (device.getName().toLowerCase().contains(constraint.toString().toLowerCase())) {
+                for (MBNearbyPlayer device : devices) {
+                    if (device.getPlayerName().toLowerCase().contains(constraint.toString().toLowerCase())) {
                         //tempList.add(user);
-                        map.put(device, device.getName());
+                        map.put(device, device.getPlayerName());
                         i++;
                     } else {
                         i++;
@@ -107,8 +105,8 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
                 filterResults.values = map;
             } else {
                 int i = 0;
-                for (BluetoothRemoteDevice device : devices) {
-                    map.put(devices.get(i++), device.getName());
+                for (MBNearbyPlayer device : devices) {
+                    map.put(devices.get(i++), device.getPlayerName());
                 }
                 filterResults.count = map.size();
                 filterResults.values = map;
@@ -125,7 +123,7 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
         @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            Map<BluetoothRemoteDevice, String> objDeviceMap = (Map) results.values;
+            Map<MBNearbyPlayer, String> objDeviceMap = (Map) results.values;
             devices.clear();
             devices.addAll(objDeviceMap.keySet());
             notifyDataSetChanged();
@@ -138,7 +136,7 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
         ImageView imageView;
         CheckBox chkSelectUser;
         private Context context;
-        private BluetoothRemoteDevice device;
+        private MBNearbyPlayer device;
 
         public ViewHolder(View itemView, Context context, int type) {
             super(itemView);
@@ -152,7 +150,7 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
 
         @Override
         public void onClick(View v) {
-            device = (BluetoothRemoteDevice) v.getTag();
+            device = (MBNearbyPlayer) v.getTag();
             ImageCache.setContext(context);
 
             BluetoothService bluetoothService = BluetoothService.getInstance();
@@ -169,16 +167,16 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
 
             selectedDevices.add(device);
 
-//            if(BluetoothDeviceAdapter.this.clickListener != null) {
-//                BluetoothDeviceAdapter.this.clickListener.onBluetoothDeviceClick(device);
-//            }
+            if(BluetoothDeviceAdapter.this.clickListener != null) {
+                BluetoothDeviceAdapter.this.clickListener.onBluetoothDeviceClick(device);
+            }
 
             NotificationManagerCompat.from(context).cancelAll();
 
         }
     }
 
-    public List<BluetoothRemoteDevice> getSelectedDevices() {
+    public List<MBNearbyPlayer> getSelectedDevices() {
         return selectedDevices;
     }
 

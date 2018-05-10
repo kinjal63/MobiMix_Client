@@ -71,6 +71,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     private String className = "";
     private Modules module = Modules.NONE;
 
+    private WifiManager wifiManager;
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
     private IntentFilter mIntentFilter;
@@ -110,7 +111,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     public void initialize() {
 //        this.messageHandler = new MessageHandler(mContext);
 
-        WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+        wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         if (!wifiManager.isWifiEnabled()) {
             wifiManager.setWifiEnabled(true);
         }
@@ -242,6 +243,14 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 if (listener != null) {
                     listener.onDeviceConnected(false);
                 }
+//                wifiManager.setWifiEnabled(false);
+//                try {
+//                    Thread.sleep(1000);
+//                }
+//                catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                wifiManager.setWifiEnabled(true);
             }
         });
     }
@@ -620,11 +629,16 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
     }
 
     public void connect(String deviceName, DeviceConnectionListener listener) {
+        boolean isDeviceNearby = false;
         HashSet<WifiP2PRemoteDevice> devices = wifiDirectService.getWifiP2PDeviceList();
         for (WifiP2PRemoteDevice remoteDevice : devices) {
             if (remoteDevice.getDevice().deviceName.contains(deviceName)) {
+                isDeviceNearby = true;
                 connectWithWifiAddress(remoteDevice.getDevice().deviceAddress, listener);
             }
+        }
+        if(!isDeviceNearby) {
+            listener.onDeviceConnected(false);
         }
     }
 

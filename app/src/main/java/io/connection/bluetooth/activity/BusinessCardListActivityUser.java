@@ -37,6 +37,7 @@ import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.actionlisteners.ISocketEventListener;
 import io.connection.bluetooth.activity.gui.GUIManager;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.core.IWifiDisconnectionListener;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.WifiDirectService;
@@ -77,7 +78,6 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
     private SearchView searchView;
 
     private ArrayList<MBNearbyPlayer> listUsers = new ArrayList<>();
-    private ArrayList<BluetoothRemoteDevice> listBluetoothDevices = new ArrayList<>();
     private NetworkType networkType;
 
     @Override
@@ -181,8 +181,7 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
 
         bluetoothService.setClassName(BusinessCardListActivityUser.class.getSimpleName());
 
-//        listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
-        bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+        bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listUsers);
         bluetoothDeviceAdapter.setDeviceClickListener(this);
 
 //        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
@@ -247,25 +246,22 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
         super.onDestroy();
     }
 
-    private void sendBusinessCard() {
+    private void sendBusinessCard(String socketAddress) {
         UtilsHandler.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(BusinessCardListActivityUser.this, "Sending business card to " + p2pDevice.deviceName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(BusinessCardListActivityUser.this, "Sending business card", Toast.LENGTH_SHORT).show();
             }
         });
 
-        SharedPreferences prefs = ImageCache.getContext().getSharedPreferences("businesscard", Context.MODE_PRIVATE);
-        String socketAddr = prefs.getString("socket_address", "");
-
-        WifiDirectService.getInstance(this).getMessageHandler().sendBusinessCard(socketAddr, Modules.BUSINESS_CARD);
+        WifiDirectService.getInstance(this).getMessageHandler().sendBusinessCard(socketAddress, Modules.BUSINESS_CARD);
     }
 
     private void setSocketListeners() {
         GUIManager.getObject().setSocketEventListener(new ISocketEventListener() {
             @Override
             public void socketInitialized(String remoteSocketAddress) {
-                sendBusinessCard();
+                sendBusinessCard(remoteSocketAddress);
             }
 
             @Override
@@ -279,10 +275,10 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
 
     @Override
     public void onWifiDeviceClick(final MBNearbyPlayer device) {
-        UtilsHandler.showProgressDialog("Removing previous connection and reconnecting with " + device.getPlayerName());
 
         WifiP2pDevice localDevice = LocalP2PDevice.getInstance().getLocalDevice();
         if (localDevice.status == WifiP2pDevice.CONNECTED) {
+            UtilsHandler.showProgressDialog("Removing previous connection and connecting with " + device.getPlayerName());
             WifiDirectService.getInstance(this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
                 @Override
                 public void connectionRemoved(boolean isDisconnected) {
@@ -309,6 +305,7 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
             });
         }
         else {
+            UtilsHandler.showProgressDialog("Trying to establish connection with " + device.getPlayerName());
             WifiDirectService.getInstance(BusinessCardListActivityUser.this).connect(device.getEmail(), new DeviceConnectionListener() {
                 @Override
                 public void onDeviceConnected(boolean isConnected) {
@@ -324,10 +321,13 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
     }
 
     @Override
-    public void onBluetoothDeviceClick(BluetoothRemoteDevice... devices) {
-        for(BluetoothRemoteDevice remoteDevice : devices) {
-            connectedThread = new ConnectedBusinessThread(remoteDevice.getDevice());
-            connectedThread.start();
+    public void onBluetoothDeviceClick(MBNearbyPlayer remoteDevice) {
+        List<BluetoothRemoteDevice> availableBluetoothDevices = BluetoothService.getInstance().getBluetoothDevices();
+        for(BluetoothRemoteDevice device : availableBluetoothDevices){
+            if(device.getName().equalsIgnoreCase(remoteDevice.getEmail())) {
+                connectedThread = new ConnectedBusinessThread(device.getDevice());
+                connectedThread.start();
+            }
         }
         NotificationManagerCompat.from(this).cancelAll();
     }

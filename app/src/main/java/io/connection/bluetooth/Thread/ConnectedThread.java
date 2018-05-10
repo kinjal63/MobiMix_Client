@@ -81,7 +81,6 @@ public class ConnectedThread extends Thread implements Serializable {
                 });
             }
         } catch (Exception e) {
-
 //            DeviceChatActivity.disconnectedChat(device.getAddress());
             try {
                 mmSocket.close();
@@ -137,11 +136,7 @@ class ReadingFile extends AsyncTask<Void, Integer, Void> {
             Log.d(TAG, "onPostExecute: " + e.getMessage());
         }
         super.onPostExecute(aVoid);
-
-
     }
-
-
 }
 
 

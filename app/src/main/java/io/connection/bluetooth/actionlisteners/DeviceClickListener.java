@@ -8,6 +8,6 @@ import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
  */
 
 public interface DeviceClickListener {
-    void onBluetoothDeviceClick(BluetoothRemoteDevice... device);
+    void onBluetoothDeviceClick(MBNearbyPlayer device);
     void onWifiDeviceClick(MBNearbyPlayer device);
 }

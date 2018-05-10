@@ -42,15 +42,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Thread.ConnectedBusinessThread;
+import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.Thread.ThreadConnection;
+import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.adapter.BluetoothDeviceAdapter;
 import io.connection.bluetooth.adapter.model.BluetoothRemoteDevice;
+import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.enums.NetworkType;
 import io.connection.bluetooth.utils.UtilsHandler;
 
-public class MainActivity extends BaseActivity implements SearchView.OnQueryTextListener {
+public class MainActivity extends BaseActivity implements SearchView.OnQueryTextListener, DeviceClickListener {
     private static final String TAG = "MainActivity";
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -595,6 +600,17 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
                 getApplicationContext().deleteFile(file.getName());
             }
         }
+    }
 
+    @Override
+    public void onBluetoothDeviceClick(MBNearbyPlayer remoteDevice) {
+        List<BluetoothRemoteDevice> availableBluetoothDevices = BluetoothService.getInstance().getBluetoothDevices();
+        for(BluetoothRemoteDevice device : availableBluetoothDevices){
+            if(device.getName().equalsIgnoreCase(remoteDevice.getEmail())) {
+                ConnectedThread connectedThread = new ConnectedBusinessThread(device.getDevice());
+                connectedThread.start();
+            }
+        }
+        NotificationManagerCompat.from(this).cancelAll();
     }
 }
