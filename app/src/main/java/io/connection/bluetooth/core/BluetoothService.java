@@ -197,9 +197,9 @@ public class BluetoothService {
         if( !bluetoothDeviceMap.containsKey(device.getDevice().getAddress()) ) {
             bluetoothDeviceMap.put(device.getDevice().getName(), device);
         }
-        if( nearbyDeviceFoundAction != null ) {
-            nearbyDeviceFoundAction.onBluetoothDeviceAvailable(device);
-        }
+//        if( nearbyDeviceFoundAction != null ) {
+//            nearbyDeviceFoundAction.onBluetoothDeviceAvailable(device);
+//        }
         NetworkManager.getInstance().setAvailabilityForBluetoothDevice(device.getName());
     }
 

@@ -62,7 +62,7 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
     BluetoothDeviceAdapter deviceAdapter;
     RecyclerView deviceLayout;
     private SearchView searchView;
-    private ArrayList<BluetoothRemoteDevice> listBluetoothDevices = new ArrayList<>();
+    private ArrayList<MBNearbyPlayer> listBluetoothDevices = new ArrayList<>();
     private static BottomSheetBehavior mBottomSheetBehavior;
     Context mContext;
     Activity activity;
@@ -283,24 +283,24 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
 
         bluetoothService.setClassName(MainActivity.class.getSimpleName());
 
-        listBluetoothDevices.addAll(bluetoothService.getBluetoothDevices());
         deviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
+        deviceAdapter.setDeviceClickListener(this);
 
-        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
-            @Override
-            public void onBluetoothDeviceAvailable(BluetoothRemoteDevice device) {
-                listBluetoothDevices.add(device);
-
-                ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
-
-                UtilsHandler.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        deviceAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        });
+//        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
+//            @Override
+//            public void onBluetoothDeviceAvailable(BluetoothRemoteDevice device) {
+//                listBluetoothDevices.add(device);
+//
+//                ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
+//
+//                UtilsHandler.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        deviceAdapter.notifyDataSetChanged();
+//                    }
+//                });
+//            }
+//        });
     }
 
     @Override
@@ -479,8 +479,9 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
                 CheckBox audioCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.audio_final_checkbox);
                 CheckBox videoCheckbox = (CheckBox) dialog.getWindow().findViewById(R.id.video_final_checkbox);
 
-                for(BluetoothRemoteDevice remoteDevice : deviceAdapter.getSelectedDevices()) {
-                    BluetoothDevice device = remoteDevice.getDevice();
+                for(MBNearbyPlayer remoteDevice : deviceAdapter.getSelectedDevices()) {
+                    BluetoothDevice device = bluetoothService.getBluetoothDevice(remoteDevice.getEmail()).getDevice();
+//                    MBNearbyPlayer device = remoteDevice.getEmail();
                     if (imageCheckbox.isChecked()) {
                         for (String check : ImageCache.getImageCheckBox().keySet()) {
                             if (ImageCache.getImageCheckBox(check)) {
@@ -528,7 +529,6 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
                     ImagesFragment.countText.setText("");
                     // ImagesFragment.mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
                     //ImagesFragment.mBottomSheetBehaviorforFooter.setState(BottomSheetBehavior.STATE_COLLAPSED);
-
 
                     ImageCache.setContext(MainActivity.this);
                     if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
@@ -607,10 +607,15 @@ public class MainActivity extends BaseActivity implements SearchView.OnQueryText
         List<BluetoothRemoteDevice> availableBluetoothDevices = BluetoothService.getInstance().getBluetoothDevices();
         for(BluetoothRemoteDevice device : availableBluetoothDevices){
             if(device.getName().equalsIgnoreCase(remoteDevice.getEmail())) {
-                ConnectedThread connectedThread = new ConnectedBusinessThread(device.getDevice());
+                ConnectedThread connectedThread = new ConnectedThread(device.getDevice());
                 connectedThread.start();
             }
         }
         NotificationManagerCompat.from(this).cancelAll();
+    }
+
+    @Override
+    public void onWifiDeviceClick(MBNearbyPlayer device) {
+
     }
 }

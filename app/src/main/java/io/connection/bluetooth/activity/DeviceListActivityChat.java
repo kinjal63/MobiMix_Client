@@ -56,7 +56,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     WifiP2PDeviceAdapter wifiDeviceAdapter;
 
     RecyclerView deviceLayout;
-    private ArrayList<BluetoothRemoteDevice> listBluetoothDevices = new ArrayList<>();
+    private ArrayList<MBNearbyPlayer> listBluetoothDevices = new ArrayList<>();
 
     private ArrayList<MBNearbyPlayer> listUsers = new ArrayList<>();
 
@@ -157,21 +157,21 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
         bluetoothDeviceAdapter = new BluetoothDeviceAdapter(this, listBluetoothDevices);
         bluetoothDeviceAdapter.setDeviceClickListener(this);
 
-        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
-            @Override
-            public void onBluetoothDeviceAvailable(BluetoothRemoteDevice device) {
-                listBluetoothDevices.add(device);
-
-                ChatDataConversation.putUserName(device.getDevice().getAddress(), device.getName());
-
-                UtilsHandler.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        bluetoothDeviceAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        });
+//        bluetoothService.setNearByBluetoothDeviceAction(new NearByBluetoothDeviceFound() {
+//            @Override
+//            public void onBluetoothDeviceAvailable(MBNearbyPlayer device) {
+//                listBluetoothDevices.add(device);
+//
+//                ChatDataConversation.putUserName(device.getEmail(), device.getPlayerName());
+//
+//                UtilsHandler.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        bluetoothDeviceAdapter.notifyDataSetChanged();
+//                    }
+//                });
+//            }
+//        });
     }
 
     private void initWifiDirect() {
@@ -230,7 +230,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
     }
 
     @Override
-    public void onBluetoothDeviceClick(BluetoothRemoteDevice... device) {
+    public void onBluetoothDeviceClick(MBNearbyPlayer device) {
         Intent intent = new Intent();
 
         intent.setClass(mContext, DeviceChatActivity.class);

@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.actionlisteners.ISocketEventListener;
@@ -60,7 +61,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
     static ChatAdapter chatAdapter;
     private static TextView chatUserName;
     private static TextView connectionStatus;
-    private static WifiP2PRemoteDevice device;
+    private static MBNearbyPlayer device;
     private MessageHandler handler;
     private String socketAddress;
     private boolean isNeedToReconnect = true;
@@ -80,7 +81,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
      */
     private StringBuffer mOutStringBuffer;
 
-    private static String remoteDeviceAddress;
+    private static String remoteDeviceName;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -99,12 +100,11 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         context = this;
 
         Intent intent = getIntent();
-        device = intent.getParcelableExtra("device");
-        remoteDeviceAddress = device.getDevice().deviceAddress;
+        device = (MBNearbyPlayer)intent.getSerializableExtra("device");
+        remoteDeviceName = device.getEmail();
         socketAddress = intent.getStringExtra("socketAddress");
-//        remoteDeviceAddress = intent.getStringExtra("remoteDeviceAddress");
 
-        chatUserName.setText(ChatDataConversation.getUserName(device.getDevice().deviceName));
+        chatUserName.setText(ChatDataConversation.getUserName(device.getPlayerName()));
         connectionStatus.setText("Connecting...");
 
         handler = WifiDirectService.getInstance(this).getMessageHandler();
@@ -115,7 +115,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             isNeedToReconnect = intent.getBooleanExtra("isNeedToReconnect", true);
         }
         if(isNeedToReconnect) {
-            UtilsHandler.showProgressDialog("Removing previous connection and reconnecting with " + device.getDevice().deviceName);
+            UtilsHandler.showProgressDialog("Removing previous connection and reconnecting with " + device.getPlayerName());
             WifiDirectService.getInstance(this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
                 @Override
                 public void connectionRemoved(boolean isDisconnected) {
@@ -127,7 +127,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                     }
 
                     UtilsHandler.dismissProgressDialog();
-                    WifiDirectService.getInstance(WifiP2PChatActivity.this).connectWithWifiAddress(device.getDevice().deviceAddress, new DeviceConnectionListener() {
+                    WifiDirectService.getInstance(WifiP2PChatActivity.this).connectWithWifiAddress(device.getEmail(), new DeviceConnectionListener() {
                         @Override
                         public void onDeviceConnected(boolean isConnected) {
                             if (isConnected) {
@@ -290,7 +290,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
 
         //mConversationView.setAdapter(mConversationArrayAdapter);
 
-        List<String> stringList = ChatDataConversation.getChatConversation(remoteDeviceAddress);
+        List<String> stringList = ChatDataConversation.getChatConversation(remoteDeviceName);
         if (stringList != null && stringList.size() > 0) {
             Log.d(TAG, "setupChat:  Value of " + stringList.size());
             mConversationArrayAdapter.addAll(stringList);
@@ -348,7 +348,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         if (message.length() > 0) {
             // Get the message bytes and tell the BluetoothChatService to write
             mConversationArrayAdapter.add("Me:  " + message);
-            ChatDataConversation.putChatConversation(remoteDeviceAddress, "Me:  " + message);
+            ChatDataConversation.putChatConversation(remoteDeviceName, "Me:  " + message);
             chatAdapter.notifyDataSetChanged();
 
             JSONObject jsonObject = new JSONObject();
@@ -411,7 +411,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             public void run() {
                 List<String> listofStrings = ChatDataConversation.getChatConversation(remoteDeviceName);
                 if (mConversationArrayAdapter != null) {
-                    if (remoteDeviceName.equals(remoteDeviceAddress)) {
+                    if (remoteDeviceName.equals(remoteDeviceName)) {
                         mConversationArrayAdapter.clear();
                         mConversationArrayAdapter.addAll(listofStrings);
                         chatAdapter.notifyDataSetChanged();
