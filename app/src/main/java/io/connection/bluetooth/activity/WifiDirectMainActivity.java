@@ -43,6 +43,7 @@ import io.connection.bluetooth.Api.ApiCall;
 import io.connection.bluetooth.Api.ApiClient;
 import io.connection.bluetooth.Database.DBParams;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
+import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.actionlisteners.DeviceClickListener;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
@@ -81,6 +82,8 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
         super.onCreate(savedInstanceState);
         super.onStart();
         // requestWindowFeature(Window.FEATURE_NO_TITLE);
+        MobiMixApplication.getInstance().registerActivity(this);
+
         setContentView(R.layout.activity_main);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -526,20 +529,24 @@ public class WifiDirectMainActivity extends AppCompatActivity implements SearchV
             WifiDirectService.getInstance(WifiDirectMainActivity.this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
                 @Override
                 public void connectionRemoved(boolean isDisconnected) {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    UtilsHandler.dismissProgressDialog();
-
+                    UtilsHandler.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            UtilsHandler.dismissProgressDialog();
+                        }
+                    });
                     WifiDirectService.getInstance(WifiDirectMainActivity.this).connect(device.getEmail(), new DeviceConnectionListener() {
                         @Override
                         public void onDeviceConnected(boolean isConnected) {
                             if (isConnected) {
                                 setSocketListeners(filesToSend);
                             } else {
-                                Toast.makeText(WifiDirectMainActivity.this, "Could not connect with " + device.getPlayerName(), Toast.LENGTH_SHORT);
+                                UtilsHandler.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(WifiDirectMainActivity.this, "Could not connect with " + device.getPlayerName(), Toast.LENGTH_SHORT);
+                                    }
+                                });
                             }
                         }
                     });

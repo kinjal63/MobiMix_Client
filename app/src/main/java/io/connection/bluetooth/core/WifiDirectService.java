@@ -226,9 +226,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
             @Override
             public void onSuccess() {
-                UtilsHandler.dismissProgressDialog();
-                Toast.makeText(mContext, "Wifi direct connection is established.",
-                        Toast.LENGTH_SHORT).show();
                 if (listener != null) {
                     listener.onDeviceConnected(true);
                 }
@@ -237,9 +234,6 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             @Override
             public void onFailure(int reason) {
                 System.out.println("Failure reason code:" + reason);
-                UtilsHandler.dismissProgressDialog();
-                Toast.makeText(mContext, "Connect failed. Retry.",
-                        Toast.LENGTH_SHORT).show();
                 if (listener != null) {
                     listener.onDeviceConnected(false);
                 }
@@ -398,8 +392,18 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 //                                    e.printStackTrace();
 //                                }
 //                            }
-
-                            wifiDiconnectionListener.connectionRemoved(true);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Thread.sleep(10000);
+                                    }
+                                    catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                    wifiDiconnectionListener.connectionRemoved(true);
+                                }
+                            }).start();
                         }
 
                         @Override
@@ -563,22 +567,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                         @Override
                         public void connectionRemoved(boolean isDisconnected) {
                             if (isDisconnected) {
-                                try {
-                                    new Handler().postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (players.size() > 0) {
-                                                establishConnection(players, gameInfo);
-                                            }
-                                        }
-                                    }, 5000);
-//                                    Thread.sleep(5000);
-                                }
-                                catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-
-                            } else {
+                                establishConnection(players, gameInfo);
+                            }
+                            else {
                                 Toast.makeText(mContext, "Failed to remove existing wifidirect connection. Please try again.", Toast.LENGTH_SHORT);
                             }
                         }

@@ -85,6 +85,8 @@ public class BusinessCard extends AppCompatActivity implements View.OnClickListe
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
+        MobiMixApplication.getInstance().registerActivity(this);
+
         preferences = getSharedPreferences("businesscard", MODE_PRIVATE);
         editor = preferences.edit();
         ImageCache.setContext(this);

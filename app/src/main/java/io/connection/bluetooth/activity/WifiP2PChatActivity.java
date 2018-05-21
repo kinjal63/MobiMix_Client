@@ -119,15 +119,9 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             WifiDirectService.getInstance(this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
                 @Override
                 public void connectionRemoved(boolean isDisconnected) {
-                    //                if(isDisconnected) {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
 
                     UtilsHandler.dismissProgressDialog();
-                    WifiDirectService.getInstance(WifiP2PChatActivity.this).connectWithWifiAddress(device.getEmail(), new DeviceConnectionListener() {
+                    WifiDirectService.getInstance(WifiP2PChatActivity.this).connect(device.getEmail(), new DeviceConnectionListener() {
                         @Override
                         public void onDeviceConnected(boolean isConnected) {
                             if (isConnected) {

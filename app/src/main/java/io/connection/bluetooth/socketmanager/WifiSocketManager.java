@@ -1,15 +1,13 @@
 package io.connection.bluetooth.socketmanager;
 
 import android.net.wifi.p2p.WifiP2pDevice;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Stack;
@@ -20,7 +18,6 @@ import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.SocketOperationType;
-import io.connection.bluetooth.socketmanager.modules.DataObjectOutputStream;
 import io.connection.bluetooth.socketmanager.modules.ReadBusinessCard;
 import io.connection.bluetooth.socketmanager.modules.ReadChatData;
 import io.connection.bluetooth.socketmanager.modules.ReadFiles;
@@ -37,7 +34,7 @@ public class WifiSocketManager implements Runnable {
     private SocketOperationType operationType = SocketOperationType.NONE;
     private MessageHandler handler;
     private ObjectInputStream ois;
-    private DataObjectOutputStream oos;
+    private ObjectOutputStream oos;
 
     private WifiP2PRemoteDevice remoteDevice;
     private String remoteHostAddress;
@@ -110,8 +107,6 @@ public class WifiSocketManager implements Runnable {
 
                 if (operationType == SocketOperationType.READ) {
                     startReadModule(socket);
-                } else {
-                    startWriteModule(socket);
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
@@ -158,28 +153,28 @@ public class WifiSocketManager implements Runnable {
     }
 
     public void startWriteModule(Socket socket) {
-        if (handler.isSocketConnected()) {
-            WifiDirectService wifiP2PService = handler.getWifiP2PService();
-            System.out.println("Socket is write connected 2");
-
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (wifiP2PService != null) {
-                if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
-                    SendBusinessCard businessCard = new SendBusinessCard(socket, handler);
-                    businessCard.sendCard();
-                } else if (wifiP2PService.getModule() == Modules.FILE_SHARING) {
-                    SendFiles sendFiles = new SendFiles(socket, handler);
-                    sendFiles.start();
-                }
-            }
-
-            operationType = SocketOperationType.NONE;
-//            handler.getWifiP2PService().setModule(Modules.NONE);
-        }
+//        if (handler.isSocketConnected()) {
+//            WifiDirectService wifiP2PService = handler.getWifiP2PService();
+//            System.out.println("Socket is write connected 2");
+//
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            if (wifiP2PService != null) {
+//                if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
+//                    SendBusinessCard businessCard = new SendBusinessCard(socket, handler);
+//                    businessCard.sendCard();
+//                } else if (wifiP2PService.getModule() == Modules.FILE_SHARING) {
+//                    SendFiles sendFiles = new SendFiles(socket, handler);
+//                    sendFiles.start();
+//                }
+//            }
+//
+//            operationType = SocketOperationType.NONE;
+////            handler.getWifiP2PService().setModule(Modules.NONE);
+//        }
     }
 
     public void readData() {
@@ -200,7 +195,7 @@ public class WifiSocketManager implements Runnable {
             if(sockets != null && !sockets.isEmpty()) {
                 socket = sockets.get(socketAddr);
             }
-            oos = new DataObjectOutputStream(socket.getOutputStream());
+            oos = new ObjectOutputStream(socket.getOutputStream());
 
             oos.writeObject(object.toString());
             oos.flush();
@@ -227,7 +222,7 @@ public class WifiSocketManager implements Runnable {
     public synchronized void sendToAll(Object object) {
         try {
             for(Socket socket: this.sockets.values()) {
-                oos = new DataObjectOutputStream(socket.getOutputStream());
+                oos = new ObjectOutputStream(socket.getOutputStream());
                 byte[] b = object.toString().getBytes();
 
                 oos.writeObject(object);

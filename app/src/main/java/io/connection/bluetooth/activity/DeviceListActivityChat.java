@@ -235,7 +235,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
 
         intent.setClass(mContext, DeviceChatActivity.class);
         intent.putExtra("device", device);
-        intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
+        intent.putExtra("networkType", NetworkType.BLUETOOTH.name());
         startActivity(intent);
     }
 

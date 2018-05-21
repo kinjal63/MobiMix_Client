@@ -62,19 +62,19 @@ public class WifiP2PDeviceAdapter extends RecyclerView.Adapter<WifiP2PDeviceAdap
 
             if(wifiP2PService.getClassName().equalsIgnoreCase(BusinessCardListActivityUser.class.getSimpleName())) {
                 if(module != Modules.BUSINESS_CARD) {
-                    wifiP2PService.closeSocket();
+//                    wifiP2PService.closeSocket();
                     wifiP2PService.setModule(Modules.BUSINESS_CARD);
                 }
             }
             else if(WifiDirectService.getInstance(mContext).getClassName().equalsIgnoreCase(DeviceListActivityChat.class.getSimpleName())) {
                 if(module != Modules.CHAT) {
-                    wifiP2PService.closeSocket();
+//                    wifiP2PService.closeSocket();
                     wifiP2PService.setModule(Modules.CHAT);
                 }
             }
             else if(wifiP2PService.getClassName().equalsIgnoreCase(WifiDirectMainActivity.class.getSimpleName())) {
                 if(module != Modules.FILE_SHARING) {
-                    wifiP2PService.closeSocket();
+//                    wifiP2PService.closeSocket();
                     wifiP2PService.setModule(Modules.FILE_SHARING);
                 }
             }

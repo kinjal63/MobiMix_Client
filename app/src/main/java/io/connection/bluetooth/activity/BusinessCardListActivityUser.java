@@ -282,13 +282,12 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
             WifiDirectService.getInstance(this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
                 @Override
                 public void connectionRemoved(boolean isDisconnected) {
-                    if (isDisconnected) {
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        UtilsHandler.dismissProgressDialog();
+                        UtilsHandler.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                UtilsHandler.dismissProgressDialog();
+                            }
+                        });
 
                         WifiDirectService.getInstance(BusinessCardListActivityUser.this).connect(device.getEmail(), new DeviceConnectionListener() {
                             @Override
@@ -296,12 +295,16 @@ public class BusinessCardListActivityUser extends BaseActivity implements Search
                                 if (isConnected) {
                                     setSocketListeners();
                                 } else {
-                                    Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + device.getPlayerName(), Toast.LENGTH_SHORT);
+                                    UtilsHandler.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(BusinessCardListActivityUser.this, "Could not connect with " + device.getPlayerName(), Toast.LENGTH_SHORT);
+                                        }
+                                    });
                                 }
                             }
                         });
                     }
-                }
             });
         }
         else {
