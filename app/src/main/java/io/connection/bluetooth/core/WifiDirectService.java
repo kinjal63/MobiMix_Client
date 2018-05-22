@@ -298,7 +298,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
         // Send Connection close event to GUIManager,
         Message msg = new Message();
-        msg.what = MobiMix.GameEvent.EVENT_GAME_CONNECTION_CLOSED;
+        msg.arg1 = MobiMix.GameEvent.EVENT_GAME_CONNECTION_CLOSED;
+        msg.obj = new JSONObject();
         CoreEngine.sendEventToGUI(msg);
 
         MobiMixCache.clearFromCache();

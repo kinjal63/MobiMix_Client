@@ -259,6 +259,8 @@ public class GUIManager {
                         DBParams params1 = new DBParams();
                         params1.event_ = MobiMix.DBRequest.DB_DELETE_GAME_PARTICIPANTS;
                         NetworkManager.getInstance().deleteGameParticipants(params1);
+
+                        socketEventListener = null;
                         break;
                     default:
                         break;

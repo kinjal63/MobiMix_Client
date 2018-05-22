@@ -6,6 +6,13 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pGroup;
+import android.net.wifi.p2p.WifiP2pManager;
+import android.util.Log;
+import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -20,6 +27,7 @@ import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.Domain.GameConnectionInfo;
 import io.connection.bluetooth.Domain.GameRequest;
+import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.Thread.ConnectedThread;
 import io.connection.bluetooth.Thread.GameEventAcceptThread;
@@ -27,6 +35,7 @@ import io.connection.bluetooth.Thread.GameEventConnectThread;
 import io.connection.bluetooth.Thread.MessageHandler;
 import io.connection.bluetooth.actionlisteners.BluetoothPairCallback;
 import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
+import io.connection.bluetooth.actionlisteners.DialogActionListener;
 import io.connection.bluetooth.actionlisteners.IUpdateListener;
 import io.connection.bluetooth.actionlisteners.NearByBluetoothDeviceFound;
 import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
@@ -94,7 +103,7 @@ public class BluetoothService {
     }
 
     public static BluetoothService getInstance() {
-        if(bluetoothService == null) {
+        if (bluetoothService == null) {
             bluetoothService = new BluetoothService();
         }
         return bluetoothService;
@@ -138,7 +147,7 @@ public class BluetoothService {
     }
 
     private void startBluetoothDiscoveryTimer() {
-        if(discoveryTimer != null) {
+        if (discoveryTimer != null) {
             discoveryTimer.cancel();
             discoveryTimer.purge();
         }
@@ -164,7 +173,7 @@ public class BluetoothService {
     }
 
     private synchronized void closeAllRunningThreads() {
-        if( connectedThread != null && !connectedThread.isInterrupted() ) {
+        if (connectedThread != null && !connectedThread.isInterrupted()) {
             connectedThread.cancel();
 
             connectedThread.interrupt();
@@ -182,19 +191,19 @@ public class BluetoothService {
     }
 
     public void notifyConnectEventToUser(String remoteDeviceAddress) {
-        if( this.socketConnectionListener != null ) {
+        if (this.socketConnectionListener != null) {
             this.socketConnectionListener.socketConnected(true, remoteDeviceAddress);
         }
     }
 
     public void notifyDisconnectEventToUser() {
-        if( this.socketConnectionListener != null ) {
+        if (this.socketConnectionListener != null) {
             this.socketConnectionListener.socketClosed();
         }
     }
 
     public void addRemoteBluetoothDevice(BluetoothRemoteDevice device) {
-        if( !bluetoothDeviceMap.containsKey(device.getDevice().getAddress()) ) {
+        if (!bluetoothDeviceMap.containsKey(device.getDevice().getAddress())) {
             bluetoothDeviceMap.put(device.getDevice().getName(), device);
         }
 //        if( nearbyDeviceFoundAction != null ) {
@@ -215,7 +224,7 @@ public class BluetoothService {
     }
 
     public boolean isSocketConnectedForAddress(String deviceAddress) {
-        if(connectedSocketAddresses.contains(deviceAddress)) {
+        if (connectedSocketAddresses.contains(deviceAddress)) {
             return true;
         }
         return false;
@@ -223,34 +232,33 @@ public class BluetoothService {
 
     public List<BluetoothRemoteDevice> getBluetoothDevices() {
         List<BluetoothRemoteDevice> devices = new ArrayList<BluetoothRemoteDevice>();
-        if( !bluetoothDeviceMap.isEmpty() ) {
+        if (!bluetoothDeviceMap.isEmpty()) {
             devices.addAll(bluetoothDeviceMap.values());
         }
         return devices;
     }
 
     public BluetoothRemoteDevice getBluetoothDevice(String deviceName) {
-        if(bluetoothDeviceMap.containsKey(deviceName)) {
+        if (bluetoothDeviceMap.containsKey(deviceName)) {
             return bluetoothDeviceMap.get(deviceName);
         }
         return null;
     }
 
     public void sendChatMessage(byte[] message) {
-        if( connectedThread != null ) {
+        if (connectedThread != null) {
             connectedThread.sendMessage(message);
         }
     }
 
     public void endChat() {
-        if( connectedThread != null ) {
+        if (connectedThread != null) {
             String message = "NOWweArECloSing";
             sendChatMessage(message.getBytes());
 
             try {
                 Thread.sleep(1000);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             removeSocketConnection();
@@ -300,7 +308,7 @@ public class BluetoothService {
     }
 
     public void sendBluetoothRequestToUser(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
-        if(handler != null)
+        if (handler != null)
             handler.closeBluetoothSocket();
 
         if (players.size() > 0) {
@@ -340,7 +348,7 @@ public class BluetoothService {
         UUID deviceUUID = GameEventAcceptThread.MY_UUID_SECURE;
 
         // Start Bluetooth Connection thread to connect with bluetooth device
-        if(remoteDevice == null) {
+        if (remoteDevice == null) {
 //            Utils.showErrorDialog(MobiMixApplication.getInstance().getContext(), "Device is not found");
             return;
         }
@@ -348,10 +356,53 @@ public class BluetoothService {
         gameEventConnectThread.start();
     }
 
+    private void connectWithPlayer(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
+        if (localDevice.status == WifiP2pDevice.CONNECTED /*&& !localDevice.isGroupOwner()*/) {
+            Utils.showAlertMessage(MobiMixApplication.getInstance().getActivity(), "Remove Connection", "Are you sure you want to drop existing bluetooth connection " +
+                    "and connect with " + players.get(0).getPlayerName() + "?", new DialogActionListener() {
+                @Override
+                public void dialogPositiveButtonPerformed() {
+                    MobiMixCache.clearFromCache();
+                    removeConnectionAndReConnect(new IWifiDisconnectionListener() {
+                        @Override
+                        public void connectionRemoved(boolean isDisconnected) {
+                            if (isDisconnected) {
+                                establishConnection(players, gameInfo);
+                            } else {
+                                Toast.makeText(mContext, "Failed to remove existing bluetooth connection. Please try again.", Toast.LENGTH_SHORT);
+                            }
+                        }
+                    });
+                }
+
+                @Override
+                public void dialogNegativeButtonPerformed() {
+
+                }
+            });
+        } else {
+            establishConnection(players, gameInfo);
+        }
+    }
+
+    public void removeConnectionAndReConnect(final  wifiDiconnectionListener) {
+
+    }
+
     public void handleEvent(EventData eventData) {
+        JSONObject object = eventData.object_;
         switch (eventData.event_) {
             case MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_QUEUED_USERS:
-                // send game request to queued playes
+            case MobiMix.GameEvent.EVENT_GAME_REQUEST_TO_USERS:
+                MBGameInfo mbGameInfo = (MBGameInfo) object.opt("mb_game_info");
+                List<MBNearbyPlayer> nearbyPlayers = (List<MBNearbyPlayer>) object.opt("mb_selected_players");
+                boolean isReqForQueuedPlayers = object.optBoolean("mb_request_queue");
+
+                if (isReqForQueuedPlayers) {
+                    connectWithQueuedPlayers(nearbyPlayers);
+                } else {
+                    connectWithPlayer(nearbyPlayers, mbGameInfo);
+                }
                 break;
             default:
                 break;

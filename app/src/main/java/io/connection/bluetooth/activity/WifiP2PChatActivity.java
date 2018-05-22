@@ -127,7 +127,13 @@ public class WifiP2PChatActivity extends AppCompatActivity {
                             if (isConnected) {
                                 setSocketListeners();
                             } else {
-                                disableChat();
+                                UtilsHandler.runOnUiThread(new Runnable() {
+                                       @Override
+                                       public void run() {
+                                           disableChat();
+                                       }
+                                    }
+                                );
                             }
                         }
                     });
