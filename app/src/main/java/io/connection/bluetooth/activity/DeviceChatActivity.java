@@ -25,6 +25,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.core.BluetoothService;
 import io.connection.bluetooth.Thread.ConnectedThread;
@@ -50,7 +51,7 @@ public class DeviceChatActivity extends BaseActivity {
     private EditText mOutEditText;
     private static Button mSendButton;
     ConnectedThread connectedThread;
-    static BluetoothRemoteDevice device;
+    static MBNearbyPlayer device;
     static ChatAdapter chatAdapter;
     private static TextView chatUserName;
     private static TextView connectionStatus;
@@ -75,6 +76,7 @@ public class DeviceChatActivity extends BaseActivity {
      * Local Bluetooth adapter
      */
     private BluetoothAdapter mBluetoothAdapter = null;
+    private BluetoothService bluetoothService;
 
 
     @Override
@@ -95,6 +97,17 @@ public class DeviceChatActivity extends BaseActivity {
 
         Intent intent = getIntent();
         device = intent.getParcelableExtra("device");
+        BluetoothDevice bluetoothDevice = bluetoothService.getBluetoothDevice(device.getEmail()).getDevice();
+
+//        if(!bluetoothService.isSocketConnectedForAddress(bluetoothDevice.getAddress())) {
+            BluetoothService.getInstance().startChatThread(bluetoothDevice);
+//        }
+//        else {
+//            BluetoothService.getInstance().notifyConnectEventToUser(bluetoothDevice.getAddress());
+//        }
+
+        chatUserName.setText(ChatDataConversation.getUserName(bluetoothDevice.getAddress()));
+        connectionStatus.setText("Connecting ...");
 
         bluetoothService.setSocketConnectionListener(new SocketConnectionListener() {
             @Override
@@ -107,16 +120,6 @@ public class DeviceChatActivity extends BaseActivity {
                 disableSendButton();
             }
         });
-
-        if(!BluetoothService.getInstance().isSocketConnectedForAddress(device.getDevice().getAddress())) {
-            BluetoothService.getInstance().startChatThread(device.getDevice());
-        }
-        else {
-            BluetoothService.getInstance().notifyConnectEventToUser(device.getDevice().getAddress());
-        }
-
-        chatUserName.setText(ChatDataConversation.getUserName(device.getDevice().getAddress()));
-        connectionStatus.setText("Connecting ...");
 
         setupChat();
     }
@@ -178,7 +181,7 @@ public class DeviceChatActivity extends BaseActivity {
 
         //mConversationView.setAdapter(mConversationArrayAdapter);
 
-        List<String> stringList = ChatDataConversation.getChatConversation(device.getDevice().getAddress());
+        List<String> stringList = ChatDataConversation.getChatConversation(device.getEmail());
         if (stringList != null && stringList.size() > 0) {
             Log.d(TAG, "setupChat:  Value of " + stringList.size());
             mConversationArrayAdapter.addAll(stringList);
@@ -248,7 +251,7 @@ public class DeviceChatActivity extends BaseActivity {
             // Get the message bytes and tell the BluetoothChatService to write
             if (!message.equals("NOWweArECloSing")) {
                 mConversationArrayAdapter.add("Me:  " + message);
-                ChatDataConversation.putChatConversation(device.getDevice().getAddress(), "Me:  " + message);
+                ChatDataConversation.putChatConversation(device.getEmail(), "Me:  " + message);
                 chatAdapter.notifyDataSetChanged();
             }
             byte[] send = message.getBytes();
@@ -297,18 +300,16 @@ public class DeviceChatActivity extends BaseActivity {
     }
 
     public static void readMessagae(final BluetoothDevice deviceRemote) {
-
         UtilsHandler.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 List<String> listofStrings = ChatDataConversation.getChatConversation(deviceRemote.getAddress());
                 if (mConversationArrayAdapter != null) {
-                    if (deviceRemote.getAddress().equals(device.getDevice().getAddress())) {
+                    if (deviceRemote.getName().equals(device.getEmail())) {
                         mConversationArrayAdapter.clear();
                         mConversationArrayAdapter.addAll(listofStrings);
                         chatAdapter.notifyDataSetChanged();
                     }
-
                 }
             }
         });
@@ -337,10 +338,8 @@ public class DeviceChatActivity extends BaseActivity {
     static class ChatAdapter extends BaseAdapter {
         private static LayoutInflater inflater = null;
 
-
         List<String> listMessages = new ArrayList<>();
         Context context;
-
 
         public ChatAdapter(Context context, List<String> listMessages) {
             this.listMessages = listMessages;

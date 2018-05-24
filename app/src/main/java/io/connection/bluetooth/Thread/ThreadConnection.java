@@ -322,7 +322,6 @@ public class ThreadConnection {
 
             notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         }
 
         @Override
@@ -335,7 +334,6 @@ public class ThreadConnection {
             try {
                 if (context.checkCallingOrSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && context.checkCallingOrSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
 
-
                     BufferedInputStream bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
                     DataInputStream dis = new DataInputStream(bis);
                     int fileCount = dis.readInt();
@@ -346,9 +344,7 @@ public class ThreadConnection {
                         String filename = System.nanoTime() + "";
                         long fileLength = dis.readLong();
                         try {
-
                             filename = dis.readUTF();
-
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

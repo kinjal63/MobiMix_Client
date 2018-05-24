@@ -357,7 +357,7 @@ public class BluetoothService {
     }
 
     private void connectWithPlayer(final List<MBNearbyPlayer> players, final MBGameInfo gameInfo) {
-        if (localDevice.status == WifiP2pDevice.CONNECTED /*&& !localDevice.isGroupOwner()*/) {
+//        if (localDevice.status == WifiP2pDevice.CONNECTED /*&& !localDevice.isGroupOwner()*/) {
             Utils.showAlertMessage(MobiMixApplication.getInstance().getActivity(), "Remove Connection", "Are you sure you want to drop existing bluetooth connection " +
                     "and connect with " + players.get(0).getPlayerName() + "?", new DialogActionListener() {
                 @Override
@@ -367,9 +367,9 @@ public class BluetoothService {
                         @Override
                         public void connectionRemoved(boolean isDisconnected) {
                             if (isDisconnected) {
-                                establishConnection(players, gameInfo);
+//                                establishConnection(players, gameInfo);
                             } else {
-                                Toast.makeText(mContext, "Failed to remove existing bluetooth connection. Please try again.", Toast.LENGTH_SHORT);
+//                                Toast.makeText(mContext, "Failed to remove existing bluetooth connection. Please try again.", Toast.LENGTH_SHORT);
                             }
                         }
                     });
@@ -380,12 +380,12 @@ public class BluetoothService {
 
                 }
             });
-        } else {
-            establishConnection(players, gameInfo);
-        }
+//        } else {
+//            establishConnection(players, gameInfo);
+//        }
     }
 
-    public void removeConnectionAndReConnect(final  wifiDiconnectionListener) {
+    public void removeConnectionAndReConnect(final  IWifiDisconnectionListener wifiDiconnectionListener) {
 
     }
 
@@ -399,7 +399,7 @@ public class BluetoothService {
                 boolean isReqForQueuedPlayers = object.optBoolean("mb_request_queue");
 
                 if (isReqForQueuedPlayers) {
-                    connectWithQueuedPlayers(nearbyPlayers);
+//                    connectWithQueuedPlayers(nearbyPlayers);
                 } else {
                     connectWithPlayer(nearbyPlayers, mbGameInfo);
                 }

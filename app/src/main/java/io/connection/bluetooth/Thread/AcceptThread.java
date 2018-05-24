@@ -40,7 +40,6 @@ public class AcceptThread extends Thread {
         this.context = context;
 
         try {
-
             tmp = bluetoothAdapter
                     .listenUsingRfcommWithServiceRecord(
                             "MyUUID", MY_UUID_SECURE);
@@ -55,7 +54,6 @@ public class AcceptThread extends Thread {
                 socket = serverSocket.accept();
 
                 BluetoothDevice remoteDevice = socket.getRemoteDevice();
-
                 if(!BluetoothService.getInstance().isSocketConnectedForAddress(remoteDevice.getAddress())) {
                     BluetoothService.getInstance().startChatThread(remoteDevice);
                 }
@@ -65,7 +63,7 @@ public class AcceptThread extends Thread {
                     Log.d(TAG, "run:  connection successfull");
                     Log.d(TAG, "run: " + socket.getRemoteDevice().getName() + "  " +
                             socket.getRemoteDevice().getAddress());
-                    readFile readfile = new readFile(socket);
+                    ReadChatData readfile = new ReadChatData(socket);
                     readfile.start();
                 }
             } catch (IOException e) {
@@ -78,7 +76,7 @@ public class AcceptThread extends Thread {
 
 }
 
-class readFile extends Thread {
+class ReadChatData extends Thread {
     private static final String TAG = "readFile";
     BluetoothSocket socket = null;
     BluetoothDevice device = null;
@@ -88,8 +86,7 @@ class readFile extends Thread {
     byte[] buffer = new byte[1024];
     int bytes;
 
-
-    readFile(BluetoothSocket socket) {
+    ReadChatData(BluetoothSocket socket) {
         this.socket = socket;
         this.context = ImageCache.getContext();
     }
@@ -99,7 +96,7 @@ class readFile extends Thread {
         while (socket.isConnected() ) {
             final String readMessage;
             try {
-                Log.d(TAG, "run: Avaliable   Size  before" +socket.getInputStream().available());
+                Log.d(TAG, "run: Avaliable Size before" +socket.getInputStream().available());
                 bytes = socket.getInputStream().read(buffer);
                 readMessage = new String(buffer);
                 buffer=new byte[1024];
