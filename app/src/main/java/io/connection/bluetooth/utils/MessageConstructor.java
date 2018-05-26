@@ -88,6 +88,10 @@ public class MessageConstructor {
         try {
             List<MBGameParticipants> gameUsers = (List<MBGameParticipants>)eventObj.object_.opt(GameConstants.GAME_UPDATE_TABLE_DATA);
 
+            if(gameUsers.size() <= 0) {
+                return null;
+            }
+
             String groupOwner = gameUsers.get(0).getPlayerId();
             long gameId = gameUsers.get(0).getGameId();
             int connectionType = gameUsers.get(0).getConnectionType();

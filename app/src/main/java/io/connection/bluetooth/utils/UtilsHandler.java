@@ -5,13 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-
-import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
-import io.connection.bluetooth.Domain.GameRequest;
 import io.connection.bluetooth.MobiMixApplication;
 
 /**
@@ -26,11 +21,14 @@ public class UtilsHandler {
         UIHandler.post(runnable);
     }
 
-    public static void showProgressDialog(String message) {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
-        }
-        progressDialog = ProgressDialog.show(MobiMixApplication.getInstance().getActivity(), "Press back to cancel", message, true,
+    public static void showProgressDialog(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (progressDialog != null && progressDialog.isShowing()) {
+                    progressDialog.dismiss();
+                }
+                progressDialog = ProgressDialog.show(MobiMixApplication.getInstance().getActivity(), "Press back to cancel", message, true,
                 true, new DialogInterface.OnCancelListener() {
 
                     @Override
@@ -38,6 +36,8 @@ public class UtilsHandler {
 
                     }
                 });
+            }
+        });
     }
 
     public static void dismissProgressDialog() {
@@ -55,6 +55,15 @@ public class UtilsHandler {
         Intent launchIntent = MobiMixApplication.getInstance().getContext().getPackageManager().
                 getLaunchIntentForPackage(gamePackageName);
         MobiMixApplication.getInstance().getContext().startActivity(launchIntent);
+    }
+
+    public static void showToast(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MobiMixApplication.getInstance().getContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }
 

@@ -485,6 +485,9 @@ public class MessageHandler {
             case MobiMix.GameEvent.EVENT_GAME_READ_TABLE_DATA:
             case MobiMix.GameEvent.EVENT_GAME_UPDATE_TABLE_DATA:
                 GameRequest gameRequest = MobiMixCache.getCurrentGameRequestFromCache();
+                if(gameRequest == null) {
+                    return;
+                }
                 int connectionType = gameRequest.getConnectionType();
                 long gameId = gameRequest.getGameId();
                 String gamePackageName = gameRequest.getGamePackageName();

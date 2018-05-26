@@ -93,12 +93,13 @@ public class WifiSocketManager implements Runnable {
         try {
             ois = new ObjectInputStream(socket.getInputStream());
             if (ois != null) {
-                Object object = ois.readObject();
+                bytes = ois.read(buffer, 0, buffer.length);
 
-                buffer = object.toString().getBytes();
-                bytes = buffer.length;
+//                buffer = object.toString().getBytes();
+//                bytes = buffer.length;
 
-                System.out.println("Getting message" + object.toString().getBytes());
+
+                System.out.println("Getting message" + buffer);
 
                 handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
                 synchronized (this.obj) {
@@ -109,7 +110,7 @@ public class WifiSocketManager implements Runnable {
                     startReadModule(socket);
                 }
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException i) {
             synchronized (this.obj) {
@@ -195,9 +196,11 @@ public class WifiSocketManager implements Runnable {
             if(sockets != null && !sockets.isEmpty()) {
                 socket = sockets.get(socketAddr);
             }
-            oos = new ObjectOutputStream(socket.getOutputStream());
+            if(oos == null) {
+                oos = new ObjectOutputStream(socket.getOutputStream());
+            }
 
-            oos.writeObject(object.toString());
+            oos.write(object.toString().getBytes());
             oos.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -305,5 +308,7 @@ public class WifiSocketManager implements Runnable {
         closeSockets();
         sockets.clear();
         socket = null;
+        oos = null;
+        ois = null;
     }
 }

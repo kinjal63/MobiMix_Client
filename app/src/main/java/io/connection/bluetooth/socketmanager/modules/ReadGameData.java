@@ -1,13 +1,9 @@
 package io.connection.bluetooth.socketmanager.modules;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
@@ -31,27 +27,28 @@ public class ReadGameData {
     }
 
     public void readGameEvent() {
+        byte[] buffer = new byte[1024];
         JSONObject object;
         try {
             ois = new ObjectInputStream(socket.getInputStream());
             while (!disable) {
                 if (ois != null) {
                     try {
-                        String eventObj = (String)ois.readObject();
-                        if (eventObj == null) {
-                            break;
+                        int bytes = ois.read(buffer, 0, buffer.length);
+                        if(bytes == -1 ) {
+                            continue;
                         }
+                        String msg = new String(buffer);
+                        System.out.println("Getting message" + msg);
 
-                        System.out.println("Getting message" + eventObj);
-
-                        object = new JSONObject(eventObj);
+                        object = new JSONObject(msg);
 
                         int arg1 = object.optInt(GameConstants.GAME_EVENT, 0);
                         if(arg1 != 0) {
                             handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, arg1, -1, object).sendToTarget();
                         }
                     }
-                    catch (ClassNotFoundException | JSONException e) {
+                    catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
