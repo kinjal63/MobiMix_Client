@@ -18,6 +18,7 @@ import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.enums.Modules;
 import io.connection.bluetooth.enums.SocketOperationType;
+import io.connection.bluetooth.socketmanager.modules.DataObjectOutputStream;
 import io.connection.bluetooth.socketmanager.modules.ReadBusinessCard;
 import io.connection.bluetooth.socketmanager.modules.ReadChatData;
 import io.connection.bluetooth.socketmanager.modules.ReadFiles;
@@ -44,6 +45,7 @@ public class WifiSocketManager implements Runnable {
 
     private String TAG = "SocketManager";
     private HashMap<String, Socket> sockets = new HashMap<>();
+    private HashMap<String, ObjectOutputStream> oosMap = new HashMap<>();
     private Stack<Socket> clientSockets = new Stack<>();
     private Socket socket = null;
 
@@ -93,13 +95,16 @@ public class WifiSocketManager implements Runnable {
         try {
             ois = new ObjectInputStream(socket.getInputStream());
             if (ois != null) {
-                bytes = ois.read(buffer, 0, buffer.length);
+//                bytes = ois.read(buffer, 0, buffer.length);
+                String msg = (String)ois.readObject();
+//                ois.close();
 
 //                buffer = object.toString().getBytes();
 //                bytes = buffer.length;
 
-
-                System.out.println("Getting message" + buffer);
+                buffer = msg.getBytes();
+                bytes = buffer.length;
+                System.out.println("Getting message" + msg);
 
                 handler.getHandler().obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
                 synchronized (this.obj) {
@@ -110,7 +115,7 @@ public class WifiSocketManager implements Runnable {
                     startReadModule(socket);
                 }
             }
-        } catch (IOException e) {
+        } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
         } catch (InterruptedException i) {
             synchronized (this.obj) {
@@ -134,7 +139,7 @@ public class WifiSocketManager implements Runnable {
         if (wifiP2PService != null) {
             if (wifiP2PService.getModule() == Modules.CHAT) {
                 System.out.println("Socket is read 3 Chat");
-                ReadChatData chatData = new ReadChatData(socket, handler);
+                ReadChatData chatData = new ReadChatData(ois, handler);
                 chatData.readChatData();
             } else if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
                 System.out.println("Socket is read 3 Business");
@@ -146,7 +151,7 @@ public class WifiSocketManager implements Runnable {
                 file.readFiles();
             } else if (wifiP2PService.getModule() == Modules.GAME) {
                 System.out.println("Socket is read 3 file Game");
-                ReadGameData file = new ReadGameData(socket, handler);
+                ReadGameData file = new ReadGameData(ois, handler);
                 file.readGameEvent();
             }
         }
@@ -193,15 +198,19 @@ public class WifiSocketManager implements Runnable {
     public void writeObject(String socketAddr, Object object) {
         try {
             Socket socket = this.socket;
+            ObjectOutputStream oos = null;
             if(sockets != null && !sockets.isEmpty()) {
                 socket = sockets.get(socketAddr);
             }
-            if(oos == null) {
-                oos = new ObjectOutputStream(socket.getOutputStream());
-            }
 
-            oos.write(object.toString().getBytes());
+            if(!oosMap.containsKey(socketAddr)) {
+                oosMap.put(socketAddr, new ObjectOutputStream(socket.getOutputStream()));
+            }
+            oos = oosMap.get(socketAddr);
+
+            oos.writeObject(object.toString());
             oos.flush();
+//            oos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -308,7 +317,6 @@ public class WifiSocketManager implements Runnable {
         closeSockets();
         sockets.clear();
         socket = null;
-        oos = null;
-        ois = null;
+        oosMap.clear();
     }
 }

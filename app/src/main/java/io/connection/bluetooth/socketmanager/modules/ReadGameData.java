@@ -21,24 +21,24 @@ public class ReadGameData {
     private ObjectInputStream ois;
     private MessageHandler handler;
 
-    public ReadGameData(Socket socket, MessageHandler handler) {
-        this.socket = socket;
+    public ReadGameData(ObjectInputStream socket, MessageHandler handler) {
+        this.ois = socket;
         this.handler = handler;
     }
 
     public void readGameEvent() {
-        byte[] buffer = new byte[1024];
         JSONObject object;
         try {
-            ois = new ObjectInputStream(socket.getInputStream());
+//            ois = new ObjectInputStream(socket.getInputStream());
             while (!disable) {
                 if (ois != null) {
                     try {
-                        int bytes = ois.read(buffer, 0, buffer.length);
-                        if(bytes == -1 ) {
-                            continue;
-                        }
-                        String msg = new String(buffer);
+                        byte[] buffer = new byte[1024];
+                        String msg = (String)ois.readObject();
+//                        if(bytes == -1 ) {
+//                            break;
+//                        }
+//                        String msg = new String(buffer);
                         System.out.println("Getting message" + msg);
 
                         object = new JSONObject(msg);
@@ -48,7 +48,7 @@ public class ReadGameData {
                             handler.getHandler().obtainMessage(Constants.MESSAGE_READ_GAME, arg1, -1, object).sendToTarget();
                         }
                     }
-                    catch (JSONException e) {
+                    catch (ClassNotFoundException | JSONException e) {
                         e.printStackTrace();
                     }
                 }

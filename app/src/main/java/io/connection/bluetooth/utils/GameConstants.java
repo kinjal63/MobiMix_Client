@@ -33,5 +33,6 @@ public class GameConstants {
 
     // Multi socket connection
     public static final String CLIENT_SOCKET_ADDRESS = "client_socket_address";
+    public static final String USER_DEVICE_NAME = "device_name";
     public static final String CHAT_MESSAGE = "mb_chat_message";
 }

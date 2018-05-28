@@ -118,6 +118,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         setUp();
         setDeviceName();
 
+        removeGroup();
         initiateDiscovery();
         new Timer().schedule(new DiscoveryTask(), 500, 45000);
     }

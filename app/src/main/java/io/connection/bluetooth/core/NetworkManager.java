@@ -122,4 +122,7 @@ public class NetworkManager {
                 break;
         }
     }
+
+    public void getPlayerInfo(DBParams params, IDatabaseActionListener iDatabaseActionListener) {
+    }
 }

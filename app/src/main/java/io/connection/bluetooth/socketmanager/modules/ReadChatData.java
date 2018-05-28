@@ -25,8 +25,8 @@ public class ReadChatData {
     private ObjectInputStream ois;
     private MessageHandler handler;
 
-    public ReadChatData(Socket socket, MessageHandler handler) {
-        this.socket = socket;
+    public ReadChatData(ObjectInputStream socket, MessageHandler handler) {
+        this.ois = socket;
         this.handler = handler;
     }
 
@@ -34,7 +34,7 @@ public class ReadChatData {
         JSONObject object = null;
 
         try {
-            ois = new ObjectInputStream(socket.getInputStream());
+//            ois = new ObjectInputStream(socket.getInputStream());
             while (!disable) {
                 if (ois != null) {
                     String eventObj = (String)ois.readObject();

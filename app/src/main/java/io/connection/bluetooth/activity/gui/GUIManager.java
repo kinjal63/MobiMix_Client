@@ -65,6 +65,30 @@ public class GUIManager {
         return handler_;
     }
 
+    public void getPlayerInfo(DBParams params, final IDBResponse IDBResponseListener) {
+        networkManager_.getPlayerInfo(params, new IDatabaseActionListener() {
+            @Override
+            public void onDataReceived(final List<?> data) {
+                MobiMixApplication.getInstance().getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        IDBResponseListener.onDataAvailable(MobiMix.DBResponse.DB_RES_FIND_NEARBY_PLAYERS, data);
+                    }
+                });
+            }
+
+            @Override
+            public void onDataUpdated() {
+
+            }
+
+            @Override
+            public void onDataError() {
+                IDBResponseListener.onDataFailure();
+            }
+        });
+    }
+
     public void getNearbyPlayers(DBParams params, final IDBResponse IDBResponseListener) {
         networkManager_.getNearByPlayersFromDB(params, new IDatabaseActionListener() {
             @Override

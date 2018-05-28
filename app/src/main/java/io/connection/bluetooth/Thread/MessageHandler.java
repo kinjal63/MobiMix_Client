@@ -11,6 +11,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -126,9 +127,9 @@ public class MessageHandler {
                 if(msg.obj != null) {
                     JSONObject jsonObject = (JSONObject)msg.obj;
                     String chatMessage = jsonObject.optString(GameConstants.CHAT_MESSAGE);
-                    String socketAddress = jsonObject.optString(GameConstants.CLIENT_SOCKET_ADDRESS);
+                    String deviceName = jsonObject.optString(GameConstants.USER_DEVICE_NAME);
 
-                    handleObject(chatMessage, socketAddress);
+                    handleChatMessage(chatMessage, deviceName);
                 }
                 break;
             case Constants.MESSAGE_READ_BUSINESS_CARD:
@@ -207,32 +208,29 @@ public class MessageHandler {
         } else if (message.startsWith("NowClosing")) {
             closeWifiSocket();
             wifiP2PService.setModule(Modules.NONE);
-        } else {
-            int module = wifiP2PService.getModule().ordinal();
-            switch (module) {
-                case 1:
-                    ChatDataConversation.putChatConversation(wifiSocketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(wifiSocketManager.getRemoteDeviceAddress()) + ":  " + message);
-                    Log.d(TAG, "run: Accept thread Receive Message Count -> " + ChatDataConversation.getChatConversation(wifiSocketManager.getRemoteDeviceAddress()).size());
-                    WifiP2PChatActivity.readMessagae(wifiSocketManager.getRemoteDeviceAddress());
+        }
+    }
 
-                    WifiP2PRemoteDevice remoteDevice = wifiSocketManager.getRemoteDevice();
 
-                    Intent intent = new Intent(MobiMixApplication.getInstance().getActivity(), WifiP2PChatActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("device", remoteDevice);
-                    intent.putExtra("socketAddress", socketAddress);
-                    intent.putExtra("isNeedToReconnect", false);
+    private void handleChatMessage(String message, String deviceName) {
+        ChatDataConversation.putChatConversation(wifiSocketManager.getRemoteDeviceAddress(), ChatDataConversation.getUserName(wifiSocketManager.getRemoteDeviceAddress()) + ":  " + message);
+        Log.d(TAG, "run: Accept thread Receive Message Count -> " + ChatDataConversation.getChatConversation(wifiSocketManager.getRemoteDeviceAddress()).size());
+        WifiP2PChatActivity.readMessagae(wifiSocketManager.getRemoteDeviceAddress());
 
-                    NotificationUtil.sendChatNotification(intent, message, remoteDevice.getName());
-                    break;
-                case 2:
-                    String businessCardInfo = message;
-                    System.out.println("Business card received :: " + businessCardInfo);
-                    break;
-                case 0:
-                    break;
+        WifiP2PRemoteDevice remoteDevice = wifiSocketManager.getRemoteDevice();
+
+        Intent intent = new Intent(MobiMixApplication.getInstance().getActivity(), WifiP2PChatActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        HashSet<WifiP2PRemoteDevice> devices = WifiDirectService.getInstance(context).getWifiP2PDeviceList();
+        for(WifiP2PRemoteDevice device : devices) {
+            if(device.getDevice().deviceName.equalsIgnoreCase(deviceName)) {
+                intent.putExtra("device", device);
             }
         }
+        intent.putExtra("isNeedToReconnect", false);
+
+        NotificationUtil.sendChatNotification(intent, message, remoteDevice.getName());
     }
 
     public void sendMessage(String socketAddress, Object object) {

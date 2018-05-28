@@ -1,10 +1,8 @@
 package io.connection.bluetooth.activity;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -20,8 +18,6 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,16 +28,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
-import io.connection.bluetooth.Domain.LocalP2PDevice;
 import io.connection.bluetooth.R;
+import io.connection.bluetooth.Thread.MessageHandler;
+import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.ISocketEventListener;
 import io.connection.bluetooth.activity.gui.GUIManager;
 import io.connection.bluetooth.core.IWifiDisconnectionListener;
 import io.connection.bluetooth.core.WifiDirectService;
-import io.connection.bluetooth.Thread.MessageHandler;
-import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
-import io.connection.bluetooth.actionlisteners.SocketConnectionListener;
-import io.connection.bluetooth.adapter.model.WifiP2PRemoteDevice;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.GameConstants;
@@ -104,6 +97,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         remoteDeviceName = device.getEmail();
         socketAddress = intent.getStringExtra("socketAddress");
 
+        GUIManager.getObject().getPlayerInfo(device.getEmail());
         chatUserName.setText(ChatDataConversation.getUserName(device.getPlayerName()));
         connectionStatus.setText("Connecting...");
 

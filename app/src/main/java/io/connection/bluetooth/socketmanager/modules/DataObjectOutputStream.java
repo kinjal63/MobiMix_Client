@@ -15,10 +15,9 @@ public class DataObjectOutputStream extends ObjectOutputStream {
 
     @Override
     protected void writeStreamHeader() throws IOException {
-        super.writeStreamHeader();
         // do not write a header, but reset:
         // this line added after another question
         // showed a problem with the original
-//        reset();
+        reset();
     }
 }
