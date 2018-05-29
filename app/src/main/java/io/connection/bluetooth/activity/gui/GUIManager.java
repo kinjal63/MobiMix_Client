@@ -72,7 +72,7 @@ public class GUIManager {
                 MobiMixApplication.getInstance().getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        IDBResponseListener.onDataAvailable(MobiMix.DBResponse.DB_RES_FIND_NEARBY_PLAYERS, data);
+                        IDBResponseListener.onDataAvailable(MobiMix.DBResponse.DB_RES_FIND_NEARBY_PLAYER, data);
                     }
                 });
             }

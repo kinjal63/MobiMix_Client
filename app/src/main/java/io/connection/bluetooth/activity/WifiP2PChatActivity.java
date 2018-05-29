@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.connection.bluetooth.Database.DBParams;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
 import io.connection.bluetooth.R;
 import io.connection.bluetooth.Thread.MessageHandler;
@@ -34,6 +35,7 @@ import io.connection.bluetooth.actionlisteners.DeviceConnectionListener;
 import io.connection.bluetooth.actionlisteners.ISocketEventListener;
 import io.connection.bluetooth.activity.gui.GUIManager;
 import io.connection.bluetooth.core.IWifiDisconnectionListener;
+import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.core.WifiDirectService;
 import io.connection.bluetooth.utils.ApplicationSharedPreferences;
 import io.connection.bluetooth.utils.Constants;
@@ -55,6 +57,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
     private static TextView chatUserName;
     private static TextView connectionStatus;
     private static MBNearbyPlayer device;
+    private static String deviceName;
     private MessageHandler handler;
     private String socketAddress;
     private boolean isNeedToReconnect = true;
@@ -93,13 +96,8 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         context = this;
 
         Intent intent = getIntent();
-        device = (MBNearbyPlayer)intent.getSerializableExtra("device");
-        remoteDeviceName = device.getEmail();
+        remoteDeviceName = (String)intent.getSerializableExtra("device");
         socketAddress = intent.getStringExtra("socketAddress");
-
-        GUIManager.getObject().getPlayerInfo(device.getEmail());
-        chatUserName.setText(ChatDataConversation.getUserName(device.getPlayerName()));
-        connectionStatus.setText("Connecting...");
 
         handler = WifiDirectService.getInstance(this).getMessageHandler();
 
@@ -108,35 +106,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
         if(intent.hasExtra("isNeedToReconnect")) {
             isNeedToReconnect = intent.getBooleanExtra("isNeedToReconnect", true);
         }
-        if(isNeedToReconnect) {
-            UtilsHandler.showProgressDialog("Removing previous connection and reconnecting with " + device.getPlayerName());
-            WifiDirectService.getInstance(this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
-                @Override
-                public void connectionRemoved(boolean isDisconnected) {
-
-                    UtilsHandler.dismissProgressDialog();
-                    WifiDirectService.getInstance(WifiP2PChatActivity.this).connect(device.getEmail(), new DeviceConnectionListener() {
-                        @Override
-                        public void onDeviceConnected(boolean isConnected) {
-                            if (isConnected) {
-                                setSocketListeners();
-                            } else {
-                                UtilsHandler.runOnUiThread(new Runnable() {
-                                       @Override
-                                       public void run() {
-                                           disableChat();
-                                       }
-                                    }
-                                );
-                            }
-                        }
-                    });
-                }
-            });
-        }
-        else {
-            enableChat();
-        }
+        getPlayer();
 
 //        if (device.getDevice().status != WifiP2pDevice.CONNECTED &&
 //                !WifiDirectService.getInstance(this).isSocketConnectedWithHost(device.getDevice().deviceName)) {
@@ -159,10 +129,68 @@ public class WifiP2PChatActivity extends AppCompatActivity {
 //        }
     }
 
+    private void getPlayer() {
+        DBParams params = new DBParams();
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("deviceName", remoteDeviceName);
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        params.event_ = MobiMix.DBRequest.DB_FIND_NEARBY_PLAYER_FROM_EMAIL;
+        params.object_ = jsonObject;
+
+        GUIManager.getObject().getPlayerInfo(params, new IDBResponse() {
+            @Override
+            public void onDataAvailable(int responseCode, List<?> data) {
+                device = (MBNearbyPlayer)data.get(0);
+
+                chatUserName.setText(ChatDataConversation.getUserName(device.getPlayerName()));
+                connectionStatus.setText("Connecting...");
+            }
+
+            @Override
+            public void onDataFailure() {
+
+            }
+        });
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         ApplicationSharedPreferences.getInstance(this).addBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN, true);
+
+        if(isNeedToReconnect) {
+            UtilsHandler.showProgressDialog("Removing previous connection and reconnecting with " + remoteDeviceName);
+            WifiDirectService.getInstance(this).removeConnectionAndReConnect(new IWifiDisconnectionListener() {
+                @Override
+                public void connectionRemoved(boolean isDisconnected) {
+
+                    UtilsHandler.dismissProgressDialog();
+                    WifiDirectService.getInstance(WifiP2PChatActivity.this).connect(remoteDeviceName, new DeviceConnectionListener() {
+                        @Override
+                        public void onDeviceConnected(boolean isConnected) {
+                            if (isConnected) {
+                                setSocketListeners();
+                            } else {
+                                UtilsHandler.runOnUiThread(new Runnable() {
+                                                               @Override
+                                                               public void run() {
+                                                                   disableChat();
+                                                               }
+                                                           }
+                                );
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        else {
+            enableChat();
+        }
     }
 
     @Override
@@ -349,6 +377,7 @@ public class WifiP2PChatActivity extends AppCompatActivity {
             try {
                 jsonObject.put(GameConstants.CLIENT_SOCKET_ADDRESS, socketAddress);
                 jsonObject.put(GameConstants.CHAT_MESSAGE, message);
+                jsonObject.put(GameConstants.USER_DEVICE_NAME, remoteDeviceName);
             }
             catch (JSONException e) {
                 e.printStackTrace();

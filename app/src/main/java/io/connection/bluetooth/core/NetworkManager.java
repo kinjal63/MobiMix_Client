@@ -80,6 +80,10 @@ public class NetworkManager {
         DatabaseManager.getInstance().findPlayers(params, dbActionListener);
     }
 
+    public void getPlayerInfo(DBParams params, IDatabaseActionListener dbActionListener) {
+        DatabaseManager.getInstance().getPlayerInfo(params, dbActionListener);
+    }
+
     public void getMutualGames(DBParams params, IDatabaseActionListener dbActionListener) {
         DatabaseManager.getInstance().findMutualGames(params, dbActionListener);
     }
@@ -121,8 +125,5 @@ public class NetworkManager {
             default:
                 break;
         }
-    }
-
-    public void getPlayerInfo(DBParams params, IDatabaseActionListener iDatabaseActionListener) {
     }
 }

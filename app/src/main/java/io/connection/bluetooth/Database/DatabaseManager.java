@@ -200,6 +200,17 @@ public class DatabaseManager {
         });
     }
 
+    public synchronized void getPlayerInfo(DBParams params, final IDatabaseActionListener iDatabaseActionListener) {
+        doAsync(params, new IActionReadListener() {
+            @Override
+            public void onReadOperation(int error, List<?> objects) {
+                if (error == 0) {
+                    iDatabaseActionListener.onDataReceived(objects);
+                }
+            }
+        });
+    }
+
     public synchronized void findMutualGames(DBParams params, final IDatabaseActionListener iDatabaseActionListener) {
         doAsync(params, new IActionReadListener() {
             @Override

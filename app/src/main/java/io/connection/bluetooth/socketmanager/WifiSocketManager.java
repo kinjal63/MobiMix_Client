@@ -140,19 +140,20 @@ public class WifiSocketManager implements Runnable {
             if (wifiP2PService.getModule() == Modules.CHAT) {
                 System.out.println("Socket is read 3 Chat");
                 ReadChatData chatData = new ReadChatData(ois, handler);
-                chatData.readChatData();
+                new Thread(chatData).start();
             } else if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
                 System.out.println("Socket is read 3 Business");
-                ReadBusinessCard businessCard = new ReadBusinessCard(socket, handler);
-                businessCard.readData();
+                ReadBusinessCard businessCard = new ReadBusinessCard(ois, handler);
+                new Thread(businessCard).start();
             } else if (wifiP2PService.getModule() == Modules.FILE_SHARING) {
                 System.out.println("Socket is read 3 file sharing");
                 ReadFiles file = new ReadFiles(socket, handler);
                 file.readFiles();
+//                new Thread(file).start();
             } else if (wifiP2PService.getModule() == Modules.GAME) {
                 System.out.println("Socket is read 3 file Game");
-                ReadGameData file = new ReadGameData(ois, handler);
-                file.readGameEvent();
+                ReadGameData gameData = new ReadGameData(ois, handler);
+                new Thread(gameData).start();
             }
         }
         operationType = SocketOperationType.NONE;
@@ -221,12 +222,15 @@ public class WifiSocketManager implements Runnable {
         if(sockets != null && !sockets.isEmpty()) {
             socket = sockets.get(socketAddr);
         }
+
+        oos = oosMap.get(socketAddr);
+
         if(module == Modules.BUSINESS_CARD) {
-            SendBusinessCard businessCard = new SendBusinessCard(socket, handler);
+            SendBusinessCard businessCard = new SendBusinessCard(oos, ois, handler);
             businessCard.start();
         }
         else if(module == Modules.FILE_SHARING) {
-            SendFiles sendFiles = new SendFiles(socket, handler);
+            SendFiles sendFiles = new SendFiles(oos, ois, handler);
             sendFiles.start();
         }
     }

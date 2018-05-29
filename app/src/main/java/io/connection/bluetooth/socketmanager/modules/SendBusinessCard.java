@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.util.List;
@@ -29,12 +31,15 @@ import io.connection.bluetooth.utils.Constants;
  * Created by KP49107 on 12-04-2017.
  */
 public class SendBusinessCard extends Thread {
-    private final Socket mSocket;
+//    private final Socket mSocket;
+    private ObjectOutputStream oos;
+    private ObjectInputStream ois;
     private MessageHandler handler;
     private String TAG = SendBusinessCard.class.getSimpleName();
 
-    public SendBusinessCard(Socket socket, MessageHandler handler) {
-        mSocket = socket;
+    public SendBusinessCard(ObjectOutputStream socket, ObjectInputStream ois, MessageHandler handler) {
+        this.oos = socket;
+        this.ois = ois;
         this.handler = handler;
     }
 
@@ -57,9 +62,7 @@ public class SendBusinessCard extends Thread {
         byte[] buffer = new byte[8 * bufferSize];
 
         try {
-
-            DataObjectOutputStream oos = new DataObjectOutputStream(mSocket.getOutputStream());
-            try {
+//            oos = new ObjectOutputStream(mSocket.getOutputStream());
                 File f = new File(file.getPath());
                 FileInputStream fis = new FileInputStream(f);
                 fis.read(buffer);
@@ -87,16 +90,6 @@ public class SendBusinessCard extends Thread {
 //                }
                 fis.close();
                 oos.flush();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                try {
-//                    dos.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
         } catch (IOException e) {
             Log.e(TAG, "disconnected", e);
         }
@@ -105,12 +98,12 @@ public class SendBusinessCard extends Thread {
         try {
             byte[] inBuffer;
 
-            BufferedInputStream bis = new BufferedInputStream(mSocket.getInputStream(), buffer.length);
-            DataInputStream dis = new DataInputStream(bis);
+//            BufferedInputStream bis = new BufferedInputStream(mSocket.getInputStream(), buffer.length);
+//            DataInputStream dis = new DataInputStream(bis);
 
-            if (dis != null) {
-                inBuffer = dis.readUTF().getBytes();
-                dis.close();
+            if (ois != null) {
+                inBuffer = ois.readUTF().getBytes();
+                ois.close();
 
                 System.out.println("Getting message" + new String(inBuffer));
                 handler.getHandler().obtainMessage(Constants.MESSAGE_READ, 0, -1, inBuffer).sendToTarget();

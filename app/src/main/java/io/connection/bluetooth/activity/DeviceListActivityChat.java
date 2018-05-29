@@ -224,7 +224,7 @@ public class DeviceListActivityChat extends BaseActivity implements SearchView.O
         Intent intent = new Intent();
 
         intent.setClass(mContext, WifiP2PChatActivity.class);
-        intent.putExtra("device", device);
+        intent.putExtra("device", device.getEmail());
         intent.putExtra("networkType", NetworkType.WIFI_DIRECT.name());
         startActivity(intent);
     }

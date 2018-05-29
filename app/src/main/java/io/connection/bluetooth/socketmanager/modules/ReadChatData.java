@@ -19,7 +19,7 @@ import io.connection.bluetooth.utils.GameConstants;
  * Created by Kinjal on 4/8/2017.
  */
 
-public class ReadChatData {
+public class ReadChatData implements Runnable {
     private Socket socket;
     private boolean disable = false;
     private ObjectInputStream ois;
@@ -30,9 +30,9 @@ public class ReadChatData {
         this.handler = handler;
     }
 
-    public void readChatData() {
+    @Override
+    public void run() {
         JSONObject object = null;
-
         try {
 //            ois = new ObjectInputStream(socket.getInputStream());
             while (!disable) {
@@ -50,6 +50,7 @@ public class ReadChatData {
         }
         catch (IOException | JSONException | ClassNotFoundException e) {
             e.printStackTrace();
+            Thread.currentThread().interrupt();
             disable = true;
         }
     }

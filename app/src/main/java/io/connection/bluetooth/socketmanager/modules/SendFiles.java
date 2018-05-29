@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.List;
@@ -31,7 +33,9 @@ import io.connection.bluetooth.utils.Constants;
  */
 
 public class SendFiles extends Thread {
-    private final Socket mSocket;
+//    private final Socket mSocket;
+    private final ObjectOutputStream oos;
+    private final ObjectInputStream ois;
     private MessageHandler handler;
     NotificationManager notificationManager;
     NotificationCompat.Builder mBuilder;
@@ -39,8 +43,9 @@ public class SendFiles extends Thread {
 
     private String TAG = "SendFiles";
 
-    public SendFiles(Socket socket, MessageHandler handler) {
-        this.mSocket = socket;
+    public SendFiles(ObjectOutputStream socket, ObjectInputStream ois, MessageHandler handler) {
+        this.ois = ois;
+        this.oos = socket;
         this.handler = handler;
     }
 
@@ -55,11 +60,11 @@ public class SendFiles extends Thread {
         try {
 
             if (ImageCache.getContext().checkCallingOrSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ImageCache.getContext().checkCallingOrSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                OutputStream os = mSocket.getOutputStream();
-                BufferedOutputStream bos = new BufferedOutputStream(os);
-                DataOutputStream dos = new DataOutputStream(bos);
+//                OutputStream os = mSocket.getOutputStream();
+//                BufferedOutputStream bos = new BufferedOutputStream(os);
+//                DataOutputStream os = new DataOutputStream(bos);
                 int size = uri.size();
-                dos.writeInt(size);
+                oos.writeInt(size);
                 try {
                     int i = 0;
 
@@ -69,9 +74,9 @@ public class SendFiles extends Thread {
                         //uriFile = Uri.fromFile(f);
                         Log.d(TAG, "sendFile: " + f.length());
 
-                        dos.writeLong(filelength);
+                        oos.writeLong(filelength);
                         final String fileName = f.getName();
-                        dos.writeUTF(fileName);
+                        oos.writeUTF(fileName);
 
                         notificationManager =
                                 (NotificationManager) ImageCache.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
@@ -91,14 +96,14 @@ public class SendFiles extends Thread {
                             total += theByte;
                             mBuilder.setProgress(100, (int) ((++total * 100) / f.length()), false);
                             notificationManager.notify(i, mBuilder.build());
-                            bos.write(buffer, 0, theByte);
+                            oos.write(buffer, 0, theByte);
                             Log.d(TAG, "doInBackground: " + filelength + "   " + total + "  counting " + counting);
 
                         }
 
                         bis.close();
-                        bos.flush();
-                        bos.close();
+                        oos.flush();
+                        oos.close();
 
                         mBuilder.setContentText("Send Successfully").setProgress(0, 0, false);
                         notificationManager.notify(i, mBuilder.build());
@@ -118,12 +123,12 @@ public class SendFiles extends Thread {
         try {
             byte[] inBuffer;
 
-            BufferedInputStream bis = new BufferedInputStream(mSocket.getInputStream(), buffer.length);
-            DataInputStream dis = new DataInputStream(bis);
+//            BufferedInputStream bis = new BufferedInputStream(mSocket.getInputStream(), buffer.length);
+//            DataInputStream dis = new DataInputStream(bis);
 
-            if (dis != null) {
-                inBuffer = dis.readUTF().getBytes();
-                dis.close();
+            if (ois != null) {
+                inBuffer = ois.readUTF().getBytes();
+                ois.close();
 
                 System.out.println("Getting message" + new String(buffer));
                 handler.getHandler().obtainMessage(Constants.MESSAGE_READ, 0, -1, inBuffer).sendToTarget();

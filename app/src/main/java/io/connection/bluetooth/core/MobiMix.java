@@ -19,11 +19,13 @@ public class MobiMix {
         public static final int DB_READ_GAME_TABLES = 105;
         public static final int DB_UPDATE_GAME_TABLE_BATCH = 106;
         public static final int DB_DELETE_GAME_PARTICIPANTS = 107;
+        public static final int DB_FIND_NEARBY_PLAYER_FROM_EMAIL = 108;
     }
 
     public interface DBResponse {
         public static final int DB_RES_FIND_NEARBY_PLAYERS = 201;
         public static final int DB_RES_FIND_MUTUAL_GAMES = 202;
+        public static final int DB_RES_FIND_NEARBY_PLAYER = 203;
     }
 
     public interface MBDatabase {

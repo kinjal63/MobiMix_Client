@@ -103,14 +103,8 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
         throw new CloneNotSupportedException();
     }
 
-    public void reinitialize() {
-        messageHandler = null;
-        initialize();
-    }
-
     public void initialize() {
 //        this.messageHandler = new MessageHandler(mContext);
-
         wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
         if (!wifiManager.isWifiEnabled()) {
             wifiManager.setWifiEnabled(true);
@@ -265,9 +259,9 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
                 try {
                     Log.d(TAG, "socketHandler!=null? = " + (socketHandler != null));
                     // Close connection if already exists
-                    if(socketHandler != null && socketHandler.isAlive()) {
-                        ((WifiP2PServerHandler)socketHandler).closeSocketAndKillThisThread();
-                    }
+//                    if(socketHandler != null && socketHandler.isAlive()) {
+//                        ((WifiP2PServerHandler)socketHandler).closeSocketAndKillThisThread();
+//                    }
 
                     socketHandler = new WifiP2PServerHandler(messageHandler);
                     socketHandler.start();

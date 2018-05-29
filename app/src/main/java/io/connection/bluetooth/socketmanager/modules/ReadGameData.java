@@ -15,7 +15,7 @@ import io.connection.bluetooth.utils.GameConstants;
  * Created by Kinjal on 10/29/2017.
  */
 
-public class ReadGameData {
+public class ReadGameData implements Runnable {
     private Socket socket;
     private boolean disable = false;
     private ObjectInputStream ois;
@@ -26,7 +26,8 @@ public class ReadGameData {
         this.handler = handler;
     }
 
-    public void readGameEvent() {
+    @Override
+    public void run() {
         JSONObject object;
         try {
 //            ois = new ObjectInputStream(socket.getInputStream());
@@ -57,6 +58,7 @@ public class ReadGameData {
         catch (IOException e) {
             e.printStackTrace();
             handler.closeSocket();
+            Thread.currentThread().interrupt();
             disable = true;
         }
     }

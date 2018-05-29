@@ -1,8 +1,5 @@
 package io.connection.bluetooth.Database;
 
-import android.database.Cursor;
-import android.net.Uri;
-
 import org.greenrobot.greendao.query.Query;
 import org.greenrobot.greendao.query.QueryBuilder;
 import org.greenrobot.greendao.query.WhereCondition;
@@ -18,12 +15,9 @@ import io.connection.bluetooth.Database.action.IActionUpdateListener;
 import io.connection.bluetooth.Database.entity.DaoSession;
 import io.connection.bluetooth.Database.entity.MBGameInfo;
 import io.connection.bluetooth.Database.entity.MBGameParticipants;
-import io.connection.bluetooth.Database.entity.MBGameParticipantsDao;
 import io.connection.bluetooth.Database.entity.MBNearbyPlayer;
-import io.connection.bluetooth.Database.entity.MBNearbyPlayerDao;
 import io.connection.bluetooth.Database.entity.MBPlayerGames;
 import io.connection.bluetooth.Database.entity.MBPlayerGamesDao;
-import io.connection.bluetooth.Database.entity.MBUserAvailability;
 import io.connection.bluetooth.MobiMixApplication;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.utils.GameConstants;
@@ -45,16 +39,24 @@ public class DBAsyncOperation extends Thread {
     public void run() {
         DaoSession daoSession = MobiMixApplication.getInstance().getDaoSession();
         switch (this.params.event_) {
+            case MobiMix.DBRequest.DB_FIND_NEARBY_PLAYER_FROM_EMAIL:
+                JSONObject pObject = this.params.object_;
+                if(pObject == null) {
+                    return;
+                }
+                QueryBuilder<MBNearbyPlayer> q = daoSession.getMBNearbyPlayerDao().queryBuilder();
+
+                q.where(new WhereCondition.StringCondition("T.email='" + pObject.optString("deviceName") + "'"));
+                ((IActionReadListener)this.iActionCRUDListener).onReadOperation(0, q.list());
+
             case MobiMix.DBRequest.DB_FIND_NEARBY_PLAYERS:
                 QueryBuilder<MBNearbyPlayer> q1 = daoSession.getMBNearbyPlayerDao().queryBuilder();
 
-                QueryBuilder<MBGameParticipants> qgameParticipants = daoSession.getMBGameParticipantsDao().queryBuilder();
-                List<MBGameParticipants> gamePs = qgameParticipants.list();
+//                QueryBuilder<MBGameParticipants> qgameParticipants = daoSession.getMBGameParticipantsDao().queryBuilder();
+//                List<MBGameParticipants> gamePs = qgameParticipants.list();
 
                 q1.where(new WhereCondition.StringCondition("T.is_engaged=0"));
                 List<MBNearbyPlayer> lstPlayers = q1.list();
-
-                List<MBGameParticipants> l = daoSession.getMBGameParticipantsDao().loadAll();
 
                 ((IActionReadListener)this.iActionCRUDListener).onReadOperation(0, lstPlayers);
                 break;
