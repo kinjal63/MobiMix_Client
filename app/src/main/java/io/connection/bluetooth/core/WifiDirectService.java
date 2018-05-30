@@ -221,7 +221,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
             @Override
             public void onSuccess() {
-                UtilsHandler.showToast("WifiDirect connection is established.");
+//                UtilsHandler.showToast("WifiDirect connection is established.");
                 if (listener != null) {
                     listener.onDeviceConnected(true);
                 }
@@ -229,7 +229,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
 
             @Override
             public void onFailure(int reason) {
-                UtilsHandler.showToast("WifiDirect connection could not be established.");
+//                UtilsHandler.showToast("WifiDirect connection could not be established.");
                 System.out.println("Failure reason code:" + reason);
                 if (listener != null) {
                     listener.onDeviceConnected(false);
@@ -627,7 +627,7 @@ public class WifiDirectService implements WifiP2pManager.ConnectionInfoListener 
             }
         }
         if(!isDeviceNearby) {
-            UtilsHandler.showToast("Device is not found");
+//            UtilsHandler.showToast("Device is not found");
 //            listener.onDeviceConnected(false);
         }
     }

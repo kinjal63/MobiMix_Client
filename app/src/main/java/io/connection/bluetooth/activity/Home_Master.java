@@ -91,7 +91,7 @@ public class Home_Master extends BaseActivity implements View.OnClickListener {
 
         startMobiMixService();
 
-        this.startService(intent);
+//        this.startService(intent);
         apiCall = ApiClient.getClient().create(ApiCall.class);
         context = this;
 
@@ -106,12 +106,16 @@ public class Home_Master extends BaseActivity implements View.OnClickListener {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 //        if (preferences.getBoolean("is_login", false)) {
-            if (!bluetoothAdapter.isEnabled()) {
-                bluetoothAdapter.enable();
-                bluetoothAdapter.setName(preferences.getString(Constants.NAME_KEY, ""));
-                Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBlueTooth, 1);
-            } else {
+//            if (!bluetoothAdapter.isEnabled()) {
+//                bluetoothAdapter.enable();
+//                bluetoothAdapter.setName(preferences.getString(Constants.NAME_KEY, ""));
+//                Intent enableBlueTooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//                startActivityForResult(enableBlueTooth, 1);
+//            } else {
+//                bluetoothEnabled();
+//            }
+
+            if(bluetoothAdapter.isEnabled()) {
                 bluetoothEnabled();
             }
 
@@ -163,6 +167,8 @@ public class Home_Master extends BaseActivity implements View.OnClickListener {
         super.onResume();
         Utils.setBluetoothAdapterName();
         Utils.makeDeviceDiscoverable(context);
+
+        ApplicationSharedPreferences.getInstance(this).addBooleanValue(Constants.PREF_CHAT_ACTIVITY_OPEN, false);
     }
 
     @Override

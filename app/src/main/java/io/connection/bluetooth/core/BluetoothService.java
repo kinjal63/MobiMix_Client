@@ -209,7 +209,9 @@ public class BluetoothService {
 //        if( nearbyDeviceFoundAction != null ) {
 //            nearbyDeviceFoundAction.onBluetoothDeviceAvailable(device);
 //        }
-        NetworkManager.getInstance().setAvailabilityForBluetoothDevice(device.getName());
+        if(device != null) {
+            NetworkManager.getInstance().setAvailabilityForBluetoothDevice(device.getName());
+        }
     }
 
     public void addSocketConnectionForAddress(String deviceAddress) {

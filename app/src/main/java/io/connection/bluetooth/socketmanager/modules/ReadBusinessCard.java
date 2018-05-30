@@ -6,6 +6,8 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,28 +21,27 @@ import io.connection.bluetooth.activity.BusinessCardReceivedList;
 import io.connection.bluetooth.activity.ImageCache;
 import io.connection.bluetooth.core.MobiMix;
 import io.connection.bluetooth.enums.Modules;
+import io.connection.bluetooth.utils.Constants;
 import io.connection.bluetooth.utils.UtilsHandler;
 
 /**
  * Created by Kinjal on 4/8/2017.
  */
 
-public class ReadBusinessCard implements Runnable {
+public class ReadBusinessCard {
     private Socket socket;
-    private ObjectInputStream ois;
     private MessageHandler handler;
     private boolean disable = false;
     private DataBaseHelper db;
     private String TAG = "ReadBusinessCard";
 
-    public ReadBusinessCard(ObjectInputStream socket, MessageHandler handler) {
-        this.ois = socket;
+    public ReadBusinessCard(Socket socket, MessageHandler handler) {
+        this.socket = socket;
         this.handler = handler;
         db = new DataBaseHelper(ImageCache.getContext());
     }
 
-    @Override
-    public void run() {
+    public void readData() {
         int bufferSize = 1024;
         byte[] buffer = new byte[8 * bufferSize];
         File files;
@@ -55,7 +56,7 @@ public class ReadBusinessCard implements Runnable {
 //                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
 //                DataInputStream dis = new DataInputStream(bis);
 
-//                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
                 String data = (String)ois.readObject();
                 JSONObject jObject = new JSONObject(data);
 
@@ -132,10 +133,10 @@ public class ReadBusinessCard implements Runnable {
 
                     Thread.sleep(1000);
                     handler.closeWifiSocket();
-                    Thread.currentThread().interrupt();
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }
+
             }
         }
     }

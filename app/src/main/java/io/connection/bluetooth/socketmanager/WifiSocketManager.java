@@ -143,8 +143,8 @@ public class WifiSocketManager implements Runnable {
                 new Thread(chatData).start();
             } else if (wifiP2PService.getModule() == Modules.BUSINESS_CARD) {
                 System.out.println("Socket is read 3 Business");
-                ReadBusinessCard businessCard = new ReadBusinessCard(ois, handler);
-                new Thread(businessCard).start();
+                ReadBusinessCard businessCard = new ReadBusinessCard(socket, handler);
+                businessCard.readData();
             } else if (wifiP2PService.getModule() == Modules.FILE_SHARING) {
                 System.out.println("Socket is read 3 file sharing");
                 ReadFiles file = new ReadFiles(socket, handler);
@@ -226,11 +226,11 @@ public class WifiSocketManager implements Runnable {
         oos = oosMap.get(socketAddr);
 
         if(module == Modules.BUSINESS_CARD) {
-            SendBusinessCard businessCard = new SendBusinessCard(oos, ois, handler);
+            SendBusinessCard businessCard = new SendBusinessCard(socket, handler);
             businessCard.start();
         }
         else if(module == Modules.FILE_SHARING) {
-            SendFiles sendFiles = new SendFiles(oos, ois, handler);
+            SendFiles sendFiles = new SendFiles(socket, handler);
             sendFiles.start();
         }
     }

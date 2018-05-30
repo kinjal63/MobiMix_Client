@@ -60,11 +60,11 @@ public class ReadFiles {
         File[] files = null;
 
         handler.setModule(Modules.NONE);
+        BufferedInputStream bis = null;
 
         try {
             if (context.checkCallingOrSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && context.checkCallingOrSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-
-                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
+                bis = new BufferedInputStream(socket.getInputStream(), buffer.length);
                 DataInputStream dis = new DataInputStream(bis);
                 int fileCount = dis.readInt();
                 Log.d(TAG, "run:  filecount" + fileCount);
@@ -155,8 +155,6 @@ public class ReadFiles {
 
                     Log.d(TAG, "run:  file path " + files[i].getPath());
                 }
-                dis.close();
-
             }
         } catch (Exception e) {
 
@@ -166,8 +164,11 @@ public class ReadFiles {
             try {
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
                 dos.writeUTF("NowClosing");
-
+                if(bis != null) {
+                    bis.close();
+                }
                 Thread.sleep(1000);
+
                 handler.closeWifiSocket();
             } catch (Exception ee) {
                 ee.printStackTrace();
